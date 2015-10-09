@@ -1,0 +1,17 @@
+Need to add:
+- Support for standard context set
+
+Should be added:
+- Accent prediction seems useful.
+- Change the way phonemes are loaded. should probably be part of dictionary somehow.
+- Rename things a bit in io.py and move stuff from make_full there.
+- Consider not passing args many places but instead specific needed args.
+- Consider not creating full utt when making aligment mlfs. Should be done!
+- The make alignment script needs some redoing.
+- Currently a warning is written if a context from a skeleton is not used. Should have option to fail.
+
+Nice to add:
+- Support for CMUdict
+- Consider if it could be useful to split combilex words with the possesive 's added as this is also done when parsing and would give better POS agreement. Alternatively we should merge parse words, but that may be difficult due to the parse tree also needing modification then.
+- Support for "standard" question sets that are not tailored to a dataset.
+- Could just output an HTK dictionary instead of lattice?
