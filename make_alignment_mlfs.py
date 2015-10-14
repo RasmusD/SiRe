@@ -165,7 +165,7 @@ if __name__ == "__main__":
   
   txtfiles = io.load_txt_dir(args.txtdir)
   
-  #Opening the mlf files here means we don't have to loop twice if outputtinh slfs as well.
+  #Opening the mlf files here means we don't have to loop twice if outputting slfs as well.
   if args.mlf:
     #Out mlf with short pause
     wfsp = open(os.path.join(args.outdir, args.mlfname+"_sp.mlf"), "w")

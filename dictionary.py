@@ -20,7 +20,7 @@ import os, sys, list_utils, phoneme_features
 #A dictionary class for creating dictionaries.
 #Currently only combilex is supported.
 #Each should have a variable called:
-#self.combilex = the dictionary with its entries (see TODO for renaming)
+#self.raw_dictionary_entries = the dictionary with its entries.
 #self.phoneme_feats = An instance of the relevant phoneme features for the relevant type of dictionary from phone_features.py
 #TODO - Should be flexible which type of dictionary to create - currently only supports combilex.
 class Dictionary(object):
@@ -31,7 +31,9 @@ class Dictionary(object):
     print "Loading combilex..."
     entries = [x for x in open(os.path.join(path, "combilex.dict"), "r").readlines() if x[0] == "("]
     entries += [x for x in open(os.path.join(path, "combilex.add"), "r").readlines() if x[0] == "("]
-    self.combilex = {}
+    #Generally this should not be used directly - rather the get methods below should be used
+    #to retrieve the desired type of entry.
+    self.raw_dictionary_entries = {}
     #Parse each combilex entry into its name, part of speech tag, reduction level and syllable/phonemes
     for e in entries:
       entry = e.split("\"")
@@ -60,10 +62,10 @@ class Dictionary(object):
         reduced = False
         entry = " (".join(entry[1:])[:-1]
       #The entry is done
-      if name in self.combilex:
-        self.combilex[name] += [{"pos":pos, "reduced":reduced, "phonetics":entry}]
+      if name in self.raw_dictionary_entries:
+        self.raw_dictionary_entries[name] += [{"pos":pos, "reduced":reduced, "phonetics":entry}]
       else:
-        self.combilex[name] = [{"pos":pos, "reduced":reduced, "phonetics":entry}]
+        self.raw_dictionary_entries[name] = [{"pos":pos, "reduced":reduced, "phonetics":entry}]
     self.phoneme_feats = phoneme_features.CombilexPhonemes()
     print "Done."
   
@@ -72,7 +74,7 @@ class Dictionary(object):
   #treated as needing seperate pronunciations.
   def get_single_entry(self, word):
     try:
-      entries = self.combilex[word]
+      entries = self.raw_dictionary_entries[word]
     except KeyError:
       #If this has udnerscores we try to pronounce each letter individually.
       if "_" in word:
@@ -106,7 +108,7 @@ class Dictionary(object):
   #Returns a list of alignment strings for each variant of a word in dict.
   def get_all_align_entries(self, word):
     try:
-      entries = self.combilex[word]
+      entries = self.raw_dictionary_entries[word]
     except KeyError:
       #If this has underscores we try to pronounce each letter individually.
       if "_" in word:

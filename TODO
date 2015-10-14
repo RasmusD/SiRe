@@ -19,14 +19,12 @@ Need to add:
 
 Should be added:
 - Accent prediction seems useful.
-- Change the way phonemes are loaded. should probably be part of dictionary somehow.
 - Rename things a bit in io.py and move stuff from make_full there.
 - Consider not passing args many places but instead specific needed args.
 - Consider not creating full utt when making aligment mlfs. Should be done!
 - The make alignment script needs some redoing.
 - Currently a warning is written if a context from a skeleton is not used. Should have option to fail.
 - Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.
-- Change name of dictionary variable in dictionary.py to generic instead of combilex.
 - Type of phonemes used is hard-coded for the contexts, should be relative to the type of phoneset used (i.e. which dictionary).
 
 Nice to add:
