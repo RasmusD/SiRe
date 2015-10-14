@@ -158,6 +158,12 @@ class Phoneme:
     print "Error: Cannot find phoneme {0} in utt {1}!".format(self.id, self.parent_utt.id)
     sys.exit()
 
+  def get_feats(self):
+    return self.parent_utt.phoneme_features.get_phoneme_feats(self.id)
+  
+  def get_feats_dict(self):
+    return self.parent_utt.phoneme_features.get_phoneme_feats_dict(self.id)
+
 class Syllable:
   """A class representing a syllable."""
   
@@ -219,6 +225,14 @@ class Syllable:
   
   def end_time(self):
     return self.phonemes[-1].end
+  
+  def get_vowel_feats(self):  
+    return self.parent_utt.phoneme_features.get_phone_feats(self.vowel_id)
+  
+  def get_vowel_feats_dict(self):  
+    return self.parent_utt.phoneme_features.get_phone_feats_dict(self.vowel_id)
+  
+
 
 class Word:
   """A classs representing a word."""
