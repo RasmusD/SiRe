@@ -1,4 +1,20 @@
-import utterance, phone_features, sys
+##########################################################################
+#Copyright 2015 Rasmus Dall                                              #
+#                                                                        #
+#Licensed under the Apache License, Version 2.0 (the "License");         #
+#you may not use this file except in compliance with the License.        #
+#You may obtain a copy of the License at                                 #
+#                                                                        #
+#http://www.apache.org/licenses/LICENSE-2.0                              #
+#                                                                        #
+#Unless required by applicable law or agreed to in writing, software     #
+#distributed under the License is distributed on an "AS IS" BASIS,       #
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.#
+#See the License for the specific language governing permissions and     #
+#limitations under the License.                                          #
+##########################################################################
+
+import utterance, sys
 
 #Methods for manipulating utterances in non-standard ways. Most of these are considered dangerous and unsafe.
 
@@ -140,6 +156,7 @@ def split_word(word, split_pos):
 def split_syll(syll, acceptable_phoneme_set, word_spanning_phonemes=[]):
   #Makes life a bit easier
   utt = syll.parent_utt
+  phoneme_features = utt.phoneme_features
   
   #A special case for phonemes which may have ended up spanning across what would normally
   #be two words or if all phonemes related to the "2nd" word has been deleted.
@@ -218,13 +235,13 @@ def split_syll(syll, acceptable_phoneme_set, word_spanning_phonemes=[]):
     p.parent_syllable = s1
   s2.phonemes[0].parent_syllable = s2
   #Update vowel id
-  if phone_features.is_vowel(s2.phonemes[0].id):
+  if phoneme_features.is_vowel(s2.phonemes[0].id):
     s2.vowel_id = s2.phonemes[0].id
   else:
     s2.vowel_id = "novowel"
   v = "novowel"
   for p in s1.phonemes:
-    if phone_features.is_vowel(p.id):
+    if phoneme_features.is_vowel(p.id):
       v = p.id
       break
   s1.vowel_id = v

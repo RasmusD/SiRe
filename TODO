@@ -1,3 +1,19 @@
+##########################################################################
+#Copyright 2015 Rasmus Dall                                              #
+#                                                                        #
+#Licensed under the Apache License, Version 2.0 (the "License");         #
+#you may not use this file except in compliance with the License.        #
+#You may obtain a copy of the License at                                 #
+#                                                                        #
+#http://www.apache.org/licenses/LICENSE-2.0                              #
+#                                                                        #
+#Unless required by applicable law or agreed to in writing, software     #
+#distributed under the License is distributed on an "AS IS" BASIS,       #
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.#
+#See the License for the specific language governing permissions and     #
+#limitations under the License.                                          #
+##########################################################################
+
 Need to add:
 - Support for standard context set
 
@@ -9,9 +25,13 @@ Should be added:
 - Consider not creating full utt when making aligment mlfs. Should be done!
 - The make alignment script needs some redoing.
 - Currently a warning is written if a context from a skeleton is not used. Should have option to fail.
+- Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.
+- Change name of dictionary variable in dictionary.py to generic instead of combilex.
+- Type of phonemes used is hard-coded for the contexts, should be relative to the type of phoneset used (i.e. which dictionary).
 
 Nice to add:
 - Support for CMUdict
 - Consider if it could be useful to split combilex words with the possesive 's added as this is also done when parsing and would give better POS agreement. Alternatively we should merge parse words, but that may be difficult due to the parse tree also needing modification then.
+(- Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.)
 - Support for "standard" question sets that are not tailored to a dataset.
 - Could just output an HTK dictionary instead of lattice?

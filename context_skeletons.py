@@ -1,4 +1,20 @@
-import sys, phone_features, context_utils
+##########################################################################
+#Copyright 2015 Rasmus Dall                                              #
+#                                                                        #
+#Licensed under the Apache License, Version 2.0 (the "License");         #
+#you may not use this file except in compliance with the License.        #
+#You may obtain a copy of the License at                                 #
+#                                                                        #
+#http://www.apache.org/licenses/LICENSE-2.0                              #
+#                                                                        #
+#Unless required by applicable law or agreed to in writing, software     #
+#distributed under the License is distributed on an "AS IS" BASIS,       #
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.#
+#See the License for the specific language governing permissions and     #
+#limitations under the License.                                          #
+##########################################################################
+
+import sys, context_utils
 from collections import OrderedDict
 
 #This contains the context skeletons which ensure compatibility between
@@ -30,7 +46,7 @@ from collections import OrderedDict
 
 class Relational(object):
   """Contains the set of variables used in the relational context set."""
-  def __init__(self):
+  def __init__(self, phoneme_features):
     #Container for all contexts given a value
     #The whole thing could be built up around this dict
     #but I think it more clear not to.
@@ -64,7 +80,7 @@ class Relational(object):
     #Right Phone stress
     #self.rps = "intxx0"
     #Phone features
-    for feat in phone_features.get_feature_lists():
+    for feat in phoneme_features.get_feature_lists():
       #Left Phoneme feats
       setattr(self, "lp"+feat, "bool")
       #Cur Phoneme feats
@@ -92,7 +108,7 @@ class Relational(object):
     #Syllable vowel id
     self.svid = "bool"
     #Syllable vowel features
-    for feat in phone_features.get_feature_lists():
+    for feat in phoneme_features.get_feature_lists():
       setattr(self, "sv"+feat, "bool")
     #Syllable forward pos in word
     self.sfwwp = "float"
@@ -170,8 +186,8 @@ class Relational(object):
 
 class RelationalStanford(Relational):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
-  def __init__(self):
-    super(RelationalStanford, self).__init__()
+  def __init__(self, phoneme_features):
+    super(RelationalStanford, self).__init__(phoneme_features)
     ###### Stanford Parse Information ######
     #Part of speech
     self.lwpos = "bool"

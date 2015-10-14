@@ -1,6 +1,28 @@
-#Contains all dictionary related operations.
-import os, sys, list_utils
+##########################################################################
+#Copyright 2015 Rasmus Dall                                              #
+#                                                                        #
+#Licensed under the Apache License, Version 2.0 (the "License");         #
+#you may not use this file except in compliance with the License.        #
+#You may obtain a copy of the License at                                 #
+#                                                                        #
+#http://www.apache.org/licenses/LICENSE-2.0                              #
+#                                                                        #
+#Unless required by applicable law or agreed to in writing, software     #
+#distributed under the License is distributed on an "AS IS" BASIS,       #
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.#
+#See the License for the specific language governing permissions and     #
+#limitations under the License.                                          #
+##########################################################################
 
+#Contains all dictionary related operations.
+import os, sys, list_utils, phoneme_features
+
+#A dictionary class for creating dictionaries.
+#Currently only combilex is supported.
+#Each should have a variable called:
+#self.combilex = the dictionary with its entries (see TODO for renaming)
+#self.phoneme_feats = An instance of the relevant phoneme features for the relevant type of dictionary from phone_features.py
+#TODO - Should be flexible which type of dictionary to create - currently only supports combilex.
 class Dictionary(object):
   """A dictionary class."""
   
@@ -42,6 +64,7 @@ class Dictionary(object):
         self.combilex[name] += [{"pos":pos, "reduced":reduced, "phonetics":entry}]
       else:
         self.combilex[name] = [{"pos":pos, "reduced":reduced, "phonetics":entry}]
+    self.phoneme_feats = phoneme_features.CombilexPhonemes()
     print "Done."
   
   #This returns the first non-reduced phomisation of a word in the dictionary.

@@ -1,4 +1,20 @@
-import argparse, sys, phone_features, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, io
+##########################################################################
+#Copyright 2015 Rasmus Dall                                              #
+#                                                                        #
+#Licensed under the Apache License, Version 2.0 (the "License");         #
+#you may not use this file except in compliance with the License.        #
+#You may obtain a copy of the License at                                 #
+#                                                                        #
+#http://www.apache.org/licenses/LICENSE-2.0                              #
+#                                                                        #
+#Unless required by applicable law or agreed to in writing, software     #
+#distributed under the License is distributed on an "AS IS" BASIS,       #
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.#
+#See the License for the specific language governing permissions and     #
+#limitations under the License.                                          #
+##########################################################################
+
+import argparse, sys, phone_features, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, io, phoneme_features
 from datetime import datetime
 
 #Parse an mlf into the lines of containing labels.
@@ -89,6 +105,9 @@ if __name__ == "__main__":
   parser.add_argument('-parsedir', type=str, help="The path to the parses.", default="parse")
   parser.add_argument('-HHEd_fix', action="store_true", help="Applies a fix to the contexts around the current phoneme to be compatible with hardcoded delimiters in HHEd.")
   args = parser.parse_args()
+  
+  #The phoneme set used - hardcoded as currently only combilex is possible
+  args.phoneme_features = phoneme_features.CombilexPhonemes()
   
   if args.stanfordparse:
     args.parsedict = read_stanford_parses(args.parsedir)

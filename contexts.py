@@ -1,4 +1,20 @@
-import context_skeletons, phone_features, copy
+##########################################################################
+#Copyright 2015 Rasmus Dall                                              #
+#                                                                        #
+#Licensed under the Apache License, Version 2.0 (the "License");         #
+#you may not use this file except in compliance with the License.        #
+#You may obtain a copy of the License at                                 #
+#                                                                        #
+#http://www.apache.org/licenses/LICENSE-2.0                              #
+#                                                                        #
+#Unless required by applicable law or agreed to in writing, software     #
+#distributed under the License is distributed on an "AS IS" BASIS,       #
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.#
+#See the License for the specific language governing permissions and     #
+#limitations under the License.                                          #
+##########################################################################
+
+import context_skeletons, copy
 from context_utils import strintify
 from context_utils import strfloatify
 from context_utils import to_relational
@@ -7,13 +23,13 @@ from context_utils import to_relational
 
 def Relational(phoneme):
   """Creates a relational context string of the given phoneme."""
-  c = context_skeletons.Relational()
+  c = context_skeletons.Relational(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
   return c
 
 def RelationalStanford(phoneme):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
-  c = context_skeletons.RelationalStanford()
+  c = context_skeletons.RelationalStanford(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
   add_stanford(c, phoneme)
   return c
@@ -21,6 +37,7 @@ def RelationalStanford(phoneme):
 def add_relational(context_skeleton, phoneme):
   """Adds the relational context set to a context skeleton. If the skeleton does not support the set this will fail."""
   utt = phoneme.parent_utt
+  phoneme_features = utt.phoneme_features
   c = context_skeleton
   syll = phoneme.parent_syllable
   word = phoneme.parent_word
@@ -62,7 +79,7 @@ def add_relational(context_skeleton, phoneme):
     rrp = "xx"
   c.add("rrp", rrp)
   #Add phoneme syll and word pos
-  if phoneme.id in phone_features.get_sil_phonemes():
+  if phoneme.id in phoneme_features.get_sil_phonemes():
     #Phone forward pos in syll
     c.add("pfwsp", str(0.0))
     #Phone backward pos in syll
@@ -115,10 +132,10 @@ def add_relational(context_skeleton, phoneme):
   #    i -= 1
   #c.add("ppsp", ppsp)
   #Phoneme features
-  lpf = phone_features.get_phoneme_feats_dict(lp)
-  cpf = phone_features.get_phoneme_feats_dict(phoneme.id)
-  rpf = phone_features.get_phoneme_feats_dict(rp)
-  for feat in phone_features.get_feature_lists():
+  lpf = phoneme_features.get_phoneme_feats_dict(lp)
+  cpf = phoneme_features.get_phoneme_feats_dict(phoneme.id)
+  rpf = phoneme_features.get_phoneme_feats_dict(rp)
+  for feat in phoneme_features.get_feature_lists():
     #Left phoneme feats
     c.add("lp"+feat, lpf[feat])
     #Current phoneme feats
@@ -192,7 +209,7 @@ def add_relational(context_skeleton, phoneme):
     c.add("rsnp", "xx")
   
   #If this is a silence segment we have no relational pos.
-  if phoneme.id in phone_features.get_sil_phonemes():
+  if phoneme.id in phoneme_features.get_sil_phonemes():
     #Syllable forward pos in word
     c.add("sfwwp", str(0.0))
     #Syllable backward pos in word
@@ -206,8 +223,8 @@ def add_relational(context_skeleton, phoneme):
   #Syll vowel id
   c.add("svid", syll.vowel_id)
   #Syll Vowel Feats
-  v_dct = phone_features.get_phoneme_feats_dict(syll.vowel_id)
-  for feat in phone_features.get_feature_lists():
+  v_dct = phoneme_features.get_phoneme_feats_dict(syll.vowel_id)
+  for feat in phoneme_features.get_feature_lists():
     c.add("sv"+feat, v_dct[feat])
   
   ##### Word level features #####

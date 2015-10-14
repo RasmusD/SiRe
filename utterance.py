@@ -1,4 +1,20 @@
-import phone_features, sys, utterance_load, os
+##########################################################################
+#Copyright 2015 Rasmus Dall                                              #
+#                                                                        #
+#Licensed under the Apache License, Version 2.0 (the "License");         #
+#you may not use this file except in compliance with the License.        #
+#You may obtain a copy of the License at                                 #
+#                                                                        #
+#http://www.apache.org/licenses/LICENSE-2.0                              #
+#                                                                        #
+#Unless required by applicable law or agreed to in writing, software     #
+#distributed under the License is distributed on an "AS IS" BASIS,       #
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.#
+#See the License for the specific language governing permissions and     #
+#limitations under the License.                                          #
+##########################################################################
+
+import phoneme_features, sys, utterance_load, os
 
 class Utterance(object):
   """An object representing an utterance."""
@@ -17,7 +33,7 @@ class Utterance(object):
   #phonemes in order as a string. 
   #Phonemes is itself a list of proto_phonemes.
   #A proto_phoneme is a dict containing 4 keys.
-  #Id being the type of phoneme, must be a valid phoneme in phone_features.
+  #Id being the type of phoneme, must be a valid phoneme in phoneme set used.
   #Start - the start time in HTK style values where 10000 is 1ms.
   #End - the end time in HTK style values where 10000 is 1 ms.
   #Stress - the stress value of the phoneme - this may be None in case we do not have the information.
@@ -41,6 +57,8 @@ class Utterance(object):
     self.phonemes = []
     self.syllables = []
     self.words = []
+    #We need to know which phoneme features this utterance is created with.
+    self.phoneme_features = args.phoneme_features
     s_utt_pos = 0
     p_utt_pos = 0
     
@@ -96,7 +114,7 @@ class Utterance(object):
   def get_words_no_pau(self):
     tmp = []
     for word in self.words:
-      if word.id not in phone_features.get_sil_phonemes():
+      if word.id not in self.phoneme_features.get_sil_phonemes():
         tmp.append(word)
     return tmp
 
@@ -139,12 +157,6 @@ class Phoneme:
         return i
     print "Error: Cannot find phoneme {0} in utt {1}!".format(self.id, self.parent_utt.id)
     sys.exit()
-  
-  def get_feats(self):
-    return phone_features.get_phoneme_feats(self.id)
-  
-  def get_feats_dict(self):
-    return phone_features.get_phoneme_feats_dict(self.id)
 
 class Syllable:
   """A class representing a syllable."""
@@ -169,7 +181,7 @@ class Syllable:
       self.child_phoneme_utt_positions.append(i+current_phoneme_utt_pos)
     #This will be filled later
     self.phonemes = None
-    self.vowel_id = self.find_vowel(proto_syll)
+    self.vowel_id = self.find_vowel(proto_syll, utt.phoneme_features)
   
   #This works because we are passing by reference value.
   def add_phonemes(self):
@@ -179,9 +191,9 @@ class Syllable:
     del self.child_phoneme_utt_positions
   
   #If a syllable contains more than one vowel this return the first one.
-  def find_vowel(self, proto_syll):
+  def find_vowel(self, proto_syll, phoneme_features):
     for p in proto_syll["phonemes"]:
-      if phone_features.is_vowel(p["id"]):
+      if phoneme_features.is_vowel(p["id"]):
         return p["id"]
     return "novowel"
   
@@ -201,12 +213,6 @@ class Syllable:
   
   def num_phonemes(self):
     return len(self.phonemes)
-  
-  def get_vowel_feats(self):
-    return phone_features.get_phone_feats(self.vowel_id)
-  
-  def get_vowel_feats_dict(self):
-    return phone_features.get_phone_feats_dict(self.vowel_id)
   
   def start_time(self):
     return self.phonemes[0].start
