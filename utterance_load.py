@@ -15,7 +15,7 @@
 ##########################################################################
 
 #Methods for loading utterances
-import utterance, utterance_utils, sys, phone_features, parsetrees, os, dictionary
+import utterance, utterance_utils, sys, phoneme_features, parsetrees, os, dictionary
 
 #Create a prototype utterance from a lab from an aligned mlf.
 #Note this assumes the following:
@@ -196,7 +196,7 @@ def load_stanford_parse(utt, parse):
   
   #Now add fake parse for sil, pau and #
   for word in utt.words:
-    if word.id in phone_features.get_sil_phonemes():
+    if word.id in utt.phoneme_features.get_sil_phonemes():
       word.parent_phrase = parsetrees.get_fake_stanford_parse()
       word.grandparent_phrase = parsetrees.get_fake_stanford_parse()
       word.greatgrandparent_phrase = parsetrees.get_fake_stanford_parse()
@@ -219,7 +219,7 @@ def load_txt(utt, txtpath):
   #Now replace the phoneme based ids with txt based.
   i = 0
   for w in utt.words:
-    if w.id not in phone_features.get_sil_phonemes():
+    if w.id not in utt.phoneme_features.get_sil_phonemes():
       w.id = txt[i]
       i += 1
   utt.txtloaded = True

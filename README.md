@@ -9,6 +9,7 @@ If you try it out, here is what it can do:
 
 - Load standard HTS (2.3beta) full-context mlfs and convert them to two other linguistic feature sets.
 - Output a relational and parsed linguistic featureset.
+- Output a standard absolute linguistic set and a parsed version of this.
 - Output a question set consistent with the linguistic features encountered in training data.
 - It should be easy to define a new linguistic feature context set allowing for rapid experimentation.
 - Load an mlf created from alignment using the multisyn tools and create full-context labels.

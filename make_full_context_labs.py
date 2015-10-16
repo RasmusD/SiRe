@@ -14,7 +14,7 @@
 #limitations under the License.                                          #
 ##########################################################################
 
-import argparse, sys, phone_features, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, io, phoneme_features
+import argparse, sys, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, io, phoneme_features
 from datetime import datetime
 
 #Parse an mlf into the lines of containing labels.
@@ -60,9 +60,15 @@ def write_context_utt(utt, args):
     cs = []
   for phone in utt.phonemes:
     if args.stanfordparse == True:
-      context = contexts.RelationalStanford(phone)
+      if args.context_type == "relational":
+        context = contexts.RelationalStanford(phone)
+      elif args.context_type == "absolute":
+        context = contexts.AbsoluteStanford(phone)
     else:
-      context = contexts.Relational(phone)
+      if args.context_type == "relational":
+        context = contexts.Relational(phone)
+      elif args.context_type == "absolute":
+        context = contexts.Absolute(phone)
     if args.questions == True:
       cs.append(context)
     wf.write(context.get_context_string(args.HHEd_fix))
@@ -74,9 +80,15 @@ def write_context_utt(utt, args):
 
 def write_questions(context_set, args):
   if args.stanfordparse == True:
-    qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanford(), args.target, True, context_set, args.HHEd_fix)
+    if args.context_type == "relational":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanford(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+    elif args.context_type == "absolute":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanford(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
   else:
-    qs, q_utt = contexts.get_question_sets(context_skeletons.Relational(), args.target, True, context_set, args.HHEd_fix)
+    if args.context_type == "relational":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.Relational(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+    elif args.context_type == "aboslute":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.Absolute(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
   for q in qs:
     args.qfile.write(q+"\n")
   for q in q_utt:
@@ -102,6 +114,7 @@ if __name__ == "__main__":
   parser.add_argument('-qpath', type=str, help="The directory to write the question set to.", default=os.path.join("questions", str(datetime.now())+".hed"))
   parser.add_argument('-target', type=str, help="The target type of the output labs and questions.", choices=['HMM', 'NN'], default='HMM')
   parser.add_argument('-stanfordparse', action="store_true", help="Add stanford parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
+  parser.add_argument('-context_type', type=str, choices=['absolute', 'relational'], help="The type of positional contexts to add.", default='relational')
   parser.add_argument('-parsedir', type=str, help="The path to the parses.", default="parse")
   parser.add_argument('-HHEd_fix', action="store_true", help="Applies a fix to the contexts around the current phoneme to be compatible with hardcoded delimiters in HHEd.")
   args = parser.parse_args()

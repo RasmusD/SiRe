@@ -82,13 +82,16 @@ def check_value(context_skeleton, variable_name, value):
   else:
     print "Unknown attribute type! "+attr
     sys.exit()
-  print "Value ({0}) is not valid for variable type ({1}) variable ({2})".format(value, attr, variable_name)
-  return False
+  print "ERROR! Value ({0}) is not valid for variable type ({1}) variable ({2})".format(value, attr, variable_name)
+  print context_skeleton
+  sys.exit()
 
 #Return the string of the int of the float multiplied by 100.
 def strintify(fl):
   #Just to make sure we deal with a float
-  fl = float(fl)
+  if type(fl) is not float:
+    print "ERROR! Cannot strintify type {0}! Must be float!".format(type(fl))
+    sys.exit()
   #First remove any leftovers and make sure we don't just floor
   fl = round(fl, 2)
   #Do the multiplication. We round due to issues with float arithmetic.
@@ -98,6 +101,10 @@ def strintify(fl):
   
 #Return the string of the float of the int divided by 100 to two decimal places.
 def strfloatify(fl):
+  #Just to make sure we deal with a int
+  if type(fl) is not int:
+    print "ERROR! Cannot strintify type {0}! Must be int!".format(type(fl))
+    sys.exit()
   #First do the division
   fl = float(fl) / 100
   #Round

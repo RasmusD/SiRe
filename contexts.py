@@ -31,11 +31,25 @@ def RelationalStanford(phoneme):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
   c = context_skeletons.RelationalStanford(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
-  add_stanford(c, phoneme)
+  add_relational_stanford(c, phoneme)
   return c
 
-def add_relational(context_skeleton, phoneme):
-  """Adds the relational context set to a context skeleton. If the skeleton does not support the set this will fail."""
+def Absolute(phoneme):
+  """Creates an absolute context string of the given phoneme."""
+  c = context_skeletons.Absolute(phoneme.parent_utt.phoneme_features)
+  add_absolute(c, phoneme)
+  return c
+
+def AbsoluteStanford(phoneme):
+  """Creates an absolute context string of the given phoneme."""
+  c = context_skeletons.AbsoluteStanford(phoneme.parent_utt.phoneme_features)
+  add_absolute(c, phoneme)
+  add_absolute_stanford(c, phoneme)
+  return c
+
+
+def add_basic(context_skeleton, phoneme):
+  """Adds the basic context set to a context skeleton. What is considered basic is currently what overlaps between relational and absolute. If the skeleton does not support the set this will fail."""
   utt = phoneme.parent_utt
   phoneme_features = utt.phoneme_features
   c = context_skeleton
@@ -78,27 +92,6 @@ def add_relational(context_skeleton, phoneme):
   else:
     rrp = "xx"
   c.add("rrp", rrp)
-  #Add phoneme syll and word pos
-  if phoneme.id in phoneme_features.get_sil_phonemes():
-    #Phone forward pos in syll
-    c.add("pfwsp", str(0.0))
-    #Phone backward pos in syll
-    c.add("pbwsp", str(0.0))
-    #Phone forward pos in word
-    c.add("pfwwp", str(0.0))
-    #Phone backward pos in word
-    c.add("pbwwp", str(0.0))
-  else:
-    #Phone forward pos in syll
-    s_n_p = syll.num_phonemes()
-    c.add("pfwsp", str(to_relational(p_pos_in_syllable, s_n_p - 1, True)))
-    #Phone backward pos in syll
-    c.add("pbwsp", str(to_relational(p_pos_in_syllable, s_n_p - 1, False)))
-    #Phone forward pos in word
-    w_n_p = word.num_phonemes()
-    c.add("pfwwp", str(to_relational(p_pos_in_word, w_n_p - 1, True)))
-    #Phone backward pos in word
-    c.add("pbwwp", str(to_relational(p_pos_in_word, w_n_p - 1, False)))
   #Left phoneme stress
   #if lp != "xx":
   #  c.add("lps", str(utt.phonemes[p_pos_in_utt - 1].stress))
@@ -207,19 +200,6 @@ def add_relational(context_skeleton, phoneme):
     c.add("rsnp", str(rs.num_phonemes()))
   else:
     c.add("rsnp", "xx")
-  
-  #If this is a silence segment we have no relational pos.
-  if phoneme.id in phoneme_features.get_sil_phonemes():
-    #Syllable forward pos in word
-    c.add("sfwwp", str(0.0))
-    #Syllable backward pos in word
-    c.add("sbwwp", str(0.0))
-  else:
-    #Syllable forward pos in word
-    w_n_s = syll.parent_word.num_syllables()
-    c.add("sfwwp", str(to_relational(s_pos_in_word, w_n_s - 1, True)))
-    #Syllable backward pos in word
-    c.add("sbwwp", str(to_relational(s_pos_in_word, w_n_s - 1, False)))
   #Syll vowel id
   c.add("svid", syll.vowel_id)
   #Syll Vowel Feats
@@ -234,11 +214,6 @@ def add_relational(context_skeleton, phoneme):
   c.add("wnp", str(word.num_phonemes()))
   #Word number of syllables
   c.add("wns", str(word.num_syllables()))
-  #Word forward pos in utterance
-  u_n_w = word.parent_utt.num_words()
-  c.add("wfwup", str(to_relational(w_pos_in_utt, u_n_w - 1, True)))
-  #Word forward pos in utterance
-  c.add("wbwup", str(to_relational(w_pos_in_utt, u_n_w - 1, False)))
   
   ##### Utterance level features #####
   #Phonemes in utterance
@@ -247,13 +222,92 @@ def add_relational(context_skeleton, phoneme):
   c.add("uns", str(utt.num_syllables()))
   #Words in utterance
   c.add("unw", str(utt.num_words()))
-  
-  ##### Experimental! #####
-  #Just adding this manually
-  #c.add("ut", "spont")
 
-def add_stanford(context_skeleton, phoneme):
-  """Adds stanford parse information to a phoneme context."""
+def add_relational(context_skeleton, phoneme):
+  """Adds the relational context set. Relational means that positions in segments are relational."""
+  utt = phoneme.parent_utt
+  phoneme_features = utt.phoneme_features
+  c = context_skeleton
+  syll = phoneme.parent_syllable
+  word = phoneme.parent_word
+  #Add the basic features
+  add_basic(c, phoneme)
+  #Add phoneme syll and word pos
+  if phoneme.id in phoneme_features.get_sil_phonemes():
+    #Phone forward pos in syll
+    c.add("pfwsp", str(0.0))
+    #Phone backward pos in syll
+    c.add("pbwsp", str(0.0))
+    #Phone forward pos in word
+    c.add("pfwwp", str(0.0))
+    #Phone backward pos in word
+    c.add("pbwwp", str(0.0))
+  else:
+    #Phone forward pos in syll
+    s_n_p = syll.num_phonemes()
+    c.add("pfwsp", str(to_relational(phoneme.pos_in_syllable(), s_n_p - 1, True)))
+    #Phone backward pos in syll
+    c.add("pbwsp", str(to_relational(phoneme.pos_in_syllable(), s_n_p - 1, False)))
+    #Phone forward pos in word
+    w_n_p = word.num_phonemes()
+    c.add("pfwwp", str(to_relational(phoneme.pos_in_word(), w_n_p - 1, True)))
+    #Phone backward pos in word
+    c.add("pbwwp", str(to_relational(phoneme.pos_in_word(), w_n_p - 1, False)))
+  #Add syllable forward and backward word pos
+  #If this is a silence segment we have no relational pos.
+  if phoneme.id in phoneme_features.get_sil_phonemes():
+    #Syllable forward pos in word
+    c.add("sfwwp", str(0.0))
+    #Syllable backward pos in word
+    c.add("sbwwp", str(0.0))
+  else:
+    #Syllable forward pos in word
+    w_n_s = syll.parent_word.num_syllables()
+    c.add("sfwwp", str(to_relational(syll.pos_in_word(), w_n_s - 1, True)))
+    #Syllable backward pos in word
+    c.add("sbwwp", str(to_relational(syll.pos_in_word(), w_n_s - 1, False)))
+  #Add pos in utt
+  #Word forward pos in utterance
+  u_n_w = word.parent_utt.num_words()
+  c.add("wfwup", str(to_relational(word.pos_in_utt(), u_n_w - 1, True)))
+  #Word forward pos in utterance
+  c.add("wbwup", str(to_relational(word.pos_in_utt(), u_n_w - 1, False)))
+
+def add_absolute(context_skeleton, phoneme):
+  """Adds the absolute context set. Absolute means that positions in segmetns are absolute values."""
+  utt = phoneme.parent_utt
+  phoneme_features = utt.phoneme_features
+  c = context_skeleton
+  syll = phoneme.parent_syllable
+  word = phoneme.parent_word
+  #Add the basic features
+  add_basic(c, phoneme)
+  #Add phoneme syll and word pos
+  #We remove one as the pos_in start from 0
+  s_n_p = syll.num_phonemes() - 1
+  c.add("pfwsp", str(phoneme.pos_in_syllable()))
+  #Phone backward pos in syll
+  c.add("pbwsp", str(s_n_p-phoneme.pos_in_syllable()))
+  #Phone forward pos in word
+  w_n_p = word.num_phonemes() - 1
+  c.add("pfwwp", str(phoneme.pos_in_word()))
+  #Phone backward pos in word
+  c.add("pbwwp", str(w_n_p-phoneme.pos_in_word()))
+  #Add syllable forward and backward word pos
+  #If this is a silence segment we have no relational pos.
+  w_n_s = syll.parent_word.num_syllables() - 1
+  c.add("sfwwp", str(syll.pos_in_word()))
+  #Syllable backward pos in word
+  c.add("sbwwp", str(w_n_s - syll.pos_in_word()))
+  #Add pos in utt
+  #Word forward pos in utterance
+  u_n_w = word.parent_utt.num_words() - 1
+  c.add("wfwup", str(word.pos_in_utt()))
+  #Word forward pos in utterance
+  c.add("wbwup", str(u_n_w - word.pos_in_utt()))
+
+def add_basic_stanford(context_skeleton, phoneme):
+  """Adds the basic elements of stanford parse information to a phoneme context."""
   c = context_skeleton
   ###### Stanford Parse Information ######
   #Part of speech of word
@@ -283,6 +337,14 @@ def add_stanford(context_skeleton, phoneme):
   c.add("wgpp", w.grandparent_phrase.label)
   #Word greatgrandparent phrase
   c.add("wggpp", w.greatgrandparent_phrase.label)
+
+def add_relational_stanford(context_skeleton, phoneme):
+  """Adds the relational elements of stanford parse information to a phoneme context."""
+  c = context_skeleton
+  #Add basic info
+  add_basic_stanford(c, phoneme)
+  #Word
+  w = phoneme.parent_word
   #Word relational position in parent phrase
   c.add("wfwrppp", str(to_relational(w.parent_phrase.pos_in_parent, w.parent_phrase.num_siblings, True, True)))
   c.add("wbwrppp", str(to_relational(w.parent_phrase.pos_in_parent, w.parent_phrase.num_siblings, False, True)))
@@ -292,6 +354,33 @@ def add_stanford(context_skeleton, phoneme):
   #Word relational position in greatgrandparent phrase
   c.add("wfwrggppp", str(to_relational(w.greatgrandparent_phrase.pos_in_parent, w.greatgrandparent_phrase.num_siblings, True, True)))
   c.add("wbwrggppp", str(to_relational(w.greatgrandparent_phrase.pos_in_parent, w.greatgrandparent_phrase.num_siblings, False, True)))
+
+def add_absolute_stanford(context_skeleton, phoneme):
+  """Adds the absolute elements of stanford parse information to a phoneme context."""
+  c = context_skeleton
+  #Add basic info
+  add_basic_stanford(c, phoneme)
+  #Word
+  w = phoneme.parent_word
+  #Word absolute position in parent phrase
+  #We may have xx
+  c.add("wfwrppp", str(w.parent_phrase.pos_in_parent))
+  if w.parent_phrase.pos_in_parent == "xx":
+    c.add("wbwrppp", str(w.parent_phrase.pos_in_parent))
+  else:
+    c.add("wbwrppp", str(w.parent_phrase.num_siblings - 1 - w.parent_phrase.pos_in_parent))
+  #Word absolute position in grandparent phrase
+  c.add("wfwrgppp", str(w.grandparent_phrase.pos_in_parent))
+  if w.grandparent_phrase.pos_in_parent == "xx":
+    c.add("wbwrgppp", str(w.grandparent_phrase.pos_in_parent))
+  else:
+    c.add("wbwrgppp", str(w.grandparent_phrase.num_siblings - 1 - w.grandparent_phrase.pos_in_parent))
+  #Word absolute position in greatgrandparent phrase
+  c.add("wfwrggppp", str(w.greatgrandparent_phrase.pos_in_parent))
+  if w.greatgrandparent_phrase.pos_in_parent == "xx":
+    c.add("wbwrggppp", str(w.greatgrandparent_phrase.num_siblings))
+  else:
+    c.add("wbwrggppp", str(w.greatgrandparent_phrase.num_siblings - 1 - w.greatgrandparent_phrase.pos_in_parent))
 
 #Returns a question set and a GV/utt question set.
 #context_skeleton = The type of question set to output.
@@ -367,7 +456,7 @@ def make_questions(context_skeleton, qformat, generic=True, HHEd_fix=False):
             if val == "xx":
               questions.append("LQ 1 0.0 \""+key+"-xx\" {*|"+key+":xx|*}")
             else:
-              questions.append("LQ 1 "+str(val)+" \""+key+"-"+strintify(val)+"\" {*|"+key+":"+strintify(val)+"|*}")
+              questions.append("LQ 1 "+str(val)+" \""+key+"-"+strintify(float(val))+"\" {*|"+key+":"+strintify(float(val))+"|*}")
       elif "int" in qtype:
           if qformat == "HMM":
             questions += make_hmm_relational_qs(vals, key, qtype)
@@ -399,7 +488,7 @@ def make_hmm_relational_qs(values, key, qtype):
     values.remove("xx")
   for i, val in enumerate(values):
     if "float" in qtype:
-      val = strintify(val)
+      val = strintify(float(val))
     questions.append("QS \""+key+"-"+str(val)+"\" {*|"+key+":"+str(val)+"|*}")
     #If val is more than one we make a less than question
     #If we count 0 then we start at 0

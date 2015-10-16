@@ -108,13 +108,13 @@ class CombilexPhonemes(object):
     self.phonemes["UH"] = ["v", "sh", "l", "m", "u","v","vo", "v"] #"uh" sound - for testing if seperating gives better results
 
   #Returns the phonemes considered silence
-  def get_sil_phonemes():
+  def get_sil_phonemes(self):
     return ["sil", "pau", "#"]
 
-  def get_phoneme_feats(phoneme):
+  def get_phoneme_feats(self, phoneme):
     return self.phonemes[phoneme]
 
-  def get_phoneme_feats_dict(phoneme):
+  def get_phoneme_feats_dict(self, phoneme):
     p = self.phonemes[phoneme]
     features = {}
     #Vowel or consonant
@@ -135,10 +135,10 @@ class CombilexPhonemes(object):
     features["V"] = p[7]
     return features
 
-  def get_phonemes():
+  def get_phonemes(self):
     return self.phonemes.keys()
 
-  def get_feature_lists():
+  def get_feature_lists(self):
     features = {}
     #Vowel or consonant
     features["VOC"] = ["v", "c", "xx"]
@@ -158,7 +158,7 @@ class CombilexPhonemes(object):
     features["V"] = ["v", "u", "xx"]
     return features
 
-  def is_vowel(phoneme):
+  def is_vowel(self, phoneme):
     self.phonemes
     if self.phonemes[phoneme][7] == "v":
       return True

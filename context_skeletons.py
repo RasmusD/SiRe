@@ -44,7 +44,7 @@ from collections import OrderedDict
 #If "utt" is in typename = Signals that this question should be included in the GV question set (which is only at the utt level).
 
 
-class Relational(object):
+class Base(object):
   """Contains the set of variables used in the relational context set."""
   def __init__(self, phoneme_features):
     #Container for all contexts given a value
@@ -65,14 +65,6 @@ class Relational(object):
     self.rp = "bool"
     #Right right phoneme
     self.rrp = "bool"
-    #Forward syllable pos
-    self.pfwsp = "float"
-    #Backward syllable pos
-    self.pbwsp = "float"
-    #Forward word pos
-    self.pfwwp = "float"
-    #Backward word pos
-    self.pbwwp = "float"
     #Left Phone stress
     #self.lps = "intxx0"
     #Current Phone stress
@@ -110,10 +102,6 @@ class Relational(object):
     #Syllable vowel features
     for feat in phoneme_features.get_feature_lists():
       setattr(self, "sv"+feat, "bool")
-    #Syllable forward pos in word
-    self.sfwwp = "float"
-    #Syllable backward pos in word
-    self.sbwwp = "float"
     #Syllables to next stressed syll
     self.snss = "intxx"
     #Syllables from previous stressed syll
@@ -124,10 +112,6 @@ class Relational(object):
     self.wnp = "intxx"
     #Word number of syllables
     self.wns = "intxx"
-    #Forward pos in utt
-    self.wfwup = "float"
-    #Backward pos in utt
-    self.wbwup = "float"
     
     ##### Utterance level features #####
     #Utterance number of phonemes
@@ -177,12 +161,64 @@ class Relational(object):
       if key in ["start", "end"]:
         continue
       if "float" in getattr(self, key):
-        s += "|"+key+":"+context_utils.strintify(self.added_contexts[key])
+        s += "|"+key+":"+context_utils.strintify(float(self.added_contexts[key]))
       else:
         s += "|"+key+":"+str(self.added_contexts[key])
     if HHEd_fix == True:
       s = s.replace("cp:"+self.added_contexts["cp"], "cp:-"+self.added_contexts["cp"]+"+")
     return s+"|"
+
+class Absolute(Base):
+  """The standard context feature set using absolute values instead of relational."""
+  def __init__(self, phoneme_features):
+    #Initiate the relational class
+    super(Absolute, self).__init__(phoneme_features)
+    #Change the relational variables from floats to ints
+    #Phoneme
+    #Forward syllable pos
+    self.pfwsp = "int0"
+    #Backward syllable pos
+    self.pbwsp = "int0"
+    #Forward word pos
+    self.pfwwp = "int0"
+    #Backward word pos
+    self.pbwwp = "int0"
+    #Syllable
+    #Syllable forward pos in word
+    self.sfwwp = "int0"
+    #Syllable backward pos in word
+    self.sbwwp = "int0"
+    #Word
+    #Forward pos in utt
+    self.wfwup = "int0"
+    #Backward pos in utt
+    self.wbwup = "int0"
+
+class Relational(Base):
+  """The standard context feature set using absolute values instead of relational."""
+  def __init__(self, phoneme_features):
+    #Initiate the relational class
+    super(Relational, self).__init__(phoneme_features)
+    #Change the relational variables from floats to ints
+    #Phoneme
+    #Forward syllable pos
+    self.pfwsp = "float"
+    #Backward syllable pos
+    self.pbwsp = "float"
+    #Forward word pos
+    self.pfwwp = "float"
+    #Backward word pos
+    self.pbwwp = "float"
+    #Syllable
+    #Syllable forward pos in word
+    self.sfwwp = "float"
+    #Syllable backward pos in word
+    self.sbwwp = "float"
+    #Word
+    #Forward pos in utt
+    self.wfwup = "float"
+    #Backward pos in utt
+    self.wbwup = "float"
 
 class RelationalStanford(Relational):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
@@ -214,3 +250,35 @@ class RelationalStanford(Relational):
     self.wfwrggppp = "float"
     #Backward
     self.wbwrggppp = "float"
+
+class AbsoluteStanford(Absolute):
+  """The standard context feature set using absolute values instead of relational."""
+  def __init__(self, phoneme_features):
+    #Initiate the absolute class
+    super(AbsoluteStanford, self).__init__(phoneme_features)
+    ###### Stanford Parse Information ######
+    #Part of speech
+    self.lwpos = "bool"
+    self.cwpos = "bool"
+    self.rwpos = "bool"
+    #Word parent phrase
+    self.wpp = "bool"
+    #Word grandpparent phrase
+    self.wgpp = "bool"
+    #Word greatgrandparent phrase
+    self.wggpp = "bool"
+    #Word absolute position in parent phrase
+    #Forward
+    self.wfwrppp = "int0xx"
+    #Backward
+    self.wbwrppp = "int0xx"
+    #Word absolute position in grandparent phrase
+    #Forward
+    self.wfwrgppp = "int0xx"
+    #Backward
+    self.wbwrgppp = "int0xx"
+    #Word absolute position in greatgrandparent phrase
+    #Forward
+    self.wfwrggppp = "int0xx"
+    #Backward
+    self.wbwrggppp = "int0xx"

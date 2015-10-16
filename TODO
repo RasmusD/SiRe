@@ -15,7 +15,7 @@
 ##########################################################################
 
 Need to add:
-- Support for standard context set
+- Should be able to load own utterances again.
 
 Should be added:
 - Accent prediction seems useful.
@@ -25,7 +25,7 @@ Should be added:
 - The make alignment script needs some redoing.
 - Currently a warning is written if a context from a skeleton is not used. Should have option to fail.
 - Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.
-- Type of phonemes used is hard-coded for the contexts, should be relative to the type of phoneset used (i.e. which dictionary).
+- Could make a the absolute/relational stanford methods just add everything by themselves.
 
 Nice to add:
 - Support for CMUdict
