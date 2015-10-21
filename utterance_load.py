@@ -96,38 +96,46 @@ def proto_from_hts_lab(lab):
   proto["utt"].pop(0)
   return proto
 
-#Create a proto utterance from text. Note that all phonemes are given a phony 100ms duration - this is expected to be overridden by the back-end duration prediction system.
+#Create a proto utterance from text.
+#Note that all phonemes are given a phony 100ms duration - this is expected to be overridden by the back-end duration prediction system.
+#If args.pron_reduced is set this will attempt to produce a reduced pronunciation for parts of the sentence as specifiied by args.pron_reduced[0]
 def proto_from_txt(lab, args):
   #Create words
   proto = {"utt":[]}
   proto["id"] = lab[0].split("/")[-1]
+  #First we check if we need to reduce some words, and which
+  if args.pron_reduced != None:
+    words = reduce_word_tuples(lab[1:], os.path.join(args.pron_reduced[1], proto["id"]+".scored"), args.pron_reduced[0])
+  else:
+    words = [(x, False) for x in lab[1:]]
   #Make words and look up in dictionary
   #If no parse exists (i.e. no pos tags) we will simply grab the first pronunciation we can find that is not reduced (if one exist).
   #We also forget the pos tag of that in the process.
   if not args.stanfordparse:
-    for word in lab[1:]:
-      proto["utt"].append({"id":word, "syllables":[args.dictionary.get_single_entry(word)]})
+    for word in words:
+      proto["utt"].append({"id":word[0], "syllables":[args.dictionary.get_single_entry(word[0], reduced=word[1])]})
   else: #Else a parse should exist and we can get the pos tags from that.
     tree = parsetrees.stanfordtree()
     tree.make_tree(args.parsedict[proto["id"]])
     leafs = tree.get_leafs()
     #In this case we need to do some merging
-    if len(leafs) != len(lab[1:]):
+    if len(leafs) != len(words):
       print "WARNING! Merging not implemented yet - the current is a non-complete hack!"
       print "Check if this sentences was done correctly - {0}".format(proto["id"])
-      for i, l in enumerate(lab[1:]):
+      for i, l in enumerate(words):
+        l = l[0]
         if l == "i'm":
           p2 = leafs[i+1].label.split("-")[0]
           leafs.pop(i+1)
           leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-i'm"
     for i, leaf in enumerate(leafs):
-      pos, word = leaf.label.lower().split("-")
-      if word != lab[i+1]:
+      pos, word[0] = leaf.label.lower().split("-")
+      if word[0] != lab[i+1]:
         print "ERROR: Parse and text does not match in {0}!".format(lab)
-        print "{0} != {1}".format(word, lab[i+1])
+        print "{0} != {1}".format(word[0], lab[i+1])
         sys.exit()
-      c_best = args.dictionary.get_single_entry(word)
-      proto["utt"].append({"id":word, "syllables":[c_best]})
+      c_best = args.dictionary.get_single_entry(word[0], pos, word[1])
+      proto["utt"].append({"id":word[0], "syllables":[c_best]})
   #Make syllables and split dictionary format
   #Phony phoneme duration counter
   cur_dur = 0
@@ -331,3 +339,36 @@ def split_hts_lab(lab, delims):
       values[i] = s[0]
       values[i+1] = s[1]
   return values
+
+#Takes a list of words and a path to a file with LM scores for each word.
+#Returns a list of tuples (word, to_reduce?) based on the reduction level (1.0 fully pronounced, 0.0 fully reduced).
+def reduce_word_tuples(words, score_file, reduction_level):
+  #Our initial assumption is nothing needs reduction
+  w_l = [[word, False] for word in words]
+  #If we don't reduce we just return all unreduced
+  if reduction_level == 1.0:
+    return w_l
+  #If the reduction_level is not between 0 and 1 we fail
+  elif reduction_level > 1.0 or reduction_level < 0.0:
+    print "ERROR! Reduction level must be between 1.0 and 0.0 but was {0}".format(reduction_level)
+    sys.exit()
+  #As words may appear more than once we make a dict indexed on word pos.
+  scores = {}
+  for i, x in enumerate(open(score_file, "r").readlines()):
+    scores[i] = x.strip().split()
+  
+  if len(scores) != len(words):
+    print "ERROR! I seem to have a mismatching set of words ({0}) and LM scores ({1}) for {2}".format(len(words), len(scores), score_file)
+    sys.exit()
+  
+  #The number of words to reduce
+  n_to_reduce = int(round(len(words)*(1-reduction_level), 0))
+  
+  #A list of dict entry tuples ordered by score in descending order
+  ranked = sorted(scores.items(), key=lambda (k, v): v[1])
+  
+  #Now mark the appropriate ones to be reduced
+  for i in range(n_to_reduce):
+    w_l[ranked[i][0]][1] = True
+  
+  return w_l

@@ -27,13 +27,32 @@ def open_line_by_line(path):
       labs.append(tmp)
   return labs
 
-#Opens and tokenizes a file.
+#Opens and makes a simple tokenization of a file.
 def open_and_tokenise_txt(path):
   txt = open(path, "r").read()
   for x in [".", ",", "!", "?", ";", ":"]:
     txt = txt.replace(x, "")
   return [path[:-4]]+txt.lower().split()
 
-#Opens, and tokenizes all txt files in a dir.
+#Opens, and tokenizes all txt files in a dir and returns them in a list.
 def load_txt_dir(dirpath):
   return [open_and_tokenise_txt(os.path.join(dirpath, x)) for x in os.listdir(dirpath) if ".txt" in x]
+
+#Checks if a path exists before opening the file to avoid overwriting.
+#Alternatively if overwrite is set to True a warning is printed.
+def open_writefile_safe(filepath, overwrite=False):
+  if os.path.exists(filepath):
+    if overwrite == True:
+      print "WARNING! Overwriting file {0}!".format(filepath)
+    else:
+      a = raw_input("The output file exists ({0})! Overwrite? (y)es / (n)o\n".format(filepath))
+      if a == "y":
+        print "Overwriting..."
+        pass
+      elif a == "n":
+        print "Will not create outfile, exiting..."
+        sys.exit()
+      else:
+        a = raw_input("Please use (y)es / (n)o\n")
+  
+  return open(filepath, "w")

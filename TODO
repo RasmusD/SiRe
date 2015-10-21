@@ -26,6 +26,7 @@ Should be added:
 - Currently a warning is written if a context from a skeleton is not used. Should have option to fail.
 - Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.
 - Could make a the absolute/relational stanford methods just add everything by themselves.
+- Add option to pass own arguments to LM binary in txt2lmscore.py and possibly also to parser in txt2parse.py
 
 Nice to add:
 - Support for CMUdict

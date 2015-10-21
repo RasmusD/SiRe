@@ -72,7 +72,10 @@ class Dictionary(object):
   #This returns the first non-reduced phomisation of a word in the dictionary.
   #Words not in the dictionary but with underscores between letters are
   #treated as needing seperate pronunciations.
-  def get_single_entry(self, word):
+  #If a POS is specified we return the first non-reduced word with the specified POS.
+  #Else the first reduced witht the POS and finally if no other with another POS.
+  #If reduced is specified we aim to deliver a reduced version.
+  def get_single_entry(self, word, pos=None, reduced=False):
     try:
       entries = self.raw_dictionary_entries[word]
     except KeyError:
@@ -87,22 +90,40 @@ class Dictionary(object):
         print "Error: Could not find \"{0}\" in dictionary! Please add it manually.".format(word)
       sys.exit()
     if len(entries) > 1:
-      added = False
+      pos_added = False
+      c_best = entries[0]["phonetics"]
       for entry in entries:
-        if entry["reduced"] == False:
+        #If we have a pos tag to go by
+        if pos != None:
+          if pos in entry["pos"]:
+            if entry["reduced"] == reduced:
+              return entry["phonetics"]
+            else:
+              c_best = entry["phonetics"]
+              pos_added = True
+          #If we have a non-reduced word and we do not have one with the correct
+          #pos we overwrite the previous best.
+          elif entry["reduced"] == False and pos_added == False:
+            c_best = entry["phonetics"]
+        #If we don't have a pos tag to go by but match the reduction desired
+        elif entry["reduced"] == reduced:
           return entry["phonetics"]
-          added = True
-          break
-      if added == False:
-        print "Warning: Could only find reduced form of {0}!".format(word)
-        return entries[0]["phonetics"]
+      if pos_added == False and pos != None:
+        print "Warning: Could not find word with correct POS of {0} for POS {1}!\nReturning word which may be wrongly reduced.".format(word, pos)
+        return c_best
+      else:
+        print "Warning: Could only find wrong reduction form of {0}! It is {1} that this should have been reduced.".format(word, reduced)
+        return c_best
     else:
-      return entries[0]["phonetics"]
+      e = entries[0]
+      if e["reduced"] != reduced:
+        print "Warning: I only had one entry in the dictionary and it was not reduced correctly! It is {0} that \"{1}\" should have been reduced.".format(reduced, word)
+      return e["phonetics"]
   
   #Returns the output of get_single_entry in the form used for alignment.
   #Output is list of phonemes.
-  def get_single_align_entry(self, word):
-    entry = self.get_single_entry(word)
+  def get_single_align_entry(self, word, pos=None):
+    entry = self.get_single_entry(word, pos)
     return self.convert_entry_phonetics_to_align_phonemes(entry)
   
   #Returns a list of alignment strings for each variant of a word in dict.

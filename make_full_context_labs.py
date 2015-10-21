@@ -104,9 +104,10 @@ def finalise_questions(qpath):
   wf.close()
 
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser(description='Load mlf and output new or old labels.')
+  parser = argparse.ArgumentParser(description='Create full context labels from a variety of input.')
+  parser.add_argument('intype', type=str, help='The type of input.', choices=['align_mlf', 'hts_mlf', 'hts_lab', 'txt'])
+  parser.add_argument('-pron_reduced', type=str, nargs=2, help='Produce labels with a reduced pronunciation based on LM scores. REDUTCION_LEVEL should be a float between 1.0 (fully pronunced) and 0.0 (fully reduced).', metavar=('REDUCTION_LEVEL', 'LM_SCORE_DIR_PATH'))
   parser.add_argument('-inpath', type=str, help='The input path. The path to the mlf if that is the input. A dir path if labs as input.', default=None)
-  parser.add_argument('-intype', type=str, help='The type of input.', choices=['align_mlf', 'hts_mlf', 'hts_lab', 'txt'], default="align_mlf")
   parser.add_argument('-labdir', type=str, help="The output lab dir.", default="lab")
   parser.add_argument('-txtdir', type=str, help="The directory containing the original txt files.", default="txt")
   parser.add_argument('-combilexpath', type=str, help="The path to the combilex dictionary directory. It will look for two files - combilex.dict and combilex.add - and retrieve all entries from these.", default=None)
@@ -121,6 +122,21 @@ if __name__ == "__main__":
   
   #The phoneme set used - hardcoded as currently only combilex is possible
   args.phoneme_features = phoneme_features.CombilexPhonemes()
+  
+  #Check if this is well-formed
+  if args.pron_reduced:
+    if args.intype != "txt":
+      print "Cannot make reduced pronunciation from non-textual input!"
+      sys.exit()
+    try:
+      args.pron_reduced[0] = float(args.pron_reduced[0])
+      if args.pron_reduced[0] > 1.0 or args.pron_reduced < 0.0:
+        print "REDUCTION_LEVEL must be between 1.0 and 0.0! Was {0}".format(args.pron_reduced[0])
+        sys.exit()
+    except ValueError:
+      print "REDUCTION_LEVEL must be a float value! Was {0}!".format(args.pron_reduced[0])
+      sys.exit()
+  
   
   if args.stanfordparse:
     args.parsedict = read_stanford_parses(args.parsedir)
@@ -155,6 +171,7 @@ if __name__ == "__main__":
     utt = utterance.Utterance(lab, args)
     #This writes out the label and also the questions
     write_context_utt(utt, args)
+  
   #Removes duplicates in the question set
   if args.questions:
     args.qfile.close()
