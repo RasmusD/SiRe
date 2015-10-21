@@ -19,7 +19,7 @@ If you try it out, here is what it can do:
 - More to come... see TODO
 
 How to make it work:
-- You need python 2.5+ (developed on 2.7x)
+- You need python 2.7+ or lower if you have the argparse module installed (developed on 2.7.3 which has it by default)
 - The main workhorse is the make_*.py files - run them with -h to see what to specify.
 - It SHOULD print lots of warnings or errors if something fishy is going on.
 - Any bugs please report to rasmus@dall.dk - I am happy to receive them and provide any support asap.
