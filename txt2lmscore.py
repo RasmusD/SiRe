@@ -40,7 +40,7 @@ if __name__ == "__main__":
   parser.add_argument('-lm_type', type=str, help="The type of LM to use. Currently only SRILM NGRAM.", choices=['SRILM_NGRAM'], default='SRILM_NGRAM')
   parser.add_argument('-f', action="store_true", help="Overwrite all output files without asking.")
   parser.add_argument('-no_tmp_file', action="store_true", help="If true a scored.txt file will not be written out and the .scored files produced directly.")
-  parser.add_argument('-pre_scored', action="store_true", help="Indicates that .scores files already exists and do not need to be remade.")
+  parser.add_argument('-pre_scored', action="store_true", help="Indicates that a scored.txt file already exists and do not need to be remade. I.e. if LM does no need to be run.")
   args = parser.parse_args()
   
   if not args.pre_scored:
@@ -86,5 +86,3 @@ if __name__ == "__main__":
         wf.write(l+"\n")
       wf.close()
       n+=1
-  
-  sys.exit()
