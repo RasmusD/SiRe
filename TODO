@@ -27,6 +27,7 @@ Should be added:
 - Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.
 - Could make a the absolute/relational stanford methods just add everything by themselves.
 - Add option to pass own arguments to LM binary in txt2lmscore.py and possibly also to parser in txt2parse.py
+- Test -no_tmp_file option in txt2lmscore.py. Current PC has RAM issues so not possible.
 
 Nice to add:
 - Support for CMUdict
@@ -34,3 +35,4 @@ Nice to add:
 (- Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.)
 - Support for "standard" question sets that are not tailored to a dataset.
 - Could just output an HTK dictionary instead of lattice?
+- Matching of txt names to output in both txt2lmscore and txt2parse relies on position in txt dir and could perhaps be done better.

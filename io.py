@@ -14,7 +14,7 @@
 #limitations under the License.                                          #
 ##########################################################################
 
-import os
+import os, sys
 
 #Opens each .lab file in a dir line by line.
 def open_line_by_line(path):

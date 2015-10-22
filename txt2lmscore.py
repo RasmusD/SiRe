@@ -39,14 +39,52 @@ if __name__ == "__main__":
   parser.add_argument('lm_binary', type=str, help="Path to the LM binary to use. For SRILM_NGRAM this should be the ngram binary.")
   parser.add_argument('-lm_type', type=str, help="The type of LM to use. Currently only SRILM NGRAM.", choices=['SRILM_NGRAM'], default='SRILM_NGRAM')
   parser.add_argument('-f', action="store_true", help="Overwrite all output files without asking.")
+  parser.add_argument('-no_tmp_file', action="store_true", help="If true a scored.txt file will not be written out and the .scored files produced directly.")
+  parser.add_argument('-pre_scored', action="store_true", help="Indicates that .scores files already exists and do not need to be remade.")
   args = parser.parse_args()
   
-  comb_file = os.path.join(args.outdirpath, "combined.txt")
+  if not args.pre_scored:
+    comb_file = os.path.join(args.outdirpath, "combined.txt")
+    
+    combine_txt(args.txtdir, comb_file, args.f)
+    
+    if args.lm_type == "SRILM_NGRAM":
+      if not args.no_tmp_file:
+        subprocess.call(args.lm_binary+" -debug 2 -tolower -ppl "+comb_file+" -lm "+args.lm_path+" -unk > "+os.path.join(args.outdirpath, "scored.txt"), shell=True)
+        scores = open(os.path.join(args.outdirpath, "scored.txt"), "r").read()
+      else:
+        scores = subprocess.communicate(args.lm_binary+" -debug 2 -tolower -ppl "+comb_file+" -lm "+args.lm_path+" -unk > "+os.path.join(args.outdirpath, "scored.txt"))
   
-  combine_txt(args.txtdir, comb_file, args.f)
   
-  if args.lm_type == "SRILM_NGRAM":
-    print "Calling - "+args.lm_binary+" -debug 2 -tolower -ppl "+comb_file+" -lm "+args.lm_path+" -unk > "+os.path.join(args.outdirpath, "scored.txt")
-    subprocess.call(args.lm_binary+" -debug 2 -tolower -ppl "+comb_file+" -lm "+args.lm_path+" -unk > "+os.path.join(args.outdirpath, "scored.txt"), shell=True)
+  scores = open(os.path.join(args.outdirpath, "scored.txt"), "r").read()
+  
+  #First split on empty lines and then split on lines
+  scores = [x.split("\n") for x in scores.split("\n\n")]
+  
+  #Pop the overall stats
+  scores.pop(-1)
+  
+  #Take away unnecessaries
+  scores = [x[1:-3] for x in scores]
+  
+  #Fix each line in each entry
+  for i, e in enumerate(scores):
+    for n, l in enumerate(e):
+      l = l.split()
+      scores[i][n] = l[1]+ " "+ l[-2]
+  
+  #Match up each scored sent with a txt file.
+  #This relies on positions when lisitng txt dir.
+  #Will fail if other files than txt files in dir.
+  #Could also rely on content <- safer see TODO.
+  txt = os.listdir(args.txtdir)
+  n = 0
+  for t in txt:
+    if ".txt" in t:
+      wf = io.open_writefile_safe(os.path.join(args.outdirpath, t[:-3]+"scored"))
+      for l in scores[n]:
+        wf.write(l+"\n")
+      wf.close()
+      n+=1
   
   sys.exit()
