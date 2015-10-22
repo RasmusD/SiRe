@@ -21,9 +21,9 @@ def parse_stanford(args):
   if not args.pretokenised:
     for txt in os.listdir(args.txtdir):
       if ".txt" in txt:
-        subprocess.call(args.javapath+" -cp "+os.path.join(args.parserdir, "stanford-parser.jar")+" edu.stanford.nlp.process.PTBTokenizer "+os.path.join(args.txtdir, txt)+" | paste -s --delimiters=\" \" | sed s': \\. : , :'g > "+os.path.join(args.tokenpath, txt[:-3]+"tokenised"), shell=True)
+        subprocess.call(args.javapath+" -mx"+str(args.javamem)+"m -cp "+os.path.join(args.parserdir, "stanford-parser.jar")+" edu.stanford.nlp.process.PTBTokenizer "+os.path.join(args.txtdir, txt)+" | paste -s --delimiters=\" \" | sed s': \\. : , :'g > "+os.path.join(args.tokenpath, txt[:-3]+"tokenised"), shell=True)
   
-  subprocess.call(args.javapath+" -mx2000m -cp \""+args.parserdir+"/*:\" edu.stanford.nlp.parser.lexparser.LexicalizedParser -outputFormat \"penn,typedDependencies\" edu/stanford/nlp/models/lexparser/englishFactored.ser.gz "+args.tokenpath+"/*.tokenised > "+os.path.join(args.outpath, "parser.log"), shell=True)
+  subprocess.call(args.javapath+" -mx"+str(args.javamem)+"m -cp \""+args.parserdir+"/*:\" edu.stanford.nlp.parser.lexparser.LexicalizedParser -outputFormat \"penn,typedDependencies\" edu/stanford/nlp/models/lexparser/englishFactored.ser.gz "+args.tokenpath+"/*.tokenised > "+os.path.join(args.outpath, "parser.log"), shell=True)
 
 #Split a stanford parse log into seperate sentences.
 def split_parse(pf):
@@ -87,6 +87,7 @@ if __name__ == "__main__":
   parser.add_argument('-javapath', type=str, help="Specify the path to the java executable. This is in case the default javapath is not correct or points to a wrong version of java.", default="java")
   parser.add_argument('-preparsed', action='store_true', help="Specify as true if the sentences have already been parsed and the outdir contains a parser.log file. Parsing is then skipped and the log file is split into seperate parse files.")
   parser.add_argument('-pretokenised', action='store_true', help="Specify as true if the sentences have already been tokenised and the output is present in tokenpath.")
+  parser.add_argument('-javamem', type=int, help="Specify the available RAM for java in MB.", default=2000)
   args = parser.parse_args()
   
   if not args.preparsed:
