@@ -21,9 +21,9 @@ def parse_stanford(args):
   if not args.pretokenised:
     for txt in os.listdir(args.txtdir):
       if ".txt" in txt:
-        subprocess.call(args.javapath+" -mx"+str(args.javamem)+"m -cp "+os.path.join(args.parserdir, "stanford-parser.jar")+" edu.stanford.nlp.process.PTBTokenizer "+os.path.join(args.txtdir, txt)+" | paste -s --delimiters=\" \" | sed s': \\. : , :'g > "+os.path.join(args.tokenpath, txt[:-3]+"tokenised"), shell=True)
+        subprocess.call(args.javapath+" -Xmx"+str(args.javamem)+"M -cp "+os.path.join(args.parserdir, "stanford-parser.jar")+" edu.stanford.nlp.process.PTBTokenizer "+os.path.join(args.txtdir, txt)+" | paste -s --delimiters=\" \" | sed s': \\. : , :'g > "+os.path.join(args.tokenpath, txt[:-3]+"tokenised"), shell=True)
   
-  subprocess.call(args.javapath+" -mx"+str(args.javamem)+"m -cp \""+args.parserdir+"/*:\" edu.stanford.nlp.parser.lexparser.LexicalizedParser -outputFormat \"penn,typedDependencies\" edu/stanford/nlp/models/lexparser/englishFactored.ser.gz "+args.tokenpath+"/*.tokenised > "+os.path.join(args.outpath, "parser.log"), shell=True)
+  subprocess.call(args.javapath+" -Xmx"+str(args.javamem)+"M -cp \""+args.parserdir+"/*:\" edu.stanford.nlp.parser.lexparser.LexicalizedParser -outputFormat \"penn,typedDependencies\" edu/stanford/nlp/models/lexparser/englishFactored.ser.gz "+args.tokenpath+"/*.tokenised > "+os.path.join(args.outpath, "parser.log"), shell=True)
 
 #Split a stanford parse log into seperate sentences.
 def split_parse(pf):
