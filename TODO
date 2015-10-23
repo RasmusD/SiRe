@@ -28,6 +28,8 @@ Should be added:
 - Could make a the absolute/relational stanford methods just add everything by themselves.
 - Add option to pass own arguments to LM binary in txt2lmscore.py and possibly also to parser in txt2parse.py
 - Test -no_tmp_file option in txt2lmscore.py. Current PC has RAM issues so not possible.
+- Reverse engineer the PBT tokenisation of the Stanford parser. Will avoid the hack of merging and splitting.
+- Also consider only either splitting or merging. If nto splitting could simply let words be both beginning and end.
 
 Nice to add:
 - Support for CMUdict

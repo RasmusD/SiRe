@@ -120,20 +120,14 @@ def proto_from_txt(lab, args):
     leafs = tree.get_leafs()
     #In this case we need to do some merging
     if len(leafs) != len(words):
-      print "WARNING! Merging not implemented yet - the current is a non-complete hack!"
-      print "Check if this sentences was done correctly - {0}".format(proto["id"])
-      for i, l in enumerate(words):
-        l = l[0]
-        if l == "i'm":
-          p2 = leafs[i+1].label.split("-")[0]
-          leafs.pop(i+1)
-          leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-i'm"
+      leafs = merge(leafs, words, proto["id"])
     for i, leaf in enumerate(leafs):
-      pos, word[0] = leaf.label.lower().split("-")
-      if word[0] != lab[i+1]:
-        print "ERROR: Parse and text does not match in {0}!".format(lab)
-        print "{0} != {1}".format(word[0], lab[i+1])
+      pos, word = leaf.label.lower().split("-")
+      if word != words[i][0]:
+        print "ERROR! Word ({0}) from parse does not match word ({1}) from txt! In {2}.".format(word, words[i][0], proto["id"])
         sys.exit()
+      else:
+        word = words[i]
       c_best = args.dictionary.get_single_entry(word[0], pos, word[1])
       proto["utt"].append({"id":word[0], "syllables":[c_best]})
   #Make syllables and split dictionary format
@@ -372,3 +366,39 @@ def reduce_word_tuples(words, score_file, reduction_level):
     w_l[ranked[i][0]][1] = True
   
   return w_l
+
+
+def merge(leafs, words, utt_id):
+  print "WARNING! Merging not implemented yet - the current is a non-complete hack!"
+  print "Check if this sentences was done correctly - {0}".format(utt_id)
+  for i, l in enumerate(words):
+    l = l[0]
+    if l == "i'm":
+      p2 = leafs[i+1].label.split("-")[0]
+      leafs.pop(i+1)
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-i'm"
+    if l == "it'll":
+      p2 = leafs[i+1].label.split("-")[0]
+      leafs.pop(i+1)
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-it'll"
+    if l == "gonna":
+      p2 = leafs[i+1].label.split("-")[0]
+      leafs.pop(i+1)
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-gonna"
+    if "'s" in l:
+      p2 = leafs[i+1].label.split("-")[0]
+      leafs.pop(i+1)
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
+    if "'ve" in l:
+      p2 = leafs[i+1].label.split("-")[0]
+      leafs.pop(i+1)
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
+    if "'re" in l:
+      p2 = leafs[i+1].label.split("-")[0]
+      leafs.pop(i+1)
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
+    if "n't" in l:
+      p2 = leafs[i+1].label.split("-")[0]
+      leafs.pop(i+1)
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
+  return leafs

@@ -109,10 +109,10 @@ class Dictionary(object):
         elif entry["reduced"] == reduced:
           return entry["phonetics"]
       if pos_added == False and pos != None:
-        print "Warning: Could not find word with correct POS of {0} for POS {1}!\nReturning word which may be wrongly reduced.".format(word, pos)
+        print "Warning: Could not find word with correct POS of \"{0}\" for POS {1}!\nReturning word which may be wrongly reduced.".format(word, pos)
         return c_best
       else:
-        print "Warning: Could only find wrong reduction form of {0}! It is {1} that this should have been reduced.".format(word, reduced)
+        print "Warning: Could only find wrong reduction form of \"{0}\"! It is {1} that this should have been reduced.".format(word, reduced)
         return c_best
     else:
       e = entries[0]
