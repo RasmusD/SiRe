@@ -38,3 +38,5 @@ Nice to add:
 - Support for "standard" question sets that are not tailored to a dataset.
 - Could just output an HTK dictionary instead of lattice?
 - Matching of txt names to output in both txt2lmscore and txt2parse relies on position in txt dir and could perhaps be done better.
+- Plotting f0 on own plot.
+- Adding alignment info to plot?

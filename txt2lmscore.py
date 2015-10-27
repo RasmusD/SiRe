@@ -81,7 +81,7 @@ if __name__ == "__main__":
   n = 0
   for t in txt:
     if ".txt" in t:
-      wf = io.open_writefile_safe(os.path.join(args.outdirpath, t[:-3]+"scored"))
+      wf = io.open_writefile_safe(os.path.join(args.outdirpath, t[:-3]+"scored"), args.f)
       for l in scores[n]:
         wf.write(l+"\n")
       wf.close()

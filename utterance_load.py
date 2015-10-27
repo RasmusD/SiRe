@@ -377,27 +377,35 @@ def merge(leafs, words, utt_id):
       p2 = leafs[i+1].label.split("-")[0]
       leafs.pop(i+1)
       leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-i'm"
-    if l == "it'll":
+    elif "'ll" in l: #While the ' endings may cover unintended words it should be safe as we only try and merge if there is a potential problem
       p2 = leafs[i+1].label.split("-")[0]
       leafs.pop(i+1)
-      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-it'll"
-    if l == "gonna":
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
+    elif l == "gonna":
       p2 = leafs[i+1].label.split("-")[0]
       leafs.pop(i+1)
       leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-gonna"
-    if "'s" in l:
+    elif l == "wanna":
+      p2 = leafs[i+1].label.split("-")[0]
+      leafs.pop(i+1)
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-wanna"
+    elif "'s" in l:
       p2 = leafs[i+1].label.split("-")[0]
       leafs.pop(i+1)
       leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
-    if "'ve" in l:
+    elif "'ve" in l:
       p2 = leafs[i+1].label.split("-")[0]
       leafs.pop(i+1)
       leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
-    if "'re" in l:
+    elif "'re" in l:
       p2 = leafs[i+1].label.split("-")[0]
       leafs.pop(i+1)
       leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
-    if "n't" in l:
+    elif "'d" in l:
+      p2 = leafs[i+1].label.split("-")[0]
+      leafs.pop(i+1)
+      leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
+    elif "n't" in l:
       p2 = leafs[i+1].label.split("-")[0]
       leafs.pop(i+1)
       leafs[i].label = leafs[i].label.split("-")[0]+"|"+p2+"-"+l
