@@ -18,7 +18,7 @@
 #NOTE: Requires matplotlib which is not a standard python module.
 #See here http://matplotlib.org/users/installing.html for how to get it.
 
-import wave, argparse, sys
+import wave, argparse, sys, math
 from numpy import fromstring
 from matplotlib import pyplot
 from matplotlib import axes
@@ -55,11 +55,11 @@ def plot_spectogram(wav_path, f0=None):
   pyplot.xlabel("Seconds")
   if f0:
     x_points = [(ns/len(f0))*x for x in range(1, len(f0)+1)]
-    y_points = [float(x) for x in f0]
+    y_points = [x for x in f0]
     pyplot.plot(x_points, y_points)
   pyplot.show()
 
-def plot_wav_and_spec(wav_path):
+def plot_wav_and_spec(wav_path, f0):
   wav = get_wav(wav_path)
   fs = wav.getframerate()
   nf = wav.getnframes()
@@ -68,14 +68,20 @@ def plot_wav_and_spec(wav_path):
   
   fig = pyplot.figure()
   pyplot.title(wav_path)
-  w = pyplot.subplot(211)
+  w = pyplot.subplot(311)
   w.set_xlim(right=nf)
   w.plot(wav)
   pyplot.xlabel("Frames")
-  s = pyplot.subplot(212)
+  s = pyplot.subplot(312)
   pyplot.specgram(wav, Fs=fs)
   s.set_xlim(right=ns)
   s.set_ylim(top=8000)
+  if f0:
+    f = pyplot.subplot(313)
+    x_points = [(ns/len(f0))*x for x in range(1, len(f0)+1)]
+    y_points = [x for x in f0]
+    pyplot.plot(x_points, y_points)
+    f.set_xlim(right=ns)
   pyplot.xlabel("Seconds")
   pyplot.show()
 
@@ -86,11 +92,13 @@ if __name__ == "__main__":
   parser.add_argument('-plot_spec', action='store_true', help="Plot a spectogram.")
   parser.add_argument('-plot_wav_and_spec', action='store_true', help="Plot both a waveform and spectogram.")
   parser.add_argument('-add_f0', type=str, help="If specified the f0 at PATH will be plotted on any spectogram plotted. The f0 is assumed to be in 5ms frames.", metavar=("PATH"))
-  #parser.add_argument('-add_lf0', type=str, help="If specified the lf0 at PATH will be plotted on any spectogram plotted. The lf0 will be converted to f0 before plotting and is assumed to be in 5ms frames.", metavar=("PATH"))
+  parser.add_argument('-add_lf0', type=str, help="If specified the lf0 at PATH will be plotted on any spectogram plotted. The lf0 will be converted to f0 before plotting and is assumed to be in 5ms frames and using the natural log. If both add_f0 and add_lf0 is specified the f0 file takes precedence.", metavar=("PATH"))
   args = parser.parse_args()
   
   if args.add_f0:
-    f0 = [x.strip() for x in open(args.add_f0, "rb").readlines()]
+    f0 = [float(x.strip()) for x in open(args.add_f0, "r").readlines()]
+  elif args.add_lf0:
+    f0 = [math.exp(float(x.strip())) for x in open(args.add_lf0, "r").readlines()]
   
   if args.plot_wav:
     plot_wav(args.inwav)
