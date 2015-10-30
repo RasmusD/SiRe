@@ -38,13 +38,11 @@ def open_and_tokenise_txt(path, keep_commas=False):
   punctuation = [".", ",", "!", "?", ";", ":"]
   if keep_commas:
     punctuation.remove(",")
-    keep = [","]
+    txt = txt.replace(",", " , ")
+    #We may have made double whitespace from this
+    txt.replace("  ", " ")
   for x in punctuation:
     txt = txt.replace(x, "")
-  for x in keep:
-    txt = txt.replace(x, " "+x)
-  #cleaning
-  txt.replace("  ", " ")
   return [path[:-4]]+txt.lower().split()
 
 #Opens, and tokenizes all txt files in a dir and returns them in a list.
