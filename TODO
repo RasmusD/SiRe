@@ -16,6 +16,7 @@
 
 Need to add:
 - Should be able to load own utterances again.
+- Option to choose which pause phoneme to use for alignment.
 
 Should be added:
 - Error messages should be proper thros which prints line number and .py file.
@@ -28,6 +29,7 @@ Should be added:
 - Add option to pass own arguments to LM binary in txt2lmscore.py and possibly also to parser in txt2parse.py
 - Test -no_tmp_file option in txt2lmscore.py. Current PC has RAM issues so not possible.
 - Reverse engineer the PBT tokenisation of the Stanford parser. Will avoid the hack of merging and splitting.
+- Option to use different silence phoneme for midsentential silence than sentence boundary silence.
 
 Consider To Add:
 - The comma_is_pause option should probably be implemented differently.
