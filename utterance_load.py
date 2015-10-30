@@ -111,13 +111,25 @@ def proto_from_txt(lab, args):
   #Make words and look up in dictionary
   #If no parse exists (i.e. no pos tags) we will simply grab the first pronunciation we can find that is not reduced (if one exist).
   #We also forget the pos tag of that in the process.
+  #We start with silence.
+  proto["utt"].append({"id":"sil", "syllables":[args.dictionary.make_entry_phonetics("sil", args.general_sil_phoneme+" 0")]})
   if not args.stanfordparse:
     for word in words:
-      proto["utt"].append({"id":word[0], "syllables":[args.dictionary.get_single_entry(word[0], reduced=word[1])]})
+      #If we need to keep some punctuation
+      if args.comma_is_pause == True:
+        proto["utt"].append({"id":word[0], "syllables":[args.dictionary.get_single_entry(word[0], reduced=word[1], punct_as_sil=([","], "sil"))]})
+      else:
+        proto["utt"].append({"id":word[0], "syllables":[args.dictionary.get_single_entry(word[0], reduced=word[1])]})
   else: #Else a parse should exist and we can get the pos tags from that.
     tree = parsetrees.stanfordtree()
     tree.make_tree(args.parsedict[proto["id"]])
-    leafs = tree.get_leafs()
+    
+    #Do we need some punctuation?
+    if args.comma_is_pause == True:
+      leafs = tree.get_leafs(include_punct=[","])
+    else:
+      leafs = tree.get_leafs()
+    
     #In this case we need to do some merging
     if len(leafs) != len(words):
       leafs = merge(leafs, words, proto["id"])
@@ -128,8 +140,13 @@ def proto_from_txt(lab, args):
         sys.exit()
       else:
         word = words[i]
-      c_best = args.dictionary.get_single_entry(word[0], pos, word[1])
+      if args.comma_is_pause:
+        c_best = args.dictionary.get_single_entry(word[0], pos, word[1], punct_as_sil=([","], "sil"))
+      else:
+        c_best = args.dictionary.get_single_entry(word[0], pos, word[1])
       proto["utt"].append({"id":word[0], "syllables":[c_best]})
+  #We end with silence.
+  proto["utt"].append({"id":"sil", "syllables":[args.dictionary.make_entry_phonetics("sil", args.general_sil_phoneme+" 0")]})
   #Make syllables and split dictionary format
   #Phony phoneme duration counter
   cur_dur = 0
@@ -156,13 +173,16 @@ def proto_from_txt(lab, args):
   return proto
 
 #Add parse information from a stanford parsed sentence
-def load_stanford_parse(utt, parse):
+def load_stanford_parse(utt, parse, comma_is_pause=False):
   if utt.words == None:
     print "Error: No words in utterance! Please load an mlf or txt (not implemented yet) file first!"
     sys.exit()
   tree = parsetrees.stanfordtree()
   tree.make_tree(parse)
-  leafs = tree.get_leafs()
+  if comma_is_pause == True:
+    leafs = tree.get_leafs(include_punct=[","])
+  else:
+    leafs = tree.get_leafs()
   if len(leafs) != utt.num_words_no_pau():
     #First we try to see if this is due to differences in how words are
     #dealt with in parsing and annotation. 

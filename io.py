@@ -17,7 +17,7 @@
 import os, sys
 
 #Opens each .lab file in a dir line by line.
-def open_line_by_line(path):
+def open_labdir_line_by_line(path):
   l = os.listdir(path)
   labs = []
   for i, lab in enumerate(l):
@@ -27,16 +27,30 @@ def open_line_by_line(path):
       labs.append(tmp)
   return labs
 
-#Opens and makes a simple tokenization of a file.
-def open_and_tokenise_txt(path):
+#Opens a file and returns a list containing each line as a seperate item.
+def open_file_line_by_line(path):
+#  return open(path, "r").read().split("\n") #This is probably faster but will leave the last item as '' if file ends with \n - the below does not so is easier to work with.
+  return [x.strip() for x in open(path, "r").readlines()]
+
+#Opens and makes a simple tokenization of a file (actually just removes tokens).
+def open_and_tokenise_txt(path, keep_commas=False):
   txt = open(path, "r").read()
-  for x in [".", ",", "!", "?", ";", ":"]:
+  punctuation = [".", ",", "!", "?", ";", ":"]
+  if keep_commas:
+    punctuation.remove(",")
+    keep = [","]
+  for x in punctuation:
     txt = txt.replace(x, "")
+  for x in keep:
+    txt = txt.replace(x, " "+x)
+  #cleaning
+  txt.replace("  ", " ")
   return [path[:-4]]+txt.lower().split()
 
 #Opens, and tokenizes all txt files in a dir and returns them in a list.
-def load_txt_dir(dirpath):
-  return [open_and_tokenise_txt(os.path.join(dirpath, x)) for x in os.listdir(dirpath) if ".txt" in x]
+#We may wish to keep_commas as they may marka pause.
+def load_txt_dir(dirpath, keep_commas=False):
+  return [open_and_tokenise_txt(os.path.join(dirpath, x), keep_commas) for x in os.listdir(dirpath) if ".txt" in x]
 
 #Checks if a path exists before opening the file to avoid overwriting.
 #Alternatively if overwrite is set to True a warning is printed.
@@ -56,3 +70,30 @@ def open_writefile_safe(filepath, overwrite=False):
         a = raw_input("Please use (y)es / (n)o\n")
   
   return open(filepath, "w")
+
+#Parse an mlf into the lines of containing labels.
+#Each labels is a list of each line split on whitespace.
+def parse_mlf(mlf, intype):
+  if intype == "align_mlf":
+    ext = ".rec"
+  elif intype == "hts_mlf":
+    ext = ".lab"
+  else:
+    print "Don't know what to do with mlf of type - {0}".format(intype)
+  #Remove mlf header
+  mlf.pop(0)
+  labs = []
+  tmp = []
+  for l in mlf:
+    tmp.append(l.split())
+    if l.strip() == ".":
+      if ext not in tmp[0][0]:
+        print "Error: Something wrong with lab:\n"
+        print tmp
+        sys.exit()
+      else:
+        tmp[0] = tmp[0][0].split("*/")[1].split(".")[0]
+        tmp.pop(-1)
+      labs.append(tmp)
+      tmp = []
+  return labs

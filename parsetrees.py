@@ -72,16 +72,21 @@ class stanfordtree:
       child.num_siblings = l
       child.add_parents_info()
   
-  def get_leafs(self, include_punct=False):
+  #When using include_punct pass a list of the punctuation to include or True if any punctuation.
+  #If include_punct is passed punct_as_pause will make each of these return as the specified pos.
+  def get_leafs(self, include_punct=None):
     leafs = []
     for child in self.children:
       if child.children is None or len(child.children) == 0:
-          if include_punct == True:
+          if child.label[0].isalpha(): #If it is not punctuation
             leafs.append(child)
-          elif child.label[0].isalpha():
-            leafs.append(child)
+          elif include_punct: #If it is not None
+            if include_punct == True:
+              leafs.append(child)
+            elif child.label[0] in include_punct:
+              leafs.append(child)
       else:
-        leafs += child.get_leafs()
+        leafs += child.get_leafs(include_punct)
     return leafs
 
 #Returns an empty "fake" stanford parse

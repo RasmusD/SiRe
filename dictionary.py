@@ -69,25 +69,56 @@ class Dictionary(object):
     self.phoneme_feats = phoneme_features.CombilexPhonemes()
     print "Done."
   
+  #Makes returns entry phonetics as if it existed in the dictionary.
+  #Pos = the words pos to use
+  #Phonemisation = The phonemisation in a whitespace delimited string - please use numbers as stress indicators
+  #and syllable boundary markers. 0 = no stress and 1 = stressed
+  #TODO - Make it possible to output in cmudict format beside combilex.
+  def make_entry_phonetics(self, pos, phonemisation):
+    entry = ""
+    #Add each syllable
+    for i, p in enumerate(phonemisation.split()):
+      p_in_s = 0
+      if p.isalpha() and self.phoneme_feats.is_phoneme(p, fail=True):
+        if p_in_s == 0:
+          if i != 0:
+            entry += " (("+p
+          else:
+            entry += "(("+p
+        else:
+          entry += " "+p
+      else:
+        #Check this is an int
+        int(p)
+        entry += ") "+p+")"
+    return entry
+
   #This returns the first non-reduced phomisation of a word in the dictionary.
   #Words not in the dictionary but with underscores between letters are
   #treated as needing seperate pronunciations.
   #If a POS is specified we return the first non-reduced word with the specified POS.
   #Else the first reduced witht the POS and finally if no other with another POS.
   #If reduced is specified we aim to deliver a reduced version.
-  def get_single_entry(self, word, pos=None, reduced=False):
+  #If punct_as_sil is specified pass a tuple containing t[0] a list of pucntuation to be silence
+  #and t[1] the phoneme to represent the silence both as phoneme and pos.
+  def get_single_entry(self, word, pos=None, reduced=False, punct_as_sil=None):
     try:
       entries = self.raw_dictionary_entries[word]
     except KeyError:
-      #If this has udnerscores we try to pronounce each letter individually.
+      #If this has underscores we try to pronounce each letter individually.
       if "_" in word:
         w_phon = []
         for w in word.split("_"):
           w_phon.append(self.get_single_entry(w))
         print "Warning! \"{0}\" looks like it should be pronounced {1}. I'm doing that. Is it right?".format(word, w_phon)
         return " ".join(w_phon)
+      elif punct_as_sil and word in punct_as_sil[0]:
+        if punct_as_sil[1] in self.phoneme_feats.get_sil_phonemes():
+          return self.make_entry_phonetics(punct_as_sil[1], punct_as_sil[1]+" 0")
+        else:
+          print "ERROR! Cannot add punctuation {0} as silence as sil phoneme specified ({1}) is not valid! Must be in {3}.".format(word, punct_as_sil[1], phoneme_feats.get_sil_phonemes())
       else:
-        print "Error: Could not find \"{0}\" in dictionary! Please add it manually.".format(word)
+        print "ERROR! Could not find \"{0}\" in dictionary! Please add it manually.".format(word)
       sys.exit()
     if len(entries) > 1:
       pos_added = False

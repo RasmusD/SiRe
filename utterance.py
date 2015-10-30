@@ -86,7 +86,7 @@ class Utterance(object):
     if args.stanfordparse:
       if args.intype != "txt":
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
-      utterance_load.load_stanford_parse(self, args.parsedict[self.id])
+      utterance_load.load_stanford_parse(self, args.parsedict[self.id], args.comma_is_pause)
     
 #    #Replacing UH - test!
 #    if not self.txtloaded:

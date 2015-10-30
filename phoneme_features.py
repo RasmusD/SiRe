@@ -159,8 +159,18 @@ class CombilexPhonemes(object):
     return features
 
   def is_vowel(self, phoneme):
-    self.phonemes
     if self.phonemes[phoneme][7] == "v":
       return True
     else:
+      return False
+  
+  #Checks if a phoneme exist in the present set.
+  #If fail is True it will fail if it is not.
+  def is_phoneme(self, phoneme, fail=False):
+    if phoneme in self.phonemes:
+      return True
+    else:
+      if fail:
+        print "ERROR! Phoneme ({0}) not a valid phoneme!".format(phoneme)
+        sys.exit()
       return False

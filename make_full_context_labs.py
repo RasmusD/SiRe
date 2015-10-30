@@ -17,32 +17,6 @@
 import argparse, sys, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, io, phoneme_features
 from datetime import datetime
 
-#Parse an mlf into the lines of containing labels.
-def parse_mlf(mlf, intype):
-  if intype == "align_mlf":
-    ext = ".rec"
-  elif intype == "hts_mlf":
-    ext = ".lab"
-  else:
-    print "Don't know what to do with mlf of type - {0}".format(intype)
-  #Remove mlf header
-  mlf.pop(0)
-  labs = []
-  tmp = []
-  for l in mlf:
-    tmp.append(l.split())
-    if l == ".\n":
-      if ext not in tmp[0][0]:
-        print "Error: Something wrong with lab:\n"
-        print tmp
-        sys.exit()
-      else:
-        tmp[0] = tmp[0][0].split("*/")[1].split(".")[0]
-        tmp.pop(-1)
-      labs.append(tmp)
-      tmp = []
-  return labs
-
 def read_stanford_parses(dirpath):
   files = [[x, open(os.path.join(dirpath, x), "r").read()] for x in os.listdir(dirpath) if ".parse" in x]
   pdct = {}
@@ -109,7 +83,7 @@ if __name__ == "__main__":
   parser.add_argument('-pron_reduced', type=str, nargs=2, help='Produce labels with a reduced pronunciation based on LM scores. REDUTCION_LEVEL should be a float between 1.0 (fully pronunced) and 0.0 (fully reduced).', metavar=('REDUCTION_LEVEL', 'LM_SCORE_DIR_PATH'))
   parser.add_argument('-inpath', type=str, help='The input path. The path to the mlf if that is the input. A dir path if labs as input.', default=None)
   parser.add_argument('-labdir', type=str, help="The output lab dir.", default="lab")
-  parser.add_argument('-txtdir', type=str, help="The directory containing the original txt files.", default="txt")
+  parser.add_argument('-txtdir', type=str, help="The directory containing the original txt files. If producing input from txt this is set to equal -inpath.", default="txt")
   parser.add_argument('-combilexpath', type=str, help="The path to the combilex dictionary directory. It will look for two files - combilex.dict and combilex.add - and retrieve all entries from these.", default=None)
   parser.add_argument('-questions', action="store_true", help="Write out a question set fitting the input dataset.")
   parser.add_argument('-qpath', type=str, help="The directory to write the question set to.", default=os.path.join("questions", str(datetime.now())+".hed"))
@@ -118,6 +92,8 @@ if __name__ == "__main__":
   parser.add_argument('-context_type', type=str, choices=['absolute', 'relational'], help="The type of positional contexts to add.", default='relational')
   parser.add_argument('-parsedir', type=str, help="The path to the parses.", default="parse")
   parser.add_argument('-HHEd_fix', action="store_true", help="Applies a fix to the contexts around the current phoneme to be compatible with hardcoded delimiters in HHEd.")
+  parser.add_argument('-comma_is_pause', action='store_true', help="If making labs from txt, commas mark where to pause and so we should pause.")
+  parser.add_argument('-general_sil_phoneme', type=str, help="If making labs from txt, use this as the silence phoneme.", default="sil")
   args = parser.parse_args()
   
   #The phoneme set used - hardcoded as currently only combilex is possible
@@ -137,25 +113,25 @@ if __name__ == "__main__":
       print "REDUCTION_LEVEL must be a float value! Was {0}!".format(args.pron_reduced[0])
       sys.exit()
   
-  
   if args.stanfordparse:
     args.parsedict = read_stanford_parses(args.parsedir)
   
   if args.intype == "txt":
-    labs = io.load_txt_dir(args.txtdir)
+    args.txtdir = args.inpath
+    labs = io.load_txt_dir(args.txtdir, args.comma_is_pause)
     if args.combilexpath == None:
       print "No path to combilex. Please use -combilexpath option."
       sys.exit()
     args.dictionary = dictionary.Dictionary(args.combilexpath)
   elif args.intype == "hts_lab":
-    labs = io.open_line_by_line(args.inpath)
+    labs = io.open_labdir_line_by_line(args.inpath)
     args.intype = "hts_mlf"
   else:
     if args.inpath == None:
       print "Input is mlf type but no mlf path has been set! Please use -inpath option."
       sys.exit()
     mlf = open(args.inpath, "r").readlines()
-    labs = parse_mlf(mlf, args.intype)
+    labs = io.parse_mlf(mlf, args.intype)
   
   #Used if we make questions fitted to a dataset
   #We use qfile as the path to the file later.
