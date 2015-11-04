@@ -43,12 +43,18 @@ def open_and_tokenise_txt(path, keep_commas=False):
     txt.replace("  ", " ")
   for x in punctuation:
     txt = txt.replace(x, "")
+  #This has to be done seperately as some word contain this in the middle
+  txt.replace(" - ", " ")
   return [path[:-4]]+txt.lower().split()
 
 #Opens, and tokenizes all txt files in a dir and returns them in a list.
-#We may wish to keep_commas as they may marka pause.
+#We may wish to keep_commas as they may mark a pause.
+#If you want the file id kept use keep_file_id, it will return a tuple (file_id, tokenized_txt_list) for each list item.
 def load_txt_dir(dirpath, keep_commas=False):
-  return [open_and_tokenise_txt(os.path.join(dirpath, x), keep_commas) for x in os.listdir(dirpath) if ".txt" in x]
+  print "Loading txt files from dir..."
+  txt = [open_and_tokenise_txt(os.path.join(dirpath, x), keep_commas) for x in os.listdir(dirpath) if ".txt" in x]
+  print "Done."
+  return txt
 
 #Checks if a path exists before opening the file to avoid overwriting.
 #Alternatively if overwrite is set to True a warning is printed.

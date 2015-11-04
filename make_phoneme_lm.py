@@ -18,7 +18,7 @@
 #This phoneme LM can then be used for phoneme reductions when synthesising.
 #This does not make sense on mlfs produced by non-variant alignment methods.
 
-import argparse, io, sys
+import argparse, io, sys, subprocess
 
 def get_phoneme_strings(labs):
   n_labs = []
@@ -45,11 +45,14 @@ def get_phoneme_strings(labs):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Create a txt file with phoneme strings for phoneme LM creation.')
   parser.add_argument('input_mlf', type=str, help="The input mlf.")
-  parser.add_argument('outputpath', type=str, help="The output filepath.")
+  parser.add_argument('txtpath', type=str, help="The output textfilepath.")
+  parser.add_argument('lmpath', type=str, help="The output lmfilepath.")
+  parser.add_argument('ngram_binary_path', type=str, help="The path to the LM making binary.")
+  parser.add_argument('-lm_binary_options', type=str, nargs=argparse.REMAINDER, default='-order 3 -interpolate -gt3min 1 -wbdiscount -debug 3'.split())
   parser.add_argument('-f', action='store_true', help="Force overwrite of outputpath file if it exists.")
   args = parser.parse_args()
   
-  wf = io.open_writefile_safe(args.outputpath, args.f)
+  wf = io.open_writefile_safe(args.txtpath, args.f)
   
   labs = io.parse_mlf(io.open_file_line_by_line(args.input_mlf), "align_mlf")
   
@@ -58,3 +61,8 @@ if __name__ == "__main__":
   for lab in labs:
     wf.write(" ".join(lab)+"\n")
   wf.close()
+  
+  #This allows for people to pass their own options to the ngram binary
+  options = " "+" ".join(args.lm_binary_options)
+  
+  subprocess.call(args.ngram_binary_path+" -text "+args.txtpath+" -lm "+args.lmpath+options, shell=True)
