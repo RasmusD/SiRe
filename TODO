@@ -26,12 +26,13 @@ Should be added:
 - Consider not creating full utt when making aligment mlfs. Should be done!
 - The make alignment script needs some redoing.
 - Currently a warning is written if a context from a skeleton is not used. Should have option to fail.
-- Add option to pass own arguments to LM binary in txt2lmscore.py and possibly also to parser in txt2parse.py
+- Add option to pass own arguments to LM binary in txt2lmscore.py and possibly also to parser in txt2parse.py. This should be modelled on make_phoneme_lm
 - Test -no_tmp_file option in txt2lmscore.py. Current PC has RAM issues so not possible.
 - Reverse engineer the PBT tokenisation of the Stanford parser. Will avoid the hack of merging and splitting.
 - Option to use different silence phoneme for midsentential silence than sentence boundary silence.
 
-Consider To Add:
+Consider To Add/Change:
+- It may be better to put check_dictionary into dictionary.py
 - The comma_is_pause option should probably be implemented differently.
 - Also consider only either splitting or merging. If nto splitting could simply let words be both beginning and end.
 - Could make a the absolute/relational stanford methods just add everything by themselves.

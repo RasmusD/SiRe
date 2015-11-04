@@ -16,7 +16,7 @@
 
 #Methods for writing out the necessary files for forced alignment.
 
-import argparse, dictionary, os, utterance, io
+import argparse, dictionary, os, utterance, io, lattice_tools
 
 #Writes out an mlf for initialising alignment and one with short pauses added.
 #These are compatible with the multisyn alignment tools. Their main difference
@@ -61,87 +61,15 @@ def write_initial_alignment_mlfs(utt, spmlf, nospmlf):
   nospmlf.write("sil\n.\n")
 
 #Writes out an HTK SLF lattice for lattice based alignment.
-def write_slf_alignment_lattices(utt, slfdirpath, dictionary, pronoun_variant):
-  #We can't write immediately as some line sdepend on later lines
-  slf = []
-  slf.append("# Size of Network: N=num nodes, L=num arcs\n")
-  N = 0
-  L = 0
-  #To be filled later
-  slf.append("")
-  slf.append("# List of nodes: I=node-number, W=word\n")
-  nodes = []
-  arcs = []
-  #We always start with sil
-  nodes.append("I="+str(N)+" W=sil\n")
-  N+=1
-  #The first word starts at sil
-  w_start_node = N-1
-  #The first word ends at sil+1
-  w_end_node = N
-  #And the node is sp normally but if only 1 wor din utt it is sil.
-  wlen = len(utt.words)-1
-  if wlen > 0:
-    nodes.append("I="+str(N)+" W=sp\n")
-  else:
-    nodes.append("I="+str(N)+" W=sil\n")
-    #If at the end we add an arc as well
-    arcs.append("J="+str(L)+" S="+str(w_end_node)+" E="+str(N))
-  N+=1
-  #Add each pronounciation allowed for the word
-  for wi, word in enumerate(utt.words):
-    if pronoun_variant:
-      entries = dictionary.get_all_align_entries(word.id)
-      for entry in entries:
-        nodes, arcs, N, L = make_word_nodes_arcs(entry, nodes, arcs, N, L, w_start_node, w_end_node)
-    else:
-      entry = dictionary.get_single_align_entry(word.id)
-      nodes, arcs, N, L = make_word_nodes_arcs(entry, nodes, arcs, N, L, w_start_node, w_end_node)
-    #Now the new start_node is the previous end node
-    w_start_node = w_end_node
-    #And the new end node is either sil or sp depending on if this is the last word.
-    if wlen != wi:
-      nodes.append("I="+str(N)+" W=sp\n")
-    else:
-      nodes.append("I="+str(N)+" W=sil\n")
-      #If at the end we add an arc as well
-      arcs.append("J="+str(L)+" S="+str(w_end_node)+" E="+str(N))
-    w_end_node = N
-    N+=1
-  
-  for node in nodes:
-    slf.append(node)
-  slf.append("# List arcs: J=arc-number, S=start-node, E=end-node\n")
-  for arc in arcs:
-    slf.append(arc)
-  #Fix the line with N and L
-  slf[1] = "N="+str(len(nodes))+" L="+str(len(arcs))+"\n"
+def write_slf_alignment_lattices(outpath, sent, slfdirpath, dictionary, pronoun_variant):
+  #Make the SLF
+  slf = lattice_tools.make_phoneme_slf(sent, dictionary, pronoun_variant)
   
   #Write it out
-  wf = open(os.path.join(slfdirpath, utt.id+".slf"), "w")
+  wf = open(os.path.join(slfdirpath, outpath), "w")
   for l in slf:
     wf.write(l)
   wf.close()
-
-#Make nodes and arcs for a word starting at node num N and arc num L
-#Returns nodes and arcs with the added new nodes and arcs
-#If pronoun_variant is true 
-def make_word_nodes_arcs(phons, nodes, arcs, N, L, start_node, end_node):
-  for i, phone in enumerate(phons):
-    #Add the node
-    nodes.append("I="+str(N)+" W="+phone+"\n")
-    #If the first phon we add arch from start_node
-    if i == 0:
-      arcs.append("J="+str(L)+" S="+str(start_node)+" E="+str(N)+"\n")
-    else: #else we add from previous to current
-      arcs.append("J="+str(L)+" S="+str(N-1)+" E="+str(N)+"\n")
-    N+=1
-    L+=1
-  #The last phoneme has been added so we add arc to end_node
-  #Note S is -1 because we just incremented N
-  arcs.append("J="+str(L)+" S="+str(N-1)+" E="+str(end_node)+"\n")
-  L+=1
-  return nodes, arcs, N, L
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Create alignment mlfs and slfs.')
@@ -176,13 +104,13 @@ if __name__ == "__main__":
   
   for txt in txtfiles:
     print "Processing {0}".format(txt)
-    #Make an utt
-    utt = utterance.Utterance(txt, args)
     if args.mlf:
+      #Make an utt
+      utt = utterance.Utterance(txt, args)
       #Write out mlfs for standard alignment methods.
       write_initial_alignment_mlfs(utt, wfsp, wfnosp)
     if args.slf:
-      write_slf_alignment_lattices(utt, args.outdir, args.dictionary, args.pronoun_variant)
+      write_slf_alignment_lattices(txt[0]+'.slf', txt[1:], args.outdir, args.dictionary, args.pronoun_variant)
   
   if args.mlf:
     wfsp.close()

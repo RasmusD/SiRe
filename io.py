@@ -33,6 +33,8 @@ def open_file_line_by_line(path):
   return [x.strip() for x in open(path, "r").readlines()]
 
 #Opens and makes a simple tokenization of a file (actually just removes tokens).
+#The return list has the format of l[0] == The name of the txt filepath - .txt extension.
+#l[1:] the tokens.
 def open_and_tokenise_txt(path, keep_commas=False):
   txt = open(path, "r").read()
   punctuation = [".", ",", "!", "?", ";", ":"]
@@ -40,12 +42,12 @@ def open_and_tokenise_txt(path, keep_commas=False):
     punctuation.remove(",")
     txt = txt.replace(",", " , ")
     #We may have made double whitespace from this
-    txt.replace("  ", " ")
+    txt = txt.replace("  ", " ")
   for x in punctuation:
     txt = txt.replace(x, "")
   #This has to be done seperately as some word contain this in the middle
   txt.replace(" - ", " ")
-  return [path[:-4]]+txt.lower().split()
+  return [os.path.splitext(os.path.basename(path))[0]]+txt.lower().split()
 
 #Opens, and tokenizes all txt files in a dir and returns them in a list.
 #We may wish to keep_commas as they may mark a pause.

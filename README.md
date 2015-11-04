@@ -10,16 +10,19 @@ If you try it out, here is what it can do:
 - Load standard HTS (2.3beta) full-context mlfs and convert them to two other linguistic feature sets.
 - Output a relational and parsed linguistic featureset.
 - Output a standard absolute linguistic set and a parsed version of this.
-- Output a question set consistent with the linguistic features encountered in training data.
+- Output labels suitable to work with HMM (HTS 2.3beta) and DNN (HTS NN 2.3alpha) systems.
+- Output a question set consistent with the linguistic features encountered in training data for both HMM and DNN.
+- Merge question sets.
 - It should be easy to define a new linguistic feature context set allowing for rapid experimentation.
 - Load an mlf created from alignment using the multisyn tools and create full-context labels.
 - Load txt, if you also have the combilex dictionary, files and create full-context labels.
-- Create mlfs and slfs suitable for alignment using the multisyn tools.
+- Create mlfs and slfs suitable for alignment using the CSTR Festival multisyn tools.
 - Interface with the Stanford parser to create a parse usable for context labelling.
+- Use NGRAM statistics for pronunciation reduction.
 - More to come... see TODO
 
 How to make it work:
-- You need python 2.7+ or lower if you have the argparse module installed (developed on 2.7.3 which has it by default)
+- You need python 2.7+, lower may work if you have the argparse module installed (developed on 2.7.3 which has it by default)
 - The main workhorse is the make_*.py files - run them with -h to see what to specify.
 - It SHOULD print lots of warnings or errors if something fishy is going on.
 - Any bugs please report to rasmus@dall.dk - I am happy to receive them and provide any support asap.
