@@ -108,7 +108,7 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
   proto["id"] = lab[0].split("/")[-1]
   #First we check if we need to reduce some words, and which
   if pron_reduced == True:
-    if os.path.exists(reduction_score_dir):
+    if os.path.isdir(reduction_score_dir):
       words = reduce_word_tuples(lab[1:], os.path.join(args.pron_reduced[1], proto["id"]+".scored"), reduction_level)
     else:
       raise SiReError("The directory with reduction scores does not exist!")
