@@ -27,7 +27,8 @@ import argparse, dictionary, os, utterance, io, lattice_tools
 #put at first phoneme in syllable). You must add these as tee models in the multisyn
 #alignments to make it work.
 #NOTE: No stress is NOT marked #0, it is simply assumed it is unstressed if unmarked.
-def write_initial_alignment_mlfs(utt, spmlf, nospmlf):
+#If syll_info is set to false we don't write out the syllable stress markers and dots for syll boundaries.
+def write_initial_alignment_mlfs(utt, spmlf, nospmlf, no_syll_info=False):
   spmlf.write("\"*/"+utt.id+".lab\"\n")
   nospmlf.write("\"*/"+utt.id+".lab\"\n")
   
@@ -35,7 +36,7 @@ def write_initial_alignment_mlfs(utt, spmlf, nospmlf):
   for wi, word in enumerate(utt.words):
     slen = len(word.syllables)-1
     for si, syllable in enumerate(word.syllables):
-      if syllable.stress != "0":
+      if syllable.stress != "0" and no_syll_info == False:
         spmlf.write("#"+syllable.stress+"\n")
       for phoneme in syllable.phonemes:
         #If the phoneme is a stop we split it in closure and release.
@@ -47,7 +48,7 @@ def write_initial_alignment_mlfs(utt, spmlf, nospmlf):
         else:
           spmlf.write(phoneme.id+"\n")
           nospmlf.write(phoneme.id+"\n")
-      if si != slen:
+      if si != slen and no_syll_info == False:
         spmlf.write(".\n")
     #At the end of a word which is not "sil" we add sp model
     if wi != wlen and word.id != "sil":
@@ -76,6 +77,7 @@ if __name__ == "__main__":
   parser.add_argument('-mlfname', type=str, help="The name to prepend the output mlfs, if making mlfs.", default="txt")
   parser.add_argument('-slf', action="store_true", help="Output slfs.")
   parser.add_argument('-pronoun_variant', action="store_true", help="Create pronounciation variant slfs.")
+  parser.add_argument('-no_syll_info', action="store_true", help="If set no syllable stress and boundary information is included in mlfs.")
   parser.add_argument('combilexpath', type=str, help="The path to the combilex dictionary directory.")
   args = parser.parse_args()
   
@@ -105,7 +107,7 @@ if __name__ == "__main__":
       #Make an utt
       utt = utterance.Utterance(txt, args)
       #Write out mlfs for standard alignment methods.
-      write_initial_alignment_mlfs(utt, wfsp, wfnosp)
+      write_initial_alignment_mlfs(utt, wfsp, wfnosp, args.no_syll_info)
     if args.slf:
       write_slf_alignment_lattices(txt[0]+'.slf', txt[1:], args.outdir, args.dictionary, args.pronoun_variant)
   

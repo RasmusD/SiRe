@@ -20,6 +20,10 @@
 
 import argparse, io, sys, subprocess
 
+#It is assumed that the input mlf uses "#1" and "#2" to mark syllable stress. These are discarded.
+#"." to mark word internal syllable boundaries. This is discarded.
+#"sp" to mark word boundaries. These may have some duration if there is a mid sentential pause and is replaced with "sil" if that is the case else kept as marker of word boundary.
+#"_cl" to mark the closure of a stop. this is discarded.
 def get_phoneme_strings(labs):
   n_labs = []
   for i, lab in enumerate(labs):
@@ -29,14 +33,13 @@ def get_phoneme_strings(labs):
     lab.pop(0)
     for phon in lab:
       #The align labs have stops split marked with _cl. We don't want the _cl.
-      #We also don't want phoneme boundaries and the like.
-      #One could experiment with keeping some of these markers in the data.
+      #We include phoneme boundaries and the like for later recreation of the utt.
+      #One could experiment with removing some of these markers in the data.
       if "_cl" not in phon[-1] and phon[-1] not in [".", "#1", "#2"]:
-        #Only use sp if it has any length
-        if phon[-1] == "sp":
-          if phon[0] != phon[1]:
-            print phon
-            tmp.append("sil")
+        #Use sp as sil if it has any length
+        #Else we simply keep it to mark a word boundary
+        if phon[-1] == "sp" and phon[0] != phon[1]:
+          tmp.append("sil")
         else:
           tmp.append(phon[-1])
     n_labs.append(tmp)
@@ -48,7 +51,7 @@ if __name__ == "__main__":
   parser.add_argument('txtpath', type=str, help="The output textfilepath.")
   parser.add_argument('lmpath', type=str, help="The output lmfilepath.")
   parser.add_argument('ngram_binary_path', type=str, help="The path to the LM making binary.")
-  parser.add_argument('-lm_binary_options', type=str, nargs=argparse.REMAINDER, default='-order 3 -interpolate -gt3min 1 -wbdiscount -debug 3'.split())
+  parser.add_argument('-lm_binary_options', type=str, help="Additional arguments to be sent to the ngram binary as options. Overwrites the defaults options: -order 3 -interpolate -gt3min 1 -wbdiscount -debug 3", nargs=argparse.REMAINDER, default='-order 3 -interpolate -gt3min 1 -wbdiscount -debug 3'.split())
   parser.add_argument('-f', action='store_true', help="Force overwrite of outputpath file if it exists.")
   args = parser.parse_args()
   
@@ -64,5 +67,4 @@ if __name__ == "__main__":
   
   #This allows for people to pass their own options to the ngram binary
   options = " "+" ".join(args.lm_binary_options)
-  
   subprocess.call(args.ngram_binary_path+" -text "+args.txtpath+" -lm "+args.lmpath+options, shell=True)
