@@ -69,12 +69,11 @@ class Dictionary(object):
     self.phoneme_feats = phoneme_features.CombilexPhonemes()
     print "Done."
   
-  #Makes returns entry phonetics as if it existed in the dictionary.
-  #Pos = the words pos to use
+  #Makes entry phonetics as if it existed in the dictionary.
   #Phonemisation = The phonemisation in a whitespace delimited string - please use numbers as stress indicators
   #and syllable boundary markers. 0 = no stress and 1 = stressed
   #TODO - Make it possible to output in cmudict format beside combilex.
-  def make_entry_phonetics(self, pos, phonemisation):
+  def make_entry_phonetics(self, phonemisation):
     entry = ""
     #Add each syllable
     for i, p in enumerate(phonemisation.split()):
@@ -92,6 +91,35 @@ class Dictionary(object):
         int(p)
         entry += ") "+p+")"
     return entry
+  
+  #Makes a dictionary entry as if it exists in the dictionary.
+  #Pos = the words pos to use
+  #Phonemisation = The phonemisation in a whitespace delimited string - please use numbers as stress indicators
+  #and syllable boundary markers. 0 = no stress and 1 = stressed
+  #Reduced = Is this a reduced form?
+  def make_entry(self, pos, phonemisation, reduced=False):
+    phonetics = make_entry_phonetics(phonemisation)
+    return [{"pos":pos, "reduced":reduced, "phonetics":phonetics}]
+  
+  def get_entries(self, word, punct_as_sil=None):
+    try:
+      return self.raw_dictionary_entries[word]
+    except KeyError:
+      #If this has underscores we try to pronounce each letter individually.
+      if "_" in word:
+        w_phon = []
+        for w in word.split("_"):
+          w_phon.append(self.get_single_entry(w))
+        print "Warning! \"{0}\" looks like it should be pronounced {1} and is a proper noun. I'm doing that. Is it right?".format(word, w_phon)
+        return self.make_entry("nnp", " ".join(w_phon))
+      elif punct_as_sil and word in punct_as_sil[0]:
+        if punct_as_sil[1] in self.phoneme_feats.get_sil_phonemes():
+          return self.make_entry(punct_as_sil[1], punct_as_sil[1]+" 0")
+        else:
+          print "ERROR! Cannot add punctuation {0} as silence as sil phoneme specified ({1}) is not valid! Must be in {3}.".format(word, punct_as_sil[1], phoneme_feats.get_sil_phonemes())
+      else:
+        print "ERROR! Could not find \"{0}\" in dictionary! Please add it manually.".format(word)
+      sys.exit()
 
   #This returns the first non-reduced phomisation of a word in the dictionary.
   #Words not in the dictionary but with underscores between letters are
@@ -102,24 +130,7 @@ class Dictionary(object):
   #If punct_as_sil is specified pass a tuple containing t[0] a list of pucntuation to be silence
   #and t[1] the phoneme to represent the silence both as phoneme and pos.
   def get_single_entry(self, word, pos=None, reduced=False, punct_as_sil=None):
-    try:
-      entries = self.raw_dictionary_entries[word]
-    except KeyError:
-      #If this has underscores we try to pronounce each letter individually.
-      if "_" in word:
-        w_phon = []
-        for w in word.split("_"):
-          w_phon.append(self.get_single_entry(w))
-        print "Warning! \"{0}\" looks like it should be pronounced {1}. I'm doing that. Is it right?".format(word, w_phon)
-        return " ".join(w_phon)
-      elif punct_as_sil and word in punct_as_sil[0]:
-        if punct_as_sil[1] in self.phoneme_feats.get_sil_phonemes():
-          return self.make_entry_phonetics(punct_as_sil[1], punct_as_sil[1]+" 0")
-        else:
-          print "ERROR! Cannot add punctuation {0} as silence as sil phoneme specified ({1}) is not valid! Must be in {3}.".format(word, punct_as_sil[1], phoneme_feats.get_sil_phonemes())
-      else:
-        print "ERROR! Could not find \"{0}\" in dictionary! Please add it manually.".format(word)
-      sys.exit()
+    entries = self.get_entries(word, punct_as_sil)
     if len(entries) > 1:
       pos_added = False
       c_best = entries[0]["phonetics"]
@@ -155,41 +166,30 @@ class Dictionary(object):
   #Output is list of phonemes.
   def get_single_align_entry(self, word, pos=None):
     entry = self.get_single_entry(word, pos)
-    return self.convert_entry_phonetics_to_align_phonemes(entry)
+    return self.convert_entry_phonetics_to_phoneme_string(entry, True)
   
   #Returns a list of alignment strings for each variant of a word in dict.
   def get_all_align_entries(self, word):
-    try:
-      entries = self.raw_dictionary_entries[word]
-    except KeyError:
-      #If this has underscores we try to pronounce each letter individually.
-      if "_" in word:
-        w_phon = []
-        for w in word.split("_"):
-          #Note the recursiveness here.
-          w_phon.append(self.get_single_entry(w))
-        print "Warning! \"{0}\" looks like it should be pronounced {1}. I'm doing that. Is it right?".format(word, w_phon)
-        entries = [{"phonetics": " ".join(w_phon)}]
-      else:
-        print "Error: Could not find \"{0}\" in dictionary! Please add it manually.".format(word)
+    entries = self.get_entries(word)
     phonemes = []
     for entry in entries:
-      phonemes.append(self.convert_entry_phonetics_to_align_phonemes(entry["phonetics"]))
+      phonemes.append(self.convert_entry_phonetics_to_phoneme_string(entry["phonetics"], True))
     #Some might be duplicates in terms of pronunciation, we remove those.
     return list_utils.unique_list_of_lists(phonemes)
   
   #Converts the standard combilex phonetics to alignment phonemes.
-  def convert_entry_phonetics_to_align_phonemes(self, entry_phonetics):
+  #If syll_info then we include syllable boundaries and syllable stress info.
+  def convert_entry_phonetics_to_phoneme_string(self, entry_phonetics, syll_info=False):
     phonemes = []
     sylls = [x.strip("()") for x in entry_phonetics.split(") (")]
     s_len = len(sylls)-1
     for i, syll in enumerate(sylls):
       syll = syll.split(") ")
       #Append stress
-      if syll[1] != "0":
+      if syll_info == True and syll[1] != "0":
         phonemes.append("#"+syll[1])
       phonemes += syll[0].split()
       #append a syllable boundary marker.
-      if i != s_len:
+      if syll_info == True and i != s_len:
         phonemes.append(".")
     return phonemes

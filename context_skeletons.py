@@ -25,7 +25,7 @@ from collections import OrderedDict
 #the question set generator to know which type of questions to generate.
 #The following types are valid:
 #"bool" = A yes/no question, examples are "Is this a @ phoneme?" or "Is this phoneme a
-#         consonant?"
+#         consonant?". This does not imply the type must be a bool, it can also be a string.
 #"float" = A question which has a value which can be checked for higher than, lower than etc.
 #          an example would be "Phoneme relational forward position in syllable".
 #          The value of it must be a float type and multipliable with 100 to yield an int

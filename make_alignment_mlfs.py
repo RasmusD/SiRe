@@ -30,9 +30,6 @@ import argparse, dictionary, os, utterance, io, lattice_tools
 def write_initial_alignment_mlfs(utt, spmlf, nospmlf):
   spmlf.write("\"*/"+utt.id+".lab\"\n")
   nospmlf.write("\"*/"+utt.id+".lab\"\n")
-  #We start with silence
-  spmlf.write("sil\n")
-  nospmlf.write("sil\n")
   
   wlen = len(utt.words)-1
   for wi, word in enumerate(utt.words):
@@ -52,13 +49,13 @@ def write_initial_alignment_mlfs(utt, spmlf, nospmlf):
           nospmlf.write(phoneme.id+"\n")
       if si != slen:
         spmlf.write(".\n")
-    #At the end of a word we add sp model
-    if wi != wlen:
+    #At the end of a word which is not "sil" we add sp model
+    if wi != wlen and word.id != "sil":
       spmlf.write("sp\n")
   
-  #We end with silence and a dot
-  spmlf.write("sil\n.\n")
-  nospmlf.write("sil\n.\n")
+  #We end with a dot
+  spmlf.write(".\n")
+  nospmlf.write(".\n")
 
 #Writes out an HTK SLF lattice for lattice based alignment.
 def write_slf_alignment_lattices(outpath, sent, slfdirpath, dictionary, pronoun_variant):

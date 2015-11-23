@@ -16,6 +16,7 @@
 
 import argparse, sys, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, io, phoneme_features
 from datetime import datetime
+from error_messages import SiReError
 
 def read_stanford_parses(dirpath):
   files = [[x, open(os.path.join(dirpath, x), "r").read()] for x in os.listdir(dirpath) if ".parse" in x]
@@ -96,22 +97,23 @@ if __name__ == "__main__":
   parser.add_argument('-general_sil_phoneme', type=str, help="If making labs from txt, use this as the silence phoneme.", default="sil")
   args = parser.parse_args()
   
-  #The phoneme set used - hardcoded as currently only combilex is possible
+  #The phoneme set used - hardcoded as currently only combilex is possible.
   args.phoneme_features = phoneme_features.CombilexPhonemes()
   
   #Check if this is well-formed
   if args.pron_reduced:
     if args.intype != "txt":
-      print "Cannot make reduced pronunciation from non-textual input!"
-      sys.exit()
+      raise SiReError("Cannot make reduced pronunciation from non-textual input!")
     try:
-      args.pron_reduced[0] = float(args.pron_reduced[0])
-      if args.pron_reduced[0] > 1.0 or args.pron_reduced < 0.0:
-        print "REDUCTION_LEVEL must be between 1.0 and 0.0! Was {0}".format(args.pron_reduced[0])
-        sys.exit()
+      args.reduction_level = float(args.pron_reduced[0])
+      args.reduction_score_dir = args.pron_reduced[1]
+      if args.reduction_level > 1.0 or args.reduction_level < 0.0:
+        raise SiReError("REDUCTION_LEVEL must be between 1.0 and 0.0! Was {0}".format(args.pron_reduced[0]))
+      else:
+        args.reduction_level = float(args.pron_reduced[0])
+      args.pron_reduced = True
     except ValueError:
-      print "REDUCTION_LEVEL must be a float value! Was {0}!".format(args.pron_reduced[0])
-      sys.exit()
+      raise SiReError("REDUCTION_LEVEL must be a float value! Was {0}!".format(args.pron_reduced[0]))
   
   if args.stanfordparse:
     args.parsedict = read_stanford_parses(args.parsedir)
@@ -120,16 +122,18 @@ if __name__ == "__main__":
     args.txtdir = args.inpath
     labs = io.load_txt_dir(args.txtdir, args.comma_is_pause)
     if args.combilexpath == None:
-      print "No path to combilex. Please use -combilexpath option."
-      sys.exit()
+      raise SiReError("No path to combilex. Please use -combilexpath option.")
+    elif not os.path.isdir(args.combilexpath):
+        raise SiReError("Combilex path is not valid. Please specify the dir in which the combilex.dict and .add files are.")
     args.dictionary = dictionary.Dictionary(args.combilexpath)
+    #The phoneme set used must match the dictionary - currently pointless as only combilex is possible and this is hardcoded above. But here for the future.
+    args.phoneme_features = args.dictionary.phoneme_feats
   elif args.intype == "hts_lab":
     labs = io.open_labdir_line_by_line(args.inpath)
     args.intype = "hts_mlf"
   else:
     if args.inpath == None:
-      print "Input is mlf type but no mlf path has been set! Please use -inpath option."
-      sys.exit()
+      raise SiReError("Input is mlf type but no mlf path has been set! Please use -inpath option.")
     mlf = open(args.inpath, "r").readlines()
     labs = io.parse_mlf(mlf, args.intype)
   

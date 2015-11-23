@@ -15,6 +15,7 @@
 ##########################################################################
 
 import phoneme_features, sys, utterance_load, os
+from error_messages import SiReError
 
 class Utterance(object):
   """An object representing an utterance."""
@@ -46,7 +47,29 @@ class Utterance(object):
       proto = utterance_load.proto_from_hts_lab(lab)
       self.txtloaded = False
     elif args.intype == "txt":
-      proto = utterance_load.proto_from_txt(lab, args)
+      #Check if args has all the necessary elements and insert defaults if not.
+      if not hasattr(args, 'pron_reduced'):
+        print "Warning! args does not tell if we should do pronunciation reduction! Using default... (no reduction)"
+        args.pron_reduced = False
+        args.reduction_score_dir = None
+        args.reduction_level = 1.0
+      else:
+        #If we are we need to check if we know enough to do it and fail if we don't.
+        if not hasattr(args, 'reduction_score_dir'):
+          raise SiReError("You have asked to produce a reduced phonemisation but no path to a directory containing LM word probabilities to base the reduction on.")
+        if not hasattr(args, 'reduction_level'):
+          raise SiReError("You have asked to produce a reduced phonemisation but not specified to which degree the sentence should be reduced.")
+      if not hasattr(args, 'general_sil_phoneme'):
+        print "Warning! args does not tell if there is a standard silence phoneme! Using default... (\"sil\")"
+        args.general_sil_phoneme = "sil"
+      if not hasattr(args, 'comma_is_pause'):
+        print "Warning! args does not tell if commas should be used as pauses! Using default... (no)"
+        args.comma_is_pause = False
+      if not hasattr(args, 'stanfordparse'):
+        print "Warning! args does not tell if we are using stanford parsing! Using default... (no)"
+        args.stanfordparse = False
+      
+      proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanfordparse, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
       self.txtloaded = True
     else:
       print "Error: Don't know what to do with intype - {0}".format(args.intype)
@@ -58,7 +81,7 @@ class Utterance(object):
     self.syllables = []
     self.words = []
     #We need to know which phoneme features this utterance is created with.
-    self.phoneme_features = args.phoneme_features
+    self.phoneme_features = args.dictionary.phoneme_feats
     s_utt_pos = 0
     p_utt_pos = 0
     
@@ -95,7 +118,7 @@ class Utterance(object):
 #      if w.id.lower() in ["uh", "uhu", "um", "uhum"]:
 #        for p in w.phonemes:
 #          if p.id in ["@", "V"]:
-#            p.id = "UH"
+#            p.id = "V"
   
   def num_phonemes(self):
     return len(self.phonemes)

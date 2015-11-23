@@ -16,6 +16,7 @@
 
 # A collection of methods for creating HTK style (SLF) lattices
 
+#Makes an slf for a phoneme path 
 def make_phoneme_slf(words, dictionary, pronoun_variant=False):
   #We can't write immediately as some lines depend on later lines
   slf = []

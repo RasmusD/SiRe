@@ -222,6 +222,9 @@ def add_basic(context_skeleton, phoneme):
   c.add("uns", str(utt.num_syllables()))
   #Words in utterance
   c.add("unw", str(utt.num_words()))
+  
+  ##### EXPERIMENTAL DO NOT COMMIT! #####
+#  c.add("ut", "read")
 
 def add_relational(context_skeleton, phoneme):
   """Adds the relational context set. Relational means that positions in segments are relational."""

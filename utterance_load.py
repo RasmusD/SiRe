@@ -16,6 +16,7 @@
 
 #Methods for loading utterances
 import utterance, utterance_utils, sys, phoneme_features, parsetrees, os, dictionary
+from error_messages import SiReError
 
 #Create a prototype utterance from a lab from an aligned mlf.
 #Note this assumes the following:
@@ -98,34 +99,39 @@ def proto_from_hts_lab(lab):
 
 #Create a proto utterance from text.
 #Note that all phonemes are given a phony 100ms duration - this is expected to be overridden by the back-end duration prediction system.
-#If args.pron_reduced is set this will attempt to produce a reduced pronunciation for parts of the sentence as specifiied by args.pron_reduced[0]
-def proto_from_txt(lab, args):
+#If pron_reduced is set this will attempt to produce a reduced pronunciation for parts of the sentence as specifiied by reduction_level and
+#the scores in reduction_score_file.
+#Reduction_level must be minimally 0 (full reduction) and maximally 1 (no reduction).
+def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=False, stanfordparse=False, pron_reduced=False, reduction_score_dir=None, reduction_level=1.0):
   #Create words
   proto = {"utt":[]}
   proto["id"] = lab[0].split("/")[-1]
   #First we check if we need to reduce some words, and which
-  if args.pron_reduced != None:
-    words = reduce_word_tuples(lab[1:], os.path.join(args.pron_reduced[1], proto["id"]+".scored"), args.pron_reduced[0])
+  if pron_reduced == True:
+    if os.path.exists(reduction_score_dir):
+      words = reduce_word_tuples(lab[1:], os.path.join(args.pron_reduced[1], proto["id"]+".scored"), reduction_level)
+    else:
+      raise SiReError("The directory with reduction scores does not exist!")
   else:
     words = [(x, False) for x in lab[1:]]
   #Make words and look up in dictionary
   #If no parse exists (i.e. no pos tags) we will simply grab the first pronunciation we can find that is not reduced (if one exist).
   #We also forget the pos tag of that in the process.
   #We start with silence.
-  proto["utt"].append({"id":"sil", "syllables":[args.dictionary.make_entry_phonetics("sil", args.general_sil_phoneme+" 0")]})
-  if not args.stanfordparse:
+  proto["utt"].append({"id":"sil", "syllables":[dictionary.make_entry_phonetics(general_sil_phoneme+" 0")]})
+  if not stanfordparse:
     for word in words:
       #If we need to keep some punctuation
-      if args.comma_is_pause == True:
-        proto["utt"].append({"id":word[0], "syllables":[args.dictionary.get_single_entry(word[0], reduced=word[1], punct_as_sil=([","], "sil"))]})
+      if comma_is_pause == True:
+        proto["utt"].append({"id":word[0], "syllables":[dictionary.get_single_entry(word[0], reduced=word[1], punct_as_sil=([","], "sil"))]})
       else:
-        proto["utt"].append({"id":word[0], "syllables":[args.dictionary.get_single_entry(word[0], reduced=word[1])]})
+        proto["utt"].append({"id":word[0], "syllables":[dictionary.get_single_entry(word[0], reduced=word[1])]})
   else: #Else a parse should exist and we can get the pos tags from that.
     tree = parsetrees.stanfordtree()
     tree.make_tree(args.parsedict[proto["id"]])
     
     #Do we need some punctuation?
-    if args.comma_is_pause == True:
+    if comma_is_pause == True:
       leafs = tree.get_leafs(include_punct=[","])
     else:
       leafs = tree.get_leafs()
@@ -140,13 +146,13 @@ def proto_from_txt(lab, args):
         sys.exit()
       else:
         word = words[i]
-      if args.comma_is_pause:
-        c_best = args.dictionary.get_single_entry(word[0], pos, word[1], punct_as_sil=([","], "sil"))
+      if comma_is_pause:
+        c_best = dictionary.get_single_entry(word[0], pos, word[1], punct_as_sil=([","], "sil"))
       else:
-        c_best = args.dictionary.get_single_entry(word[0], pos, word[1])
+        c_best = dictionary.get_single_entry(word[0], pos, word[1])
       proto["utt"].append({"id":word[0], "syllables":[c_best]})
   #We end with silence.
-  proto["utt"].append({"id":"sil", "syllables":[args.dictionary.make_entry_phonetics("sil", args.general_sil_phoneme+" 0")]})
+  proto["utt"].append({"id":"sil", "syllables":[dictionary.make_entry_phonetics(general_sil_phoneme+" 0")]})
   #Make syllables and split dictionary format
   #Phony phoneme duration counter
   cur_dur = 0
