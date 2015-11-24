@@ -15,7 +15,7 @@
 ##########################################################################
 
 #Methods for loading utterances
-import utterance, utterance_utils, sys, phoneme_features, parsetrees, os, dictionary
+import utterance, utterance_utils, phoneme_features, parsetrees, os, dictionary
 from error_messages import SiReError
 
 #Create a prototype utterance from a lab from an aligned mlf.
@@ -142,8 +142,7 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
     for i, leaf in enumerate(leafs):
       pos, word = leaf.label.lower().split("-")
       if word != words[i][0]:
-        print "ERROR! Word ({0}) from parse does not match word ({1}) from txt! In {2}.".format(word, words[i][0], proto["id"])
-        sys.exit()
+        raise SiReError("Word ({0}) from parse does not match word ({1}) from txt! In {2}.".format(word, words[i][0], proto["id"]))
       else:
         word = words[i]
       if comma_is_pause:
@@ -181,8 +180,7 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
 #Add parse information from a stanford parsed sentence
 def load_stanford_parse(utt, parse, comma_is_pause=False):
   if utt.words == None:
-    print "Error: No words in utterance! Please load an mlf or txt (not implemented yet) file first!"
-    sys.exit()
+    raise SiReError("No words in utterance! Please load an mlf or txt (not implemented yet) file first!")
   tree = parsetrees.stanfordtree()
   tree.make_tree(parse)
   if comma_is_pause == True:
@@ -199,11 +197,7 @@ def load_stanford_parse(utt, parse, comma_is_pause=False):
     #we add a "phony" word which affects contexts but adds no phonemes.
     utterance_utils.try_split_words(utt)
     if len(leafs) != utt.num_words_no_pau():
-      print "Error! Number of leaves ({0}) not equal to number of words ({1})!".format(len(leafs), utt.num_words_no_pau())
-      print utt.id
-      for w in utt.words:
-        print w.id
-      sys.exit()
+      raise SiReError("Number of leaves ({0}) not equal to number of words ({1})! In utt ({2})!".format(len(leafs), utt.num_words_no_pau(), utt.id))
   #Match each word with parse
   for i, word in enumerate(utt.get_words_no_pau()):
     l = leafs[i].label.split("-")
@@ -241,9 +235,7 @@ def load_txt(utt, txtpath):
   txt = txt.lower()
   txt = txt.split()
   if len(txt) != utt.num_words_no_pau():
-    print "Error: Text length ({0}) and number of words in utt ({1}) does not match!".format(len(txt), utt.num_words_no_pau())
-    print utt.id
-    sys.exit()
+    raise SiReError("Text length ({0}) and number of words ({1}) in utt ({2}) does not match!".format(len(txt), utt.num_words_no_pau(), utt.id))
   #Now replace the phoneme based ids with txt based.
   i = 0
   for w in utt.words:
@@ -258,9 +250,7 @@ def remake_stops(lab):
   for i, l in enumerate(lab):
     if "_cl" in l[-1]:
       if lab[i+1][-1]+"_cl" != l[-1]:
-        print "Error: Closure not preceding release!"
-        print lab
-        sys.exit()
+        raise SiReError("Closure not preceding release! In {0}".format(lab))
       else:
         lab[i+1][0] = l[0]
         remove.append(l)
@@ -308,9 +298,7 @@ def make_sylls(utt):
       syll["id"] += p["id"]
       if p["stress"] > 0:
         if syll["stress"] != 0:
-          print "Error: Syllable already stressed!"
-          print syll
-          sys.exit()
+          raise SiReError("Syllable ({0}) already stressed! In utt ({1})".format(syll, utt.id))
         syll["stress"] = 1
       if i == len(utt)-1:
         syll["start"] = syll["phonemes"][0]["start"]
@@ -337,9 +325,7 @@ def make_words(utt):
         words.append({"id":s["id"], "syllables":[s], "start":s["start"], "end":s["end"]})
       elif i == 0 or i == len(utt)+1:
         #Something is likely fishy
-        print "Error: Boundary silence not of any length!"
-        print word
-        sys.exit()
+        raise SiReError("Boundary silence not of any length in word ({0})!".format(word))
       word = {"id":"", "syllables":[]}
     else:
       word["syllables"].append(s)
@@ -370,16 +356,14 @@ def reduce_word_tuples(words, score_file, reduction_level):
     return w_l
   #If the reduction_level is not between 0 and 1 we fail
   elif reduction_level > 1.0 or reduction_level < 0.0:
-    print "ERROR! Reduction level must be between 1.0 and 0.0 but was {0}".format(reduction_level)
-    sys.exit()
+    raise SiReError("Reduction level must be between 1.0 and 0.0 but was {0}".format(reduction_level))
   #As words may appear more than once we make a dict indexed on word pos.
   scores = {}
   for i, x in enumerate(open(score_file, "r").readlines()):
     scores[i] = x.strip().split()
   
   if len(scores) != len(words):
-    print "ERROR! I seem to have a mismatching set of words ({0}) and LM scores ({1}) for {2}".format(len(words), len(scores), score_file)
-    sys.exit()
+    raise SiReError("I seem to have a mismatching set of words ({0}) and LM scores ({1}) for {2}".format(len(words), len(scores), score_file))
   
   #The number of words to reduce
   n_to_reduce = int(round(len(words)*(1-reduction_level), 0))

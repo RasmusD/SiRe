@@ -15,7 +15,8 @@
 ##########################################################################
 
 #Contains all dictionary related operations.
-import os, sys, list_utils, phoneme_features
+import os, list_utils, phoneme_features
+from error_messages import SiReError
 
 #A dictionary class for creating dictionaries.
 #Currently only combilex is supported.
@@ -52,8 +53,7 @@ class Dictionary(object):
         elif p_r[1] == "full":
           reduced = False
         else:
-          print "ERROR! Cannot parse entry in combilex:\n{0}".format(e)
-          sys.exit()
+          raise SiReError("Cannot parse entry in combilex:\n{0}".format(e))
         #Make entry the syllable structure
         entry = ") (".join(entry[1:])[:-1]
       else: #The entry is definitely not reduced
@@ -116,10 +116,9 @@ class Dictionary(object):
         if punct_as_sil[1] in self.phoneme_feats.get_sil_phonemes():
           return self.make_entry(punct_as_sil[1], punct_as_sil[1]+" 0")
         else:
-          print "ERROR! Cannot add punctuation {0} as silence as sil phoneme specified ({1}) is not valid! Must be in {3}.".format(word, punct_as_sil[1], phoneme_feats.get_sil_phonemes())
+          raise SiReError("Cannot add punctuation {0} as silence as sil phoneme specified ({1}) is not valid! Must be in {3}.".format(word, punct_as_sil[1], phoneme_feats.get_sil_phonemes()))
       else:
-        print "ERROR! Could not find \"{0}\" in dictionary! Please add it manually.".format(word)
-      sys.exit()
+        raise SiReError("Could not find \"{0}\" in dictionary! Please add it manually.".format(word))
 
   #This returns the first non-reduced phomisation of a word in the dictionary.
   #Words not in the dictionary but with underscores between letters are

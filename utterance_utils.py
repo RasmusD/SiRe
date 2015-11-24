@@ -14,7 +14,8 @@
 #limitations under the License.                                          #
 ##########################################################################
 
-import utterance, sys
+import utterance
+from error_messages import SiReError
 
 #Methods for manipulating utterances in non-standard ways. Most of these are considered dangerous and unsafe.
 
@@ -25,8 +26,7 @@ def try_split_words(utt):
   l = len(utt.words)
   #We should not try this if we have not gotten the word.id from txt.
   if utt.txtloaded != True:
-    print "ERROR: Cannot split words if word ids not loaded from txt."
-    sys.exit()
+    raise SiReError("Cannot split words if word ids not loaded from txt.")
   for word in utt.words:
     #End of word 's
     if word.id[-2:] == "'s":
@@ -115,8 +115,7 @@ def split_word(word, split_pos):
       split_syll(s, ["aI"], ["aI"])
   
   if word.syllables[-1].num_phonemes() > 1 and split_more_than_one_phoneme != True:
-    print "Error: Cannot split a word {0} with final syllable {1} with more than one phoneme ({2}) as this has not been explicitly allowed!".format(word.id, word.syllables[-1].id, word.syllables[-1].num_phonemes())
-    sys.exit()
+    raise SiReError("Cannot split a word {0} with final syllable {1} with more than one phoneme ({2}) as this has not been explicitly allowed!".format(word.id, word.syllables[-1].id, word.syllables[-1].num_phonemes()))
   w1 = utterance.Word()
   w1.id = word.id[:split_pos]
   w2 = utterance.Word()
@@ -183,9 +182,7 @@ def split_syll(syll, acceptable_phoneme_set, word_spanning_phonemes=[]):
   #You must know which phonemes are acceptable to replace.
   #Just a safety that things don't go horribly wrong. Disable this if you feel lucky.
   if syll.phonemes[-1].id not in acceptable_phoneme_set:
-    print "Error: Cannot split syllable unless its last phoneme {0} exists in the acceptable set - {1}".format(syll.phonemes[-1].id, acceptable_phoneme_set)
-    print syll.id
-    sys.exit()
+    raise SiReError("Cannot split syllable {0} unless its last phoneme {1} exists in the acceptable set ({2})".format(syll.id, syll.phonemes[-1].id, acceptable_phoneme_set))
   
   #ID
   s1 = utterance.Syllable()

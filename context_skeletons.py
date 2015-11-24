@@ -14,8 +14,9 @@
 #limitations under the License.                                          #
 ##########################################################################
 
-import sys, context_utils
+import context_utils
 from collections import OrderedDict
+from error_messages import SiReError
 
 #This contains the context skeletons which ensure compatibility between
 #question sets and full context labels. These also dump out the resulting
@@ -133,8 +134,7 @@ class Base(object):
       if context_utils.check_value(self, v_name, value):
         self.added_contexts[v_name] = value
     else:
-      print "Tried to add context which does not exist in skeleton! "+v_name
-      sys.exit()
+      raise SiReError("Tried to add context ({0}) which does not exist in skeleton! ".format(v_name))
   
   #Adds values in a list to the dict.
   #Ignores the initial value and only adds
@@ -149,8 +149,7 @@ class Base(object):
         else:
           self.added_contexts[v_name] += [value]
     else:
-      print "Tried to add context which does not exist in skeleton! "+v_name
-      sys.exit()
+      raise SiReError("Tried to add context ({0}) which does not exist in skeleton! ".format(v_name))
   
   #Returns a context string based on what is in added_contexts.
   def get_context_string(self, HHEd_fix=False):

@@ -14,7 +14,7 @@
 #limitations under the License.                                          #
 ##########################################################################
 
-import argparse, sys, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, io, phoneme_features
+import argparse, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, io, phoneme_features
 from datetime import datetime
 from error_messages import SiReError
 

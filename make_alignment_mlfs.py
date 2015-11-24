@@ -17,6 +17,7 @@
 #Methods for writing out the necessary files for forced alignment.
 
 import argparse, dictionary, os, utterance, io, lattice_tools
+from error_messages import SiReError
 
 #Writes out an mlf for initialising alignment and one with short pauses added.
 #These are compatible with the multisyn alignment tools. Their main difference
@@ -87,8 +88,7 @@ if __name__ == "__main__":
   args.dictionary = dictionary.Dictionary(args.combilexpath)
   
   if args.pronoun_variant and not args.slf:
-    print "Cannot create pronounciation variant mlfs. Please output slfs."
-    sys.exit()
+    raise SiReError("Cannot create pronounciation variant mlfs. Please output slfs.")
   
   txtfiles = io.load_txt_dir(args.txtdir)
   

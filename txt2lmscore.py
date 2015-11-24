@@ -18,7 +18,7 @@
 #one .scores file per .txt file containing each word line by line with its
 #LM probability.
 
-import argparse, io, os, sys, subprocess, dictionary, lattice_tools
+import argparse, io, os, subprocess, dictionary, lattice_tools
 
 #Combines all txt files in a dir to one txt file where the others are written line by line.
 def combine_txt(indirpath, outfilepath, overwrite=False):

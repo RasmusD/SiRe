@@ -15,6 +15,7 @@
 ##########################################################################
 
 import os, sys
+from error_messages import SiReError
 
 #Opens each .lab file in a dir line by line.
 def open_labdir_line_by_line(path):
@@ -85,7 +86,7 @@ def parse_mlf(mlf, intype):
   elif intype == "hts_mlf":
     ext = ".lab"
   else:
-    print "Don't know what to do with mlf of type - {0}".format(intype)
+    raise SiReError("Don't know what to do with mlf of type - {0}".format(intype))
   #Remove mlf header
   mlf.pop(0)
   labs = []
@@ -94,9 +95,7 @@ def parse_mlf(mlf, intype):
     tmp.append(l.split())
     if l.strip() == ".":
       if ext not in tmp[0][0]:
-        print "Error: Something wrong with lab:\n"
-        print tmp
-        sys.exit()
+        raise SiReError("Something wrong with lab:\n{0}".format(tmp))
       else:
         tmp[0] = tmp[0][0].split("*/")[1].split(".")[0]
         tmp.pop(-1)

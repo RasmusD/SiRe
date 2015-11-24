@@ -18,7 +18,7 @@
 #This phoneme LM can then be used for phoneme reductions when synthesising.
 #This does not make sense on mlfs produced by non-variant alignment methods.
 
-import argparse, io, sys, subprocess
+import argparse, io, subprocess
 
 #It is assumed that the input mlf uses "#1" and "#2" to mark syllable stress. These are discarded.
 #"." to mark word internal syllable boundaries. This is discarded.

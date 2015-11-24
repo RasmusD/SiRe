@@ -18,6 +18,7 @@ import context_skeletons, copy
 from context_utils import strintify
 from context_utils import strfloatify
 from context_utils import to_relational
+from error_messages import SiReError
 
 #This contains the methods for creating a variety of context types from an utterance.
 
@@ -394,9 +395,7 @@ def add_absolute_stanford(context_skeleton, phoneme):
 def get_question_sets(context_skeleton, qformat, fit_contexts=False, contexts_to_fit=None, HHEd_fix=False):
   #Should be unnecessary due to argparse, but just to be sure.
   if qformat not in ["NN", "HMM"]:
-    print "Error: Invalid question format! " + qformat
-    print "Must be either HMM or NN!"
-    sys.exit()
+    raise SiReError("Invalid question format ({0})! Must be either HMM or NN!".format(qformat))
   c = context_skeleton
   c_utt = copy.deepcopy(context_skeleton)
   questions = []
@@ -413,8 +412,7 @@ def get_question_sets(context_skeleton, qformat, fit_contexts=False, contexts_to
     q_utt = make_questions(c_utt, qformat, False, HHEd_fix)
     return (qs, q_utt)
   else:
-    print "Error: Not Implemented yet! (Not fitting contexts for question set.)"
-    sys.exit()
+    raise SiReError("Not Implemented yet! (Not fitting contexts for question set.)"
 
 #Returns a list of questions for the appropriate feature.
 #If generic is True outputs a generic set which may or may not cover your dataset.
@@ -426,9 +424,7 @@ def get_question_sets(context_skeleton, qformat, fit_contexts=False, contexts_to
 def make_questions(context_skeleton, qformat, generic=True, HHEd_fix=False):
   context_dict = context_skeleton.added_contexts
   if qformat not in ["NN", "HMM"]:
-    print "Error: Invalid question format! " + qformat
-    print "Must be either HMM or NN!"
-    sys.exit()
+    raise SiReError("Invalid question format {0}! Must be either HMM or NN!".format(qformat))
   questions = []
   if generic == False:
     for key in context_dict:
@@ -472,10 +468,9 @@ def make_questions(context_skeleton, qformat, generic=True, HHEd_fix=False):
               else:
                 questions.append("LQ 1 "+strfloatify(val)+" \""+key+"-"+str(val)+"\" {*|"+key+":"+str(val)+"|*}")
       else:
-        print "Error: Odd question type, should not exist - "+qtype
-        sys.exit()
+        raise SiReError("Odd question type, should not exist - {0}".format(qtype))
   else:
-    print "Error: Not implemented yet! (Outputting generic question set)"
+    raise SiReError("Not implemented yet! (Outputting generic question set)")
   return questions
 
 #This assumes that values are already sorted in ascending order!
@@ -486,8 +481,7 @@ def make_hmm_relational_qs(values, key, qtype):
     if "xx" in qtype:
       questions.append("QS \""+key+"-xx\" {*|"+key+":xx|*}")
     else:
-      print "Error: xx in values but not in qtype {0} for key {1} - why?".format(qtype,key)
-      sys.exit()
+      raise SiReError("xx in values but not in qtype {0} for key {1} - why?".format(qtype,key))
     values.remove("xx")
   for i, val in enumerate(values):
     if "float" in qtype:

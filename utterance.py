@@ -14,7 +14,7 @@
 #limitations under the License.                                          #
 ##########################################################################
 
-import phoneme_features, sys, utterance_load, os
+import phoneme_features, utterance_load, os
 from error_messages import SiReError
 
 class Utterance(object):
@@ -72,8 +72,7 @@ class Utterance(object):
       proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanfordparse, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
       self.txtloaded = True
     else:
-      print "Error: Don't know what to do with intype - {0}".format(args.intype)
-      sys.exit()
+      raise SiReError("Don't know what to do with intype - {0}".format(args.intype))
     
     #Construct the utt from the proto utt
     self.id = proto["id"]
@@ -164,22 +163,19 @@ class Phoneme:
     for i, p in enumerate(self.parent_syllable.phonemes):
       if p == self:
         return i
-    print "Error: Cannot find self {0} in syll {1}!".format(self.id, self.parent_syllable.id)
-    sys.exit()
+    raise SiReError("Cannot find self {0} in syll {1}!".format(self.id, self.parent_syllable.id))
   
   def pos_in_word(self):
     for i, p in enumerate(self.parent_word.phonemes):
       if p == self:
         return i
-    print "Error: Cannot find phoneme {0} in word {1}!".format(self.id, self.parent_word.id)
-    sys.exit()
+    raise SiReError("Cannot find phoneme {0} in word {1}!".format(self.id, self.parent_word.id))
   
   def pos_in_utt(self):
     for i, p in enumerate(self.parent_utt.phonemes):
       if p == self:
         return i
-    print "Error: Cannot find phoneme {0} in utt {1}!".format(self.id, self.parent_utt.id)
-    sys.exit()
+    raise SiReError("Cannot find phoneme {0} in utt {1}!".format(self.id, self.parent_utt.id))
 
   def get_feats(self):
     return self.parent_utt.phoneme_features.get_phoneme_feats(self.id)
@@ -230,15 +226,13 @@ class Syllable:
     for i, p in enumerate(self.parent_word.syllables):
       if p == self:
         return i
-    print "Error: Cannot find syllable {0} in word {1}!".format(self.id, self.parent_word.id)
-    sys.exit()
+    raise SiReError("Cannot find syllable {0} in word {1}!".format(self.id, self.parent_word.id))
     
   def pos_in_utt(self):
     for i, p in enumerate(self.parent_utt.syllables):
       if p == self:
         return i
-    print "Error: Cannot find syllable {0} in utt {1}!".format(self.id, self.parent_utt.id)
-    sys.exit()
+    raise SiReError("Cannot find syllable {0} in utt {1}!".format(self.id, self.parent_utt.id))
   
   def num_phonemes(self):
     return len(self.phonemes)
@@ -302,8 +296,7 @@ class Word:
     for i, p in enumerate(self.parent_utt.words):
       if p == self:
         return i
-    print "Error: Cannot find word {0} in utt {1}!".format(self.id, self.parent_utt.id)
-    sys.exit()
+    raise SiReError("Cannot find word {0} in utt {1}!".format(self.id, self.parent_utt.id))
   
   def num_syllables(self):
     return len(self.syllables)

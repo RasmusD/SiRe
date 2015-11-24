@@ -14,7 +14,7 @@
 #limitations under the License.                                          #
 ##########################################################################
 
-import sys
+from error_messages import SiReError
 
 #Return a float to two decimal places giving
 #the relational position of pos given maximal pos.
@@ -30,8 +30,7 @@ def to_relational(pos, mpos, fw, accept_xx=False):
     if pos == "xx" or mpos == "xx":
       return 0.0
   if pos > mpos:
-    print "Position ("+str(pos)+") is above max position ("+str(mpos)+"). Should not happen!"
-    sys.exit()
+    raise SiReError("Position ({0}) is above max position ({1}). Should not happen!".format(pos, mpos))
   #To avoid dividing with 0
   if mpos == 0:
     #This is technically correct but we could consider using 0.01
@@ -49,8 +48,7 @@ def to_relational(pos, mpos, fw, accept_xx=False):
       p = 0.01
     return p
   else:
-    print "Error: FW/BW unspecified! Please use bool!"
-    sys.exit()
+    raise SiReError("FW/BW unspecified! Please use bool!")
 
 def check_value(context_skeleton, variable_name, value):
   #Is the value of the correct type?
@@ -80,18 +78,14 @@ def check_value(context_skeleton, variable_name, value):
       if "xx" in attr and value == "xx":
         return True
   else:
-    print "Unknown attribute type! "+attr
-    sys.exit()
-  print "ERROR! Value ({0}) is not valid for variable type ({1}) variable ({2})".format(value, attr, variable_name)
-  print context_skeleton
-  sys.exit()
+    raise SiReError("Unknown attribute type ({0})!".format(attr))
+  raise SiReError("Value ({0}) is not valid for variable type ({1}) variable ({2}) in \n {3}".format(value, attr, variable_name, context_skeleton))
 
 #Return the string of the int of the float multiplied by 100.
 def strintify(fl):
   #Just to make sure we deal with a float
   if type(fl) is not float:
-    print "ERROR! Cannot strintify type {0}! Must be float!".format(type(fl))
-    sys.exit()
+    raise SiReError("Cannot strintify type {0}! Must be float!".format(type(fl)))
   #First remove any leftovers and make sure we don't just floor
   fl = round(fl, 2)
   #Do the multiplication. We round due to issues with float arithmetic.
@@ -103,8 +97,7 @@ def strintify(fl):
 def strfloatify(fl):
   #Just to make sure we deal with a int
   if type(fl) is not int:
-    print "ERROR! Cannot strintify type {0}! Must be int!".format(type(fl))
-    sys.exit()
+    raise SiReError("Cannot strintify type {0}! Must be int!".format(type(fl)))
   #First do the division
   fl = float(fl) / 100
   #Round

@@ -15,6 +15,7 @@
 ##########################################################################
 
 import argparse
+from error_messages import SiReError
 
 class CombilexPhonemes(object):
   def __init__(self):
@@ -171,6 +172,5 @@ class CombilexPhonemes(object):
       return True
     else:
       if fail:
-        print "ERROR! Phoneme ({0}) not a valid phoneme!".format(phoneme)
-        sys.exit()
+        raise SiReError("Phoneme ({0}) not a valid phoneme!".format(phoneme))
       return False

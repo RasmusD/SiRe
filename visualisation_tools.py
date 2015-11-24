@@ -18,16 +18,16 @@
 #NOTE: Requires matplotlib which is not a standard python module.
 #See here http://matplotlib.org/users/installing.html for how to get it.
 
-import wave, argparse, sys, math
+import wave, argparse, math
 from numpy import fromstring
 from matplotlib import pyplot
 from matplotlib import axes
+from error_messages import SiReError
 
 def get_wav(wav_path):
   wav = wave.open(wav_path, "r")
   if wav.getnchannels() == 2:
-    print "Can only handle mono files. {0} had {1} channels.".format(wav_path, wav.getnchannels())
-    sys.exit()
+    raise SiReError("Can only handle mono files. {0} had {1} channels.".format(wav_path, wav.getnchannels()))
   return wav
 
 def plot_wav(wav_path):
