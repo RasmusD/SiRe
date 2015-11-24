@@ -41,8 +41,6 @@ def make_phoneme_slf(words, dictionary, pronoun_variant=False):
     nodes.append("I="+str(N)+" W=sp\n")
   else:
     nodes.append("I="+str(N)+" W=sil\n")
-    #If at the end we add an arc as well
-    arcs.append("J="+str(L)+" S="+str(w_end_node)+" E="+str(N))
   N+=1
   #Add each pronounciation allowed for the word
   for wi, word in enumerate(words):
@@ -55,13 +53,14 @@ def make_phoneme_slf(words, dictionary, pronoun_variant=False):
       nodes, arcs, N, L = make_word_nodes_arcs(entry, nodes, arcs, N, L, w_start_node, w_end_node)
     #Now the new start_node is the previous end node
     w_start_node = w_end_node
-    #And the new end node is either sil or sp depending on if this is the last word.
-    if wlen != wi:
+    #And the new end node is either sil or sp depending on if this is the word before last.
+    if wi < wlen - 1: #If it is not the word before last or the last word add sp
       nodes.append("I="+str(N)+" W=sp\n")
-    else:
+    elif wi == wlen - 1: #If it is the word before last we add sil as the last node
       nodes.append("I="+str(N)+" W=sil\n")
-      #If at the end we add an arc as well
-      arcs.append("J="+str(L)+" S="+str(w_end_node)+" E="+str(N))
+    elif wi == wlen:
+      #If this is the last word we are done
+      break
     w_end_node = N
     N+=1
   
@@ -77,7 +76,6 @@ def make_phoneme_slf(words, dictionary, pronoun_variant=False):
 
 #Make nodes and arcs for a word starting at node num N and arc num L
 #Returns nodes and arcs with the added new nodes and arcs
-#If pronoun_variant is true 
 def make_word_nodes_arcs(phons, nodes, arcs, N, L, start_node, end_node):
   for i, phone in enumerate(phons):
     #Add the node
