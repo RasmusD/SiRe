@@ -100,6 +100,10 @@ if __name__ == "__main__":
   #The phoneme set used - hardcoded as currently only combilex is possible.
   args.phoneme_features = phoneme_features.CombilexPhonemes()
   
+  #We can't use commas as pause if we are not creating labs from text.
+  if args.comma_is_pause and args.intype != "txt":
+    raise SiReError("It makes no sense to insert pauses at commas when you already have the pauses from the alignment!")
+  
   #Check if this is well-formed
   if args.pron_reduced:
     if args.intype != "txt":

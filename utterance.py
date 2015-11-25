@@ -80,7 +80,12 @@ class Utterance(object):
     self.syllables = []
     self.words = []
     #We need to know which phoneme features this utterance is created with.
-    self.phoneme_features = args.dictionary.phoneme_feats
+    if hasattr(args, 'dictionary'):
+      self.phoneme_features = args.dictionary.phoneme_feats
+    elif hasattr(args, 'phoneme_features'):
+      self.phoneme_features = args.phoneme_features
+    else:
+      raise SiReError("args does not contain either a dictionary or a phoneme featureset!")
     s_utt_pos = 0
     p_utt_pos = 0
     
