@@ -412,7 +412,7 @@ def get_question_sets(context_skeleton, qformat, fit_contexts=False, contexts_to
     q_utt = make_questions(c_utt, qformat, False, HHEd_fix)
     return (qs, q_utt)
   else:
-    raise SiReError("Not Implemented yet! (Not fitting contexts for question set.)"
+    raise SiReError("Not Implemented yet! (Not fitting contexts for question set.)")
 
 #Returns a list of questions for the appropriate feature.
 #If generic is True outputs a generic set which may or may not cover your dataset.
