@@ -80,10 +80,10 @@ def write_out(pf, out, tf):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Perform a syntactic parsing of the text files using the Stanford parser. The output log of the stanford parser is subsequently loaded and split into individual parse files.')
   parser.add_argument('parserdir', type=str, help="The directory containing the parser to use.")
-  parser.add_argument('-txtdir', type=str, help="The directory containing the original txt files.", default="txt")
+  parser.add_argument('outpath', type=str, help="The output directory for the parsed sentences.")
+  parser.add_argument('txtdir', type=str, help="The directory containing the original txt files.")
+  parser.add_argument('tokenpath', type=str, help="The directory to output PTB tokenised sentences.")
   parser.add_argument('-parser_type', type=str, help="The type of parser to use. Currently only stanford is supported.", default="stanford", choices=["stanford"])
-  parser.add_argument('-outpath', type=str, help="The output directory.", default="parse")
-  parser.add_argument('-tokenpath', type=str, help="The directory to output PTB tokenised sentences.", default="tokenised")
   parser.add_argument('-javapath', type=str, help="Specify the path to the java executable. This is in case the default javapath is not correct or points to a wrong version of java.", default="java")
   parser.add_argument('-preparsed', action='store_true', help="Specify as true if the sentences have already been parsed and the outdir contains a parser.log file. Parsing is then skipped and the log file is split into seperate parse files.")
   parser.add_argument('-pretokenised', action='store_true', help="Specify as true if the sentences have already been tokenised and the output is present in tokenpath.")

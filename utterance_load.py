@@ -102,14 +102,14 @@ def proto_from_hts_lab(lab):
 #If pron_reduced is set this will attempt to produce a reduced pronunciation for parts of the sentence as specifiied by reduction_level and
 #the scores in reduction_score_file.
 #Reduction_level must be minimally 0 (full reduction) and maximally 1 (no reduction).
-def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=False, stanfordparse=False, pron_reduced=False, reduction_score_dir=None, reduction_level=1.0):
+def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=False, stanfordparse=False, parsedict=None, pron_reduced=False, reduction_score_dir=None, reduction_level=1.0):
   #Create words
   proto = {"utt":[]}
   proto["id"] = lab[0].split("/")[-1]
   #First we check if we need to reduce some words, and which
   if pron_reduced == True:
     if os.path.isdir(reduction_score_dir):
-      words = reduce_word_tuples(lab[1:], os.path.join(args.pron_reduced[1], proto["id"]+".scored"), reduction_level)
+      words = reduce_word_tuples(lab[1:], os.path.join(reduction_score_dir, proto["id"]+".scored"), reduction_level)
     else:
       raise SiReError("The directory with reduction scores does not exist!")
   else:
@@ -128,7 +128,7 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
         proto["utt"].append({"id":word[0], "syllables":[dictionary.get_single_entry(word[0], reduced=word[1])]})
   else: #Else a parse should exist and we can get the pos tags from that.
     tree = parsetrees.stanfordtree()
-    tree.make_tree(args.parsedict[proto["id"]])
+    tree.make_tree(parsedict[proto["id"]])
     
     #Do we need some punctuation?
     if comma_is_pause == True:

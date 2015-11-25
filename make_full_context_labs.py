@@ -81,10 +81,10 @@ def finalise_questions(qpath):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Create full context labels from a variety of input.')
   parser.add_argument('intype', type=str, help='The type of input.', choices=['align_mlf', 'hts_mlf', 'hts_lab', 'txt'])
+  parser.add_argument('labdir', type=str, help="The output lab dir.")
+  parser.add_argument('inpath', type=str, help='The input path. The path to the mlf if that is the input. A dir path if labs or txt as input.')
   parser.add_argument('-pron_reduced', type=str, nargs=2, help='Produce labels with a reduced pronunciation based on LM scores. REDUTCION_LEVEL should be a float between 1.0 (fully pronunced) and 0.0 (fully reduced).', metavar=('REDUCTION_LEVEL', 'LM_SCORE_DIR_PATH'))
-  parser.add_argument('-inpath', type=str, help='The input path. The path to the mlf if that is the input. A dir path if labs as input.', default=None)
-  parser.add_argument('-labdir', type=str, help="The output lab dir.", default="lab")
-  parser.add_argument('-txtdir', type=str, help="The directory containing the original txt files. If producing input from txt this is set to equal -inpath.", default="txt")
+  parser.add_argument('-txtdir', type=str, help="The directory containing the original txt files. If producing input from txt this is set to equal INPATH and does not need to be set.", default="txt")
   parser.add_argument('-combilexpath', type=str, help="The path to the combilex dictionary directory. It will look for two files - combilex.dict and combilex.add - and retrieve all entries from these.", default=None)
   parser.add_argument('-questions', action="store_true", help="Write out a question set fitting the input dataset.")
   parser.add_argument('-qpath', type=str, help="The directory to write the question set to.", default=os.path.join("questions", str(datetime.now())+".hed"))
@@ -118,6 +118,8 @@ if __name__ == "__main__":
       args.pron_reduced = True
     except ValueError:
       raise SiReError("REDUCTION_LEVEL must be a float value! Was {0}!".format(args.pron_reduced[0]))
+  else:
+    args.pron_reduced = False
   
   if args.stanfordparse:
     args.parsedict = read_stanford_parses(args.parsedir)

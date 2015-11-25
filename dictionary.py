@@ -98,7 +98,7 @@ class Dictionary(object):
   #and syllable boundary markers. 0 = no stress and 1 = stressed
   #Reduced = Is this a reduced form?
   def make_entry(self, pos, phonemisation, reduced=False):
-    phonetics = make_entry_phonetics(phonemisation)
+    phonetics = self.make_entry_phonetics(phonemisation)
     return [{"pos":pos, "reduced":reduced, "phonetics":phonetics}]
   
   def get_entries(self, word, punct_as_sil=None):

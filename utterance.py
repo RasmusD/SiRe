@@ -48,8 +48,7 @@ class Utterance(object):
       self.txtloaded = False
     elif args.intype == "txt":
       #Check if args has all the necessary elements and insert defaults if not.
-      if not hasattr(args, 'pron_reduced'):
-        print "Warning! args does not tell if we should do pronunciation reduction! Using default... (no reduction)"
+      if not hasattr(args, 'pron_reduced') or args.pron_reduced == False:
         args.pron_reduced = False
         args.reduction_score_dir = None
         args.reduction_level = 1.0
@@ -68,8 +67,9 @@ class Utterance(object):
       if not hasattr(args, 'stanfordparse'):
         print "Warning! args does not tell if we are using stanford parsing! Using default... (no)"
         args.stanfordparse = False
+        args.parsedict = False
       
-      proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanfordparse, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
+      proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanfordparse, args.parsedict, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
       self.txtloaded = True
     else:
       raise SiReError("Don't know what to do with intype - {0}".format(args.intype))
