@@ -67,8 +67,8 @@ class Utterance(object):
       if not hasattr(args, 'stanfordparse'):
         print "Warning! args does not tell if we are using stanford parsing! Using default... (no)"
         args.stanfordparse = False
+      if args.stanfordparse == False:
         args.parsedict = False
-      
       proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanfordparse, args.parsedict, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
       self.txtloaded = True
     else:

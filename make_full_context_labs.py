@@ -62,7 +62,7 @@ def write_questions(context_set, args):
   else:
     if args.context_type == "relational":
       qs, q_utt = contexts.get_question_sets(context_skeletons.Relational(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
-    elif args.context_type == "aboslute":
+    elif args.context_type == "absolute":
       qs, q_utt = contexts.get_question_sets(context_skeletons.Absolute(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
   for q in qs:
     args.qfile.write(q+"\n")
@@ -87,7 +87,7 @@ if __name__ == "__main__":
   parser.add_argument('-txtdir', type=str, help="The directory containing the original txt files. If producing input from txt this is set to equal INPATH and does not need to be set.", default="txt")
   parser.add_argument('-combilexpath', type=str, help="The path to the combilex dictionary directory. It will look for two files - combilex.dict and combilex.add - and retrieve all entries from these.", default=None)
   parser.add_argument('-questions', action="store_true", help="Write out a question set fitting the input dataset.")
-  parser.add_argument('-qpath', type=str, help="The directory to write the question set to.", default=os.path.join("questions", str(datetime.now())+".hed"))
+  parser.add_argument('-qpath', type=str, help="The path to write the question set to. Default is \"questions/DATETIMENOW.hed\".", default=os.path.join("questions", str(datetime.now())+".hed"))
   parser.add_argument('-target', type=str, help="The target type of the output labs and questions.", choices=['HMM', 'NN'], default='HMM')
   parser.add_argument('-stanfordparse', action="store_true", help="Add stanford parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
   parser.add_argument('-context_type', type=str, choices=['absolute', 'relational'], help="The type of positional contexts to add.", default='relational')
@@ -125,12 +125,14 @@ if __name__ == "__main__":
     args.parsedict = read_stanford_parses(args.parsedir)
   
   if args.intype == "txt":
+    if not os.path.isdir(args.inpath):
+      raise SiReError("Input path is not a directory! It must be when creating labs from text.")
     args.txtdir = args.inpath
     labs = io.load_txt_dir(args.txtdir, args.comma_is_pause)
     if args.combilexpath == None:
       raise SiReError("No path to combilex. Please use -combilexpath option.")
     elif not os.path.isdir(args.combilexpath):
-        raise SiReError("Combilex path is not valid. Please specify the dir in which the combilex.dict and .add files are.")
+        raise SiReError("Combilex path is not valid ({0}).\nPlease specify the dir in which the combilex.dict and .add files are.".format(args.combilexpath))
     args.dictionary = dictionary.Dictionary(args.combilexpath)
     #The phoneme set used must match the dictionary - currently pointless as only combilex is possible and this is hardcoded above. But here for the future.
     args.phoneme_features = args.dictionary.phoneme_feats
@@ -138,8 +140,8 @@ if __name__ == "__main__":
     labs = io.open_labdir_line_by_line(args.inpath)
     args.intype = "hts_mlf"
   else:
-    if args.inpath == None:
-      raise SiReError("Input is mlf type but no mlf path has been set! Please use -inpath option.")
+    if not os.path.exists(args.inpath):
+      raise SiReError("Input path to mlf does no exist!")
     mlf = open(args.inpath, "r").readlines()
     labs = io.parse_mlf(mlf, args.intype)
   
