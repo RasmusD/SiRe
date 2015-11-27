@@ -126,7 +126,7 @@ class Dictionary(object):
         return self.make_entry("nnp", " ".join(w_phon))
       elif punct_as_sil and word in punct_as_sil[0]:
         if punct_as_sil[1] in self.phoneme_feats.get_sil_phonemes():
-          return self.make_entry(punct_as_sil[1], "0 "+punct_as_sil[1])
+          return self.make_entry(punct_as_sil[1], punct_as_sil[1]+" 0")
         else:
           raise SiReError("Cannot add punctuation {0} as silence as sil phoneme specified ({1}) is not valid! Must be in {3}.".format(word, punct_as_sil[1], phoneme_feats.get_sil_phonemes()))
       else:

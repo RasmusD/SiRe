@@ -61,6 +61,7 @@ then
 fi
 COMBILEXPATH=/work/rasmus/SiRe/combilex
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -context_type absolute
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -questions -qpath outputs/questions/test -combilexpath $COMBILEXPATH
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -questions -qpath outputs/questions/test -combilexpath $COMBILEXPATH -context_type absolute
