@@ -1,0 +1,8 @@
+nsubj(have-4, Dan-1)
+aux(have-4, did-2)
+neg(have-4, n't-3)
+root(ROOT-0, have-4)
+poss(PhD-6, his-5)
+nsubj(confirmed-7, PhD-6)
+ccomp(have-4, confirmed-7)
+

@@ -1,0 +1,12 @@
+nsubj(be-3, Mine-1)
+aux(be-3, would-2)
+root(ROOT-0, be-3)
+mark(doing-8, if-4)
+nsubj(doing-8, I-5)
+aux(doing-8, was-6)
+neg(doing-8, n't-7)
+advcl(be-3, doing-8)
+iobj(doing-8, it-9)
+nn(time-11, part-10)
+dobj(doing-8, time-11)
+

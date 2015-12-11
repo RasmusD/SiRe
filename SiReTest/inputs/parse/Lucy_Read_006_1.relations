@@ -1,0 +1,9 @@
+root(ROOT-0, Learning-1)
+advmod(good-6, how-2)
+aux(good-6, to-3)
+cop(good-6, be-4)
+advmod(good-6, really-5)
+ccomp(Learning-1, good-6)
+prep(good-6, at-7)
+pobj(at-7, Go-8)
+

@@ -1,0 +1,8 @@
+cc(lived-5, But-1)
+nsubj(lived-5, I-2)
+aux(lived-5, 've-3)
+advmod(lived-5, always-4)
+root(ROOT-0, lived-5)
+prep(lived-5, in-6)
+pobj(in-6, Newington-7)
+

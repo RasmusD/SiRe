@@ -1,0 +1,12 @@
+nsubj(think-2, I-1)
+root(ROOT-0, think-2)
+nsubj(confident-8, I-3)
+cop(confident-8, 'm-4)
+neg(confident-8, not-5)
+advmod(confident-8, really-6)
+advmod(confident-8, that-7)
+ccomp(think-2, confident-8)
+prep(confident-8, with-9)
+pobj(with-9, it-10)
+advmod(confident-8, yet-11)
+

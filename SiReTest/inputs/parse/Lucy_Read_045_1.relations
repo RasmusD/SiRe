@@ -1,0 +1,6 @@
+root(ROOT-0, Felt-1)
+advmod(comfortable-3, pretty-2)
+acomp(Felt-1, comfortable-3)
+prep(comfortable-3, with-4)
+pobj(with-4, that-5)
+

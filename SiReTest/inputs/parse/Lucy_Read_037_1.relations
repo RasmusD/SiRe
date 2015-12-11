@@ -1,0 +1,12 @@
+nsubj(is-2, It-1)
+root(ROOT-0, is-2)
+prep(is-2, like-3)
+pobj(like-3, right-4)
+dep(to-6, next-5)
+prep(right-4, to-6)
+det(Building-10, the-7)
+nn(Building-10, Dugald-8)
+nn(Building-10, Stewart-9)
+pobj(to-6, Building-10)
+advmod(is-2, basically-11)
+

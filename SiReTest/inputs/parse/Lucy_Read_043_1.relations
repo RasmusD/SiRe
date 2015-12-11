@@ -1,0 +1,6 @@
+advmod(heavily-3, Really-1)
+advmod(heavily-3, really-2)
+advmod(based-5, heavily-3)
+nsubj(based-5, exam-4)
+root(ROOT-0, based-5)
+

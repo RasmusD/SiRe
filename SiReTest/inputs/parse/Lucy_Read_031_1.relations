@@ -1,0 +1,11 @@
+cc(likely-5, But-1)
+nsubj(likely-5, you-2)
+cop(likely-5, 're-3)
+advmod(likely-5, more-4)
+root(ROOT-0, likely-5)
+aux(year-10, to-6)
+cop(year-10, be-7)
+advmod(year-10, here-8)
+det(year-10, this-9)
+xcomp(likely-5, year-10)
+

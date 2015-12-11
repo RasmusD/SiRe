@@ -1,0 +1,8 @@
+cc(is-4, And-1)
+det(Underbelly-3, the-2)
+nsubj(is-4, Underbelly-3)
+root(ROOT-0, is-4)
+prep(is-4, on-5)
+pobj(on-5, Cowgate-6)
+advmod(is-4, right-7)
+

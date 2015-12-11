@@ -109,11 +109,19 @@ class Utterance(object):
       word.add_phonemes()
       word.add_syllables()
     
-    #If we should use the stanford parse info
-    if args.stanfordparse:
+    #If we should use the stanford pcfg parse info
+    if args.stanford_pcfg_parse:
+      print "Loading stanford pcfg parse info to utt..."
       if args.intype != "txt":
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
-      utterance_load.load_stanford_parse(self, args.parsedict[self.id], args.comma_is_pause)
+      utterance_load.load_stanford_pcfg_parse(self, args.pcfgdict[self.id], args.comma_is_pause)
+    
+    #If we should use the stanford dependency parse info
+    if args.stanford_dependency_parse:
+      print "Loading stanford dependency parse info to utt..."
+      if args.intype != "txt":
+        utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
+      utterance_load.load_stanford_dependency_parse(self, args.dependencydict[self.id])
     
 #    #Replacing UH - test!
 #    if not self.txtloaded:

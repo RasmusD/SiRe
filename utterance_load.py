@@ -127,7 +127,7 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
       else:
         proto["utt"].append({"id":word[0], "syllables":[dictionary.get_single_entry(word[0], reduced=word[1])]})
   else: #Else a parse should exist and we can get the pos tags from that.
-    tree = parsetrees.stanfordtree()
+    tree = parsetrees.stanfordPcfgTree()
     tree.make_tree(parsedict[proto["id"]])
     
     #Do we need some punctuation?
@@ -177,11 +177,11 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
       word["syllables"].append(c_syll)
   return proto
 
-#Add parse information from a stanford parsed sentence
-def load_stanford_parse(utt, parse, comma_is_pause=False):
+#Add parse information from a stanford pcfg parsed sentence
+def load_stanford_pcfg_parse(utt, parse, comma_is_pause=False):
   if utt.words == None:
-    raise SiReError("No words in utterance! Please load an mlf or txt (not implemented yet) file first!")
-  tree = parsetrees.stanfordtree()
+    raise SiReError("No words in utterance! Please load an mlf or txt file first!")
+  tree = parsetrees.stanfordPcfgTree()
   tree.make_tree(parse)
   if comma_is_pause == True:
     leafs = tree.get_leafs(include_punct=[","])
@@ -209,21 +209,64 @@ def load_stanford_parse(utt, parse, comma_is_pause=False):
     if word.parent_phrase.parent != None:
       word.grandparent_phrase = word.parent_phrase.parent
     else:
-      word.grandparent_phrase = parsetrees.get_fake_stanford_parse()
+      word.grandparent_phrase = parsetrees.get_fake_stanford_pcfg_parse()
     #And certainly we might be done here
     if word.grandparent_phrase.parent in [None, "xx"] or word.grandparent_phrase.parent.label == "xx":
-      word.greatgrandparent_phrase = parsetrees.get_fake_stanford_parse()
+      word.greatgrandparent_phrase = parsetrees.get_fake_stanford_pcfg_parse()
     else:
       word.greatgrandparent_phrase = word.grandparent_phrase.parent
   
   #Now add fake parse for sil, pau and #
   for word in utt.words:
     if word.id in utt.phoneme_features.get_sil_phonemes():
-      word.parent_phrase = parsetrees.get_fake_stanford_parse()
-      word.grandparent_phrase = parsetrees.get_fake_stanford_parse()
-      word.greatgrandparent_phrase = parsetrees.get_fake_stanford_parse()
+      word.parent_phrase = parsetrees.get_fake_stanford_pcfg_parse()
+      word.grandparent_phrase = parsetrees.get_fake_stanford_pcfg_parse()
+      word.greatgrandparent_phrase = parsetrees.get_fake_stanford_pcfg_parse()
       word.pos = "sil"
 
+#Add parse information from a stanford dependency parse
+def load_stanford_dependency_parse(utt, parse):
+  if utt.words == None:
+    raise SiReError("No words in utterance! Please load an mlf or txt file first!")
+  tree = parsetrees.stanfordDependencyTree()
+  tree.make_tree(parse)
+  #As each word is at a node not at a leaf we get the nodes.
+  nodes = tree.get_nodes(utt_sorted=True)
+  if len(nodes) != utt.num_words_no_pau():
+    #First we try to see if this is due to differences in how words are
+    #dealt with in parsing and annotation. 
+    #Prime example is using 's in e.g. there's for transcription instead of there is.
+    #Parsing splits there's into two whereas in e.g. combilex there's is one word.
+    #If this is the case we split the WORD into two with the 's being a single phoneme
+    #single syllable word. In other cases the contraction straddles two words and
+    #we add a "phony" word which affects contexts but adds no phonemes.
+    utterance_utils.try_split_words(utt)
+    if len(nodes) != utt.num_words_no_pau():
+      for node in nodes:
+        print node.label
+      raise SiReError("Number of nodes ({0}) not equal to number of words ({1})! In utt ({2})!".format(len(nodes), utt.num_words_no_pau(), utt.id))
+  #Match each word with parse
+  for i, word in enumerate(utt.get_words_no_pau()):
+    #As we may have split words the parse contains the id
+    word.id = nodes[i].label
+    #But as we may have punctuation the word itself contains the utt_pos
+    nodes[i].utt_pos = word.pos_in_utt()
+    #There should always be itself
+    word.parent_dependency = nodes[i]
+    #And there should always be a parent
+    word.grandparent_dependency = word.parent_dependency.parent
+    #But there might not be more than one
+    if word.grandparent_dependency.parent != None:
+      word.greatgrandparent_dependency = word.grandparent_dependency.parent
+    else:
+      word.greatgrandparent_dependency = parsetrees.stanfordDependencyTree()
+  
+  #Now add empty parse for sil, pau and #
+  for word in utt.words:
+    if word.id in utt.phoneme_features.get_sil_phonemes():
+      word.parent_dependency = parsetrees.stanfordDependencyTree()
+      word.grandparent_dependency = parsetrees.stanfordDependencyTree()
+      word.greatgrandparent_dependency = parsetrees.stanfordDependencyTree()
 
 #Get word ids from text.
 def load_txt(utt, txtpath):

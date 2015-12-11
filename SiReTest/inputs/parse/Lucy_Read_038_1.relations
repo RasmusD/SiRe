@@ -1,0 +1,10 @@
+root(ROOT-0, For-1)
+det(students-3, the-2)
+pobj(For-1, students-3)
+mark(studying-8, because-4)
+nsubj(studying-8, they-5)
+aux(studying-8, 're-6)
+neg(studying-8, not-7)
+dep(students-3, studying-8)
+advmod(studying-8, anyway-9)
+

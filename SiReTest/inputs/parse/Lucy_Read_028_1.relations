@@ -1,0 +1,6 @@
+poss(halls-2, My-1)
+nsubj(finished-3, halls-2)
+root(ROOT-0, finished-3)
+prep(finished-3, in-4)
+pobj(in-4, June-5)
+

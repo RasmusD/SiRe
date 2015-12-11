@@ -160,7 +160,10 @@ class Base(object):
       if key in ["start", "end"]:
         continue
       if "float" in getattr(self, key):
-        s += "|"+key+":"+context_utils.strintify(float(self.added_contexts[key]))
+        if self.added_contexts[key] == "xx" and "xx" in getattr(self, key):
+          s += "|"+key+":"+str(self.added_contexts[key])
+        else:
+          s += "|"+key+":"+context_utils.strintify(float(self.added_contexts[key]))
       else:
         s += "|"+key+":"+str(self.added_contexts[key])
     if HHEd_fix == True:
@@ -219,10 +222,10 @@ class Relational(Base):
     #Backward pos in utt
     self.wbwup = "float"
 
-class RelationalStanford(Relational):
+class RelationalStanfordPcfg(Relational):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
   def __init__(self, phoneme_features):
-    super(RelationalStanford, self).__init__(phoneme_features)
+    super(RelationalStanfordPcfg, self).__init__(phoneme_features)
     ###### Stanford Parse Information ######
     #Part of speech
     self.lwpos = "bool"
@@ -250,11 +253,11 @@ class RelationalStanford(Relational):
     #Backward
     self.wbwrggppp = "float"
 
-class AbsoluteStanford(Absolute):
+class AbsoluteStanfordPcfg(Absolute):
   """The standard context feature set using absolute values instead of relational."""
   def __init__(self, phoneme_features):
     #Initiate the absolute class
-    super(AbsoluteStanford, self).__init__(phoneme_features)
+    super(AbsoluteStanfordPcfg, self).__init__(phoneme_features)
     ###### Stanford Parse Information ######
     #Part of speech
     self.lwpos = "bool"
@@ -281,3 +284,41 @@ class AbsoluteStanford(Absolute):
     self.wfwrggppp = "int0xx"
     #Backward
     self.wbwrggppp = "int0xx"
+
+
+class AbsoluteStanfordDependency(Absolute):
+  """The standard context feature set using absolute values instead of relational."""
+  def __init__(self, phoneme_features):
+    #Initiate the absolute class
+    super(AbsoluteStanfordDependency, self).__init__(phoneme_features)
+    ###### Stanford Dependency Parse Information ######
+    #Word parent dependency relation
+    self.wpdr = "bool"
+    #Word parent to grandparent relation
+    self.wgpdr = "bool"
+    #Word grandparent to greatgrandparent relation
+    self.wggpdr = "bool"
+    #Word absolute distance to parent relation
+    self.wdpr = "intxx"
+    #Word absolute distance to grandparent relation
+    self.wdgpr = "intxx"
+    #Word absolute position in greatgrandparent phrase
+    self.wdggpr = "intxx"
+
+class RelationalStanfordDependency(Relational):
+  """An extension of the relational base set including information from a stanford parsing of the sentence."""
+  def __init__(self, phoneme_features):
+    super(RelationalStanfordDependency, self).__init__(phoneme_features)
+    ###### Stanford Dependency Parse Information ######
+    #Word parent dependency relation
+    self.wpdr = "bool"
+    #Word parent to grandparent relation
+    self.wgpdr = "bool"
+    #Word grandparent to greatgrandparent relation
+    self.wggpdr = "bool"
+    #Word relational distance to parent relation
+    self.wdpr = "floatxx"
+    #Word relational distance to grandparent relation
+    self.wdgpr = "floatxx"
+    #Word relational position in greatgrandparent phrase
+    self.wdggpr = "floatxx"

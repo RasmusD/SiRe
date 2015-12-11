@@ -1,0 +1,7 @@
+expl('s-2, There-1)
+root(ROOT-0, 's-2)
+advmod('s-2, always-3)
+nsubj(do-6, things-4)
+aux(do-6, to-5)
+ccomp('s-2, do-6)
+

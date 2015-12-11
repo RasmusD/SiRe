@@ -1,0 +1,9 @@
+nsubj(seem-4, It-1)
+aux(seem-4, does-2)
+neg(seem-4, n't-3)
+root(ROOT-0, seem-4)
+aux(make-6, to-5)
+xcomp(seem-4, make-6)
+amod(sense-8, much-7)
+dobj(make-6, sense-8)
+

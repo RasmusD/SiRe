@@ -1,0 +1,12 @@
+nsubj(come-4, I-1)
+aux(come-4, do-2)
+neg(come-4, n't-3)
+root(ROOT-0, come-4)
+prep(come-4, from-5)
+det(family-9, a-6)
+advmod(sporty-8, very-7)
+amod(family-9, sporty-8)
+pobj(from-5, family-9)
+prep(come-4, at-10)
+pobj(at-10, all-11)
+

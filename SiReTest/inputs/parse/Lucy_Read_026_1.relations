@@ -1,0 +1,11 @@
+prep(is-8, In-1)
+poss(time-3, my-2)
+pobj(In-1, time-3)
+prep(time-3, in-4)
+pobj(in-4, Edinburgh-5)
+nsubj(is-8, which-7)
+root(ROOT-0, is-8)
+det(bit-10, a-9)
+nsubj(ridiculous-11, bit-10)
+xcomp(is-8, ridiculous-11)
+

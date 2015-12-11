@@ -1,0 +1,7 @@
+cc(big-6, But-1)
+nsubj(big-6, it-2)
+cop(big-6, 's-3)
+neg(big-6, not-4)
+advmod(big-6, overwhelmingly-5)
+root(ROOT-0, big-6)
+

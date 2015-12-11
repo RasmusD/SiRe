@@ -1,0 +1,8 @@
+cc(claim-2, Or-1)
+root(ROOT-0, claim-2)
+aux(have-4, to-3)
+xcomp(claim-2, have-4)
+dobj(have-4, claims-5)
+prep(have-4, over-6)
+pobj(over-6, it-7)
+

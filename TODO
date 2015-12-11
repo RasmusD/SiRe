@@ -20,6 +20,7 @@ Need to add:
 - SiReExcercise should excercise parsed versions of SiRe too.
 
 Should be added:
+- When splitting n't words should put the n with the t and not split those.
 - Accent prediction seems useful.
 - Consider not passing args many places but instead specific needed args. This should be done! (It involves many more checks many places but it is probably better than relying on remembering to add these things for different things that need an utt from text.)
 - Currently a warning is written if a context from a skeleton is not used. Should have option to fail.
@@ -28,6 +29,7 @@ Should be added:
 - Reverse engineer the PBT tokenisation of the Stanford parser. Will avoid the hack of merging and splitting.
 - Option to use different silence phoneme for midsentential silence than sentence boundary silence.
 - Files in combilex dir should not be prespecified as combilex.dict and .add
+- Leafs should be renamed leaves
 
 Consider To Add/Change:
 - The dictionary should store its entries differently, probably as a dict containing a list of syllables which is a tuple of phonemes and stress value

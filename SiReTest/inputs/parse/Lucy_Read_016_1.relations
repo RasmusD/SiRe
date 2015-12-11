@@ -1,0 +1,10 @@
+nsubj(kind-3, They-1)
+cop(kind-3, are-2)
+root(ROOT-0, kind-3)
+prep(kind-3, of-4)
+pcomp(of-4, growing-5)
+prep(growing-5, in-6)
+pobj(in-6, popularity-7)
+nsubj(think-9, I-8)
+rcmod(kind-3, think-9)
+

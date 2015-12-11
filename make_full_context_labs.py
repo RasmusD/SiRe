@@ -18,12 +18,18 @@ import argparse, os, utterance, contexts, copy, context_skeletons, utterance_loa
 from datetime import datetime
 from error_messages import SiReError
 
-def read_stanford_parses(dirpath):
-  files = [[x, open(os.path.join(dirpath, x), "r").read()] for x in os.listdir(dirpath) if ".parse" in x]
+def read_stanford_pcfg_parses(dirpath):
   pdct = {}
   for f in os.listdir(dirpath):
     if ".parse" in f:
       pdct[f[:-6]] = open(os.path.join(dirpath, f), "r").read().strip()
+  return pdct
+
+def read_stanford_dependency_parses(dirpath):
+  pdct = {}
+  for f in os.listdir(dirpath):
+    if ".relations" in f:
+      pdct[f.split(".rel")[0]] = io.open_file_line_by_line(os.path.join(dirpath, f))
   return pdct
 
 #Writes out a label context.
@@ -34,11 +40,16 @@ def write_context_utt(utt, args):
   if args.questions == True:
     cs = []
   for phone in utt.phonemes:
-    if args.stanfordparse == True:
+    if args.stanford_pcfg_parse == True:
       if args.context_type == "relational":
-        context = contexts.RelationalStanford(phone)
+        context = contexts.RelationalStanfordPcfg(phone)
       elif args.context_type == "absolute":
-        context = contexts.AbsoluteStanford(phone)
+        context = contexts.AbsoluteStanfordPcfg(phone)
+    elif args.stanford_dependency_parse == True:
+      if args.context_type == "relational":
+        context = contexts.RelationalStanfordDependency(phone)
+      elif args.context_type == "absolute":
+        context = contexts.AbsoluteStanfordDependency(phone)
     else:
       if args.context_type == "relational":
         context = contexts.Relational(phone)
@@ -54,11 +65,16 @@ def write_context_utt(utt, args):
     write_questions(cs, args)
 
 def write_questions(context_set, args):
-  if args.stanfordparse == True:
+  if args.stanford_pcfg_parse == True:
     if args.context_type == "relational":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanford(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordPcfg(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanford(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordPcfg(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+  elif args.stanford_dependency_parse == True:
+    if args.context_type == "relational":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordDependency(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+    elif args.context_type == "absolute":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordDependency(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
   else:
     if args.context_type == "relational":
       qs, q_utt = contexts.get_question_sets(context_skeletons.Relational(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
@@ -89,7 +105,8 @@ if __name__ == "__main__":
   parser.add_argument('-questions', action="store_true", help="Write out a question set fitting the input dataset.")
   parser.add_argument('-qpath', type=str, help="The path to write the question set to. Default is \"questions/DATETIMENOW.hed\".", default=os.path.join("questions", str(datetime.now())+".hed"))
   parser.add_argument('-target', type=str, help="The target type of the output labs and questions.", choices=['HMM', 'NN'], default='HMM')
-  parser.add_argument('-stanfordparse', action="store_true", help="Add stanford parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
+  parser.add_argument('-stanford_pcfg_parse', action="store_true", help="Add stanford pcfg parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
+  parser.add_argument('-stanford_dependency_parse', action="store_true", help="Add stanford dependency parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
   parser.add_argument('-context_type', type=str, choices=['absolute', 'relational'], help="The type of positional contexts to add.", default='relational')
   parser.add_argument('-parsedir', type=str, help="The path to the parses.", default="parse")
   parser.add_argument('-HHEd_fix', action="store_true", help="Applies a fix to the contexts around the current phoneme to be compatible with hardcoded delimiters in HHEd.")
@@ -121,8 +138,11 @@ if __name__ == "__main__":
   else:
     args.pron_reduced = False
   
-  if args.stanfordparse:
-    args.parsedict = read_stanford_parses(args.parsedir)
+  if args.stanford_pcfg_parse:
+    args.pcfgdict = read_stanford_pcfg_parses(args.parsedir)
+  
+  if args.stanford_dependency_parse:
+    args.dependencydict = read_stanford_dependency_parses(args.parsedir)
   
   if args.intype == "txt":
     if not os.path.isdir(args.inpath):

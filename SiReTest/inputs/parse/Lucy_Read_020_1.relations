@@ -1,0 +1,9 @@
+advmod('s-3, So-1)
+nsubj('s-3, it-2)
+ccomp(bad-9, 's-3)
+nsubj(bad-9, it-5)
+cop(bad-9, 's-6)
+neg(bad-9, not-7)
+advmod(bad-9, too-8)
+root(ROOT-0, bad-9)
+

@@ -28,11 +28,18 @@ def Relational(phoneme):
   add_relational(c, phoneme)
   return c
 
-def RelationalStanford(phoneme):
+def RelationalStanfordPcfg(phoneme):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
-  c = context_skeletons.RelationalStanford(phoneme.parent_utt.phoneme_features)
+  c = context_skeletons.RelationalStanfordPcfg(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
-  add_relational_stanford(c, phoneme)
+  add_relational_stanford_pcfg(c, phoneme)
+  return c
+
+def RelationalStanfordDependency(phoneme):
+  """An extension of the relational base set including information from a stanford parsing of the sentence."""
+  c = context_skeletons.RelationalStanfordDependency(phoneme.parent_utt.phoneme_features)
+  add_relational(c, phoneme)
+  add_relational_stanford_dependency(c, phoneme)
   return c
 
 def Absolute(phoneme):
@@ -41,13 +48,19 @@ def Absolute(phoneme):
   add_absolute(c, phoneme)
   return c
 
-def AbsoluteStanford(phoneme):
-  """Creates an absolute context string of the given phoneme."""
-  c = context_skeletons.AbsoluteStanford(phoneme.parent_utt.phoneme_features)
+def AbsoluteStanfordPcfg(phoneme):
+  """Creates an absolute context string of the given phoneme including information from a stanford parse."""
+  c = context_skeletons.AbsoluteStanfordPcfg(phoneme.parent_utt.phoneme_features)
   add_absolute(c, phoneme)
-  add_absolute_stanford(c, phoneme)
+  add_absolute_stanford_pcfg(c, phoneme)
   return c
 
+def AbsoluteStanfordDependency(phoneme):
+  """Creates an absolute context string of the given phoneme including information from a stanford parse."""
+  c = context_skeletons.AbsoluteStanfordDependency(phoneme.parent_utt.phoneme_features)
+  add_absolute(c, phoneme)
+  add_absolute_stanford_dependency(c, phoneme)
+  return c
 
 def add_basic(context_skeleton, phoneme):
   """Adds the basic context set to a context skeleton. What is considered basic is currently what overlaps between relational and absolute. If the skeleton does not support the set this will fail."""
@@ -310,7 +323,7 @@ def add_absolute(context_skeleton, phoneme):
   #Word forward pos in utterance
   c.add("wbwup", str(u_n_w - word.pos_in_utt()))
 
-def add_basic_stanford(context_skeleton, phoneme):
+def add_basic_stanford_pcfg(context_skeleton, phoneme):
   """Adds the basic elements of stanford parse information to a phoneme context."""
   c = context_skeleton
   ###### Stanford Parse Information ######
@@ -342,11 +355,11 @@ def add_basic_stanford(context_skeleton, phoneme):
   #Word greatgrandparent phrase
   c.add("wggpp", w.greatgrandparent_phrase.label)
 
-def add_relational_stanford(context_skeleton, phoneme):
+def add_relational_stanford_pcfg(context_skeleton, phoneme):
   """Adds the relational elements of stanford parse information to a phoneme context."""
   c = context_skeleton
   #Add basic info
-  add_basic_stanford(c, phoneme)
+  add_basic_stanford_pcfg(c, phoneme)
   #Word
   w = phoneme.parent_word
   #Word relational position in parent phrase
@@ -359,11 +372,11 @@ def add_relational_stanford(context_skeleton, phoneme):
   c.add("wfwrggppp", str(to_relational(w.greatgrandparent_phrase.pos_in_parent, w.greatgrandparent_phrase.num_siblings, True, True)))
   c.add("wbwrggppp", str(to_relational(w.greatgrandparent_phrase.pos_in_parent, w.greatgrandparent_phrase.num_siblings, False, True)))
 
-def add_absolute_stanford(context_skeleton, phoneme):
+def add_absolute_stanford_pcfg(context_skeleton, phoneme):
   """Adds the absolute elements of stanford parse information to a phoneme context."""
   c = context_skeleton
   #Add basic info
-  add_basic_stanford(c, phoneme)
+  add_basic_stanford_pcfg(c, phoneme)
   #Word
   w = phoneme.parent_word
   #Word absolute position in parent phrase
@@ -385,6 +398,90 @@ def add_absolute_stanford(context_skeleton, phoneme):
     c.add("wbwrggppp", str(w.greatgrandparent_phrase.num_siblings))
   else:
     c.add("wbwrggppp", str(w.greatgrandparent_phrase.num_siblings - 1 - w.greatgrandparent_phrase.pos_in_parent))
+
+
+def add_basic_stanford_dependency(context_skeleton, phoneme):
+  """Adds the basic elements of stanford dependency parse information to a phoneme context."""
+  c = context_skeleton
+  #Word
+  w = phoneme.parent_word
+  ###### Stanford Dependency Parse Information ######
+  #Word parent dependency relation
+  if w.parent_dependency.parent_relation != None:
+    c.add("wpdr", w.parent_dependency.parent_relation)
+  else:
+    c.add("wpdr", "xx")
+  #Word parent to grandparent relation
+  if w.grandparent_dependency.parent_relation != None:
+    c.add("wgpdr", w.grandparent_dependency.parent_relation)
+  else:
+    c.add("wgpdr", "xx")
+  #Word grandparent to greatgrandparent relation
+  if w.greatgrandparent_dependency.parent_relation != None:
+    c.add("wggpdr", w.greatgrandparent_dependency.parent_relation)
+  else:
+    c.add("wggpdr", "xx")
+
+def add_absolute_stanford_dependency(context_skeleton, phoneme):
+  """Adds the absolute elements of stanford parse information to a phoneme context."""
+  c = context_skeleton
+  #Word
+  w = phoneme.parent_word
+  ###### Stanford Dependency Parse Information ######
+  add_basic_stanford_dependency(c, phoneme)
+  #Word absolute distance to parent relation
+  dep_pos = w.parent_dependency.utt_pos
+  if w.parent_dependency.parent != None and w.parent_dependency.parent.label != "ROOT":
+    p_dep_pos = w.parent_dependency.parent.utt_pos
+    c.add("wdpr", str(abs(dep_pos-p_dep_pos)))
+  else:
+    c.add("wdpr", "xx")
+  #Word absolute distance to grandparent relation
+  if w.grandparent_dependency.parent != None and w.grandparent_dependency.parent.label != "ROOT":
+    p_dep_pos = w.grandparent_dependency.parent.utt_pos
+    c.add("wdgpr", str(abs(dep_pos-p_dep_pos)))
+  else:
+    c.add("wdgpr", "xx")
+  #Word absolute position in greatgrandparent phrase
+  if w.greatgrandparent_dependency.parent != None and w.greatgrandparent_dependency.parent.label != "ROOT":
+    p_dep_pos = w.greatgrandparent_dependency.parent.utt_pos
+    c.add("wdggpr", str(abs(dep_pos-p_dep_pos)))
+  else:
+    c.add("wdggpr", "xx")
+
+def add_relational_stanford_dependency(context_skeleton, phoneme):
+  """Adds the relational elements of stanford parse information to a phoneme context."""
+  c = context_skeleton
+  #Word
+  w = phoneme.parent_word
+  ###### Stanford Dependency Parse Information ######
+  add_basic_stanford_dependency(c, phoneme)
+  #Word relational distance to parent relation
+  #We subtract 1 because label pos and num phonemes start from 1 but to_relational starts from 0
+  #If the current phoneme is sil/pau etc. the label is None and we can just add "xx" all through
+  if w.parent_dependency.label == None and phoneme.id in phoneme.parent_utt.phoneme_features.get_sil_phonemes():
+    c.add("wdpr", "xx")
+    c.add("wdgpr", "xx")
+    c.add("wdggpr", "xx")
+    return
+  dep_pos = to_relational(w.parent_dependency.utt_pos-1, w.parent_utt.num_words()-1, True)
+  if w.parent_dependency.parent != None and w.parent_dependency.parent.label != "ROOT":
+    p_dep_pos = to_relational(w.parent_dependency.parent.utt_pos-1, w.parent_utt.num_words()-1, True)
+    c.add("wdpr", str(abs(dep_pos-p_dep_pos)))
+  else:
+    c.add("wdpr", "xx")
+  #Word relational distance to grandparent relation
+  if w.grandparent_dependency.parent != None and w.grandparent_dependency.parent.label != "ROOT":
+    p_dep_pos = to_relational(w.grandparent_dependency.parent.utt_pos-1, w.parent_utt.num_words()-1, True)
+    c.add("wdgpr", str(abs(dep_pos-p_dep_pos)))
+  else:
+    c.add("wdgpr", "xx")
+  #Word relational position in greatgrandparent phrase
+  if w.greatgrandparent_dependency.parent != None and w.greatgrandparent_dependency.parent.label != "ROOT":
+    p_dep_pos = to_relational(w.greatgrandparent_dependency.parent.utt_pos-1, w.parent_utt.num_words()-1, True)
+    c.add("wdggpr", str(abs(dep_pos-p_dep_pos)))
+  else:
+    c.add("wdggpr", "xx")
 
 #Returns a question set and a GV/utt question set.
 #context_skeleton = The type of question set to output.
@@ -466,7 +563,7 @@ def make_questions(context_skeleton, qformat, generic=True, HHEd_fix=False):
               if val == "xx":
                 questions.append("LQ 1 0.0 \""+key+"-xx\" {*|"+key+":xx|*}")
               else:
-                questions.append("LQ 1 "+strfloatify(val)+" \""+key+"-"+str(val)+"\" {*|"+key+":"+str(val)+"|*}")
+                questions.append("LQ 1 "+strfloatify(int(val))+" \""+key+"-"+str(val)+"\" {*|"+key+":"+str(val)+"|*}")
       else:
         raise SiReError("Odd question type, should not exist - {0}".format(qtype))
   else:

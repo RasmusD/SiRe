@@ -1,0 +1,6 @@
+advmod(sounds-3, Yeah-1)
+nsubj(sounds-3, that-2)
+root(ROOT-0, sounds-3)
+advmod(similar-5, pretty-4)
+acomp(sounds-3, similar-5)
+

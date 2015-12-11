@@ -1,0 +1,9 @@
+cc(require-5, And-1)
+nsubj(require-5, they-2)
+aux(require-5, do-3)
+neg(require-5, n't-4)
+root(ROOT-0, require-5)
+amod(experience-8, previous-6)
+nn(experience-8, computing-7)
+dobj(require-5, experience-8)
+

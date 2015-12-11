@@ -1,0 +1,11 @@
+advmod(learning-5, Sometimes-1)
+nsubj(learning-5, it-2)
+aux(learning-5, 's-3)
+advmod(learning-5, just-4)
+root(ROOT-0, learning-5)
+advmod(approach-8, how-6)
+aux(approach-8, to-7)
+ccomp(learning-5, approach-8)
+det(problem-10, the-9)
+dobj(approach-8, problem-10)
+

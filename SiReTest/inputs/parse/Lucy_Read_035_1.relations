@@ -1,0 +1,13 @@
+neg(gon-5, Not-1)
+advmod(gon-5, sure-2)
+nsubj(gon-5, I-3)
+aux(gon-5, 'm-4)
+root(ROOT-0, gon-5)
+aux(get-7, na-6)
+xcomp(gon-5, get-7)
+det(sleep-9, any-8)
+dobj(get-7, sleep-9)
+prep(sleep-9, in-10)
+pobj(in-10, August-11)
+advmod(sleep-9, but-13)
+

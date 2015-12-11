@@ -1,0 +1,10 @@
+nsubj(like-3, I-1)
+advmod(like-3, quite-2)
+root(ROOT-0, like-3)
+xcomp(like-3, visiting-4)
+dobj(visiting-4, places-5)
+prep(places-5, like-6)
+pobj(like-6, London-7)
+cc(London-7, and-8)
+conj(London-7, Manchester-9)
+

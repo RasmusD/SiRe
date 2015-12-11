@@ -1,0 +1,7 @@
+aux(take-3, Did-1)
+nsubj(take-3, you-2)
+root(ROOT-0, take-3)
+det(course-5, that-4)
+dobj(take-3, course-5)
+advmod(take-3, or-6)
+

@@ -1,0 +1,10 @@
+nsubj(worked-3, Never-1)
+advmod(worked-3, really-2)
+root(ROOT-0, worked-3)
+advmod(hard-5, very-4)
+advmod(worked-3, hard-5)
+prep(worked-3, in-6)
+poss(degree-9, his-7)
+amod(degree-9, maths-8)
+pobj(in-6, degree-9)
+

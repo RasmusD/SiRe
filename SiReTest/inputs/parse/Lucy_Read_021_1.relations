@@ -1,0 +1,9 @@
+root(ROOT-0, Think-1)
+prep(Think-1, for-2)
+pcomp(for-2, now-3)
+nsubj(works-5, it-4)
+ccomp(Think-1, works-5)
+prt(works-5, out-6)
+advmod(well-8, quite-7)
+advmod(works-5, well-8)
+

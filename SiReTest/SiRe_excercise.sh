@@ -36,22 +36,26 @@ python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -HHE
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -HHEd_fix -context_type absolute
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -target NN
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute -target NN
+
+#Parsing - there are more combinations but this should suffice
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/ -context_type absolute
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/ -context_type absolute
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/ -context_type absolute -questions -qpath outputs/questions/test -HHEd_fix
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/ -questions -qpath outputs/questions/test -HHEd_fix
+
+#We start assuming things like -HHEd_fix just works to reduce number of runs
 
 #From hts_mlf
-python ../make_full_context_labs.py hts_mlf outputs/labs inputs/hts.mlf
-python ../make_full_context_labs.py hts_mlf outputs/labs inputs/hts.mlf -HHEd_fix
-python ../make_full_context_labs.py hts_mlf outputs/labs inputs/hts.mlf -HHEd_fix -context_type absolute
-python ../make_full_context_labs.py hts_mlf outputs/labs inputs/hts.mlf -questions -qpath outputs/questions/test -HHEd_fix
 python ../make_full_context_labs.py hts_mlf outputs/labs inputs/hts.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute
 
 #From hts_labs
-python ../make_full_context_labs.py hts_lab outputs/labs inputs/HTS_Lab
-python ../make_full_context_labs.py hts_lab outputs/labs inputs/HTS_Lab -HHEd_fix
-python ../make_full_context_labs.py hts_lab outputs/labs inputs/HTS_Lab -HHEd_fix -context_type absolute
-python ../make_full_context_labs.py hts_lab outputs/labs inputs/HTS_Lab -questions -qpath outputs/questions/test -HHEd_fix
 python ../make_full_context_labs.py hts_lab outputs/labs inputs/HTS_Lab -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute
 
-#THE FOLLOWING EXCERCISES NEED YOU TO SET A NUMBER OF PATHS YOURSELF!!!
+#THE FOLLOWING EXCERCISES NEED YOU TO HAVE COMBILEX AND SET A THE PATH TO IT YOURSELF!!!
 #From txt
 if [ "$1" != "all" ]
 then

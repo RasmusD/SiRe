@@ -1,0 +1,13 @@
+aux(make-2, To-1)
+root(ROOT-0, make-2)
+xcomp(make-2, owning-3)
+poss(house-6, your-4)
+amod(house-6, own-5)
+dobj(owning-3, house-6)
+det(lot-8, a-7)
+npadvmod(more-9, lot-8)
+advmod(affordable-10, more-9)
+amod(house-6, affordable-10)
+prep(make-2, for-11)
+pobj(for-11, people-12)
+

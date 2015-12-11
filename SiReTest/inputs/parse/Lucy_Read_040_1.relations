@@ -1,0 +1,12 @@
+advmod(sounds-3, Yeah-1)
+nsubj(sounds-3, it-2)
+root(ROOT-0, sounds-3)
+prep(sounds-3, like-4)
+det(masters-7, an-5)
+amod(masters-7, integrated-6)
+pobj(like-4, masters-7)
+mark(it-11, though-8)
+cop(it-11, is-9)
+neg(it-11, n't-10)
+advcl(sounds-3, it-11)
+

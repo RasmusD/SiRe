@@ -1,0 +1,10 @@
+nsubj(need-2, You-1)
+root(ROOT-0, need-2)
+prep(need-2, to-3)
+pobj(to-3, know-4)
+dobj(need-8, what-6)
+nsubj(need-8, you-7)
+dep(know-4, need-8)
+aux(know-10, to-9)
+xcomp(need-8, know-10)
+

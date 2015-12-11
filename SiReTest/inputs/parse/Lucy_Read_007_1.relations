@@ -1,0 +1,11 @@
+root(ROOT-0, Think-1)
+poss(brother-3, my-2)
+nsubj(sixth-6, brother-3)
+aux(sixth-6, is-4)
+advmod(sixth-6, maybe-5)
+ccomp(Think-1, sixth-6)
+dobj(sixth-6, Dan-7)
+prep(sixth-6, at-8)
+det(moment-10, the-9)
+pobj(at-8, moment-10)
+

@@ -1,0 +1,6 @@
+csubj(rooms-3, Borrowing-1)
+dobj(Borrowing-1, friends-2)
+root(ROOT-0, rooms-3)
+cc(rooms-3, and-4)
+conj(rooms-3, stuff-5)
+
