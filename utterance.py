@@ -149,7 +149,7 @@ class Utterance(object):
   def get_words_no_pau(self):
     tmp = []
     for word in self.words:
-      if word.id not in self.phoneme_features.get_sil_phonemes():
+      if word.id not in self.phoneme_features.get_sil_phonemes()+[","]:
         tmp.append(word)
     return tmp
 

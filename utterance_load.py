@@ -263,7 +263,7 @@ def load_stanford_dependency_parse(utt, parse):
   
   #Now add empty parse for sil, pau and #
   for word in utt.words:
-    if word.id in utt.phoneme_features.get_sil_phonemes():
+    if word.id in utt.phoneme_features.get_sil_phonemes()+[","]:
       word.parent_dependency = parsetrees.stanfordDependencyTree()
       word.grandparent_dependency = parsetrees.stanfordDependencyTree()
       word.greatgrandparent_dependency = parsetrees.stanfordDependencyTree()
