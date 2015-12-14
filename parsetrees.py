@@ -146,7 +146,10 @@ class stanfordDependencyTree:
     if key in rel_dct:
       parent.children = []
       for child in rel_dct[key]:
-        label, utt_pos = child[1].split("-")
+        #This has to be done this slightly awkward way due to the
+        #possibility of words with "-" in them, e.g. ill-judged
+        utt_pos = child[1].split("-")[-1]
+        label = "-".join(child[1].split("-")[:-1])
         c = stanfordDependencyTree(label=label, parent=parent, parent_relation=child[0], utt_pos=int(utt_pos))
         parent.children.append(c)
         self.make_children(rel_dct, c)
