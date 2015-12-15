@@ -30,6 +30,7 @@ class Dictionary(object):
   #Create a combilex dictionary
   def __init__(self, path):
     print "Loading combilex..."
+    self.type = "combilex"
     entries = [x for x in open(os.path.join(path, "combilex.dict"), "r").readlines() if x[0] == "("]
     entries += [x for x in open(os.path.join(path, "combilex.add"), "r").readlines() if x[0] == "("]
     #Generally this should not be used directly - rather the get methods below should be used

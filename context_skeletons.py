@@ -26,7 +26,10 @@ from error_messages import SiReError
 #the question set generator to know which type of questions to generate.
 #The following types are valid:
 #"bool" = A yes/no question, examples are "Is this a @ phoneme?" or "Is this phoneme a
-#         consonant?". This does not imply the type must be a bool, it can also be a string.
+#         consonant?". This does not imply the type must be a bool, it should be a string.
+#         Rather it implies that it is a boolean yes/no question which should be asked about it.
+#         Note how this can also be used for ints or floats that should not be checked for
+#         higher/lower than values by str() them before adding.
 #"float" = A question which has a value which can be checked for higher than, lower than etc.
 #          an example would be "Phoneme relational forward position in syllable".
 #          The value of it must be a float type and multipliable with 100 to yield an int
@@ -41,7 +44,7 @@ from error_messages import SiReError
 #If "xx" is in typename = "xx" is a valid value for this type. This is only valid for float
 #and int. (xx is always valid for bool type)
 #If "0" is in typename = Signals that 0 value is not exclusive to silence segments. This is
-#only valid for float and int.
+#only valid for float and int. (However the string "0" is valid for bool)
 #If "utt" is in typename = Signals that this question should be included in the GV question set (which is only at the utt level).
 
 
