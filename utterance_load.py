@@ -187,7 +187,8 @@ def load_stanford_pcfg_parse(utt, parse, comma_is_pause=False):
     leafs = tree.get_leafs(include_punct=[","])
   else:
     leafs = tree.get_leafs()
-  if len(leafs) != utt.num_words_no_pau():
+  num_w = utt.num_words_no_pau(comma_is_pause)
+  if len(leafs) != num_w:
     #First we try to see if this is due to differences in how words are
     #dealt with in parsing and annotation. 
     #Prime example is using 's in e.g. there's for transcription instead of there is.
@@ -196,10 +197,15 @@ def load_stanford_pcfg_parse(utt, parse, comma_is_pause=False):
     #single syllable word. In other cases the contraction straddles two words and
     #we add a "phony" word which affects contexts but adds no phonemes.
     utterance_utils.try_split_words(utt)
-    if len(leafs) != utt.num_words_no_pau():
-      raise SiReError("Number of leaves ({0}) not equal to number of words ({1})! In utt ({2})!".format(len(leafs), utt.num_words_no_pau(), utt.id))
+    #Update num_w
+    num_w = utt.num_words_no_pau(comma_is_pause)
+    if len(leafs) != num_w:
+      for w in utt.words:
+        print w.id
+      raise SiReError("Number of leaves ({0}) not equal to number of words ({1})! In utt ({2})!".format(len(leafs), num_w, utt.id))
   #Match each word with parse
-  for i, word in enumerate(utt.get_words_no_pau()):
+  words = utt.get_words_no_pau(comma_is_pause)
+  for i, word in enumerate(words):
     l = leafs[i].label.split("-")
     word.id = l[1]
     word.pos = l[0]

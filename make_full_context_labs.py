@@ -140,9 +140,12 @@ if __name__ == "__main__":
   
   if args.stanford_pcfg_parse:
     args.pcfgdict = read_stanford_pcfg_parses(args.parsedir)
+    args.parsedict = read_stanford_pcfg_parses(args.parsedir)
   
   if args.stanford_dependency_parse:
     args.dependencydict = read_stanford_dependency_parses(args.parsedir)
+    args.parsedict = read_stanford_dependency_parses(args.parsedir)
+  
   
   if args.intype == "txt":
     if not os.path.isdir(args.inpath):

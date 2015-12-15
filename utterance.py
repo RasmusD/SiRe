@@ -64,12 +64,12 @@ class Utterance(object):
       if not hasattr(args, 'comma_is_pause'):
         print "Warning! args does not tell if commas should be used as pauses! Using default... (no)"
         args.comma_is_pause = False
-      if not hasattr(args, 'stanfordparse'):
+      if not hasattr(args, 'stanford_pcfg_parse'):
         print "Warning! args does not tell if we are using stanford parsing! Using default... (no)"
-        args.stanfordparse = False
-      if args.stanfordparse == False:
+        args.stanford_pcfg_parse = False
+      if args.stanford_pcfg_parse == False:
         args.parsedict = False
-      proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanfordparse, args.parsedict, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
+      proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanford_pcfg_parse, args.parsedict, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
       self.txtloaded = True
     else:
       raise SiReError("Don't know what to do with intype - {0}".format(args.intype))
@@ -141,15 +141,18 @@ class Utterance(object):
   def num_words(self):
     return len(self.words)
   
-  def num_words_no_pau(self):
-    return len(self.get_words_no_pau())
+  def num_words_no_pau(self, keep_comma=False):
+    return len(self.get_words_no_pau(keep_comma))
   
   #Gets the words without pausing
   #Used when comparing to stanford parse etc.
-  def get_words_no_pau(self):
+  def get_words_no_pau(self, keep_comma=False):
     tmp = []
     for word in self.words:
-      if word.id not in self.phoneme_features.get_sil_phonemes()+[","]:
+      ignore = self.phoneme_features.get_sil_phonemes()
+      if keep_comma == False:
+        ignore += [","]
+      if word.id not in ignore:
         tmp.append(word)
     return tmp
 
