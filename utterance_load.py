@@ -348,7 +348,7 @@ def make_sylls(utt):
       if p["stress"] > 0:
         if syll["stress"] != 0:
           raise SiReError("Syllable ({0}) already stressed! In utt ({1})".format(syll, utt.id))
-        syll["stress"] = 1
+        syll["stress"] = p["stress"]
       if i == len(utt)-1:
         syll["start"] = syll["phonemes"][0]["start"]
         syll["end"] = syll["phonemes"][-1]["end"]

@@ -126,16 +126,19 @@ class Base(object):
     self.unw = "intutt"
     ##### Experimental! #####
     #Is this read or spontaneous data?
-    self.ut = "bool"
+    #self.ut = "bool"
   
   #Can only add one context value to the dict.
-  #Overwrites old values present.
+  #Throws error if context already has a value.
   #Used for phoneme context string generation.
   #Also checks if the type of the value to add is valid.
   def add(self, v_name, value):
     if hasattr(self, v_name):
       if context_utils.check_value(self, v_name, value):
-        self.added_contexts[v_name] = value
+        if v_name not in self.added_contexts:
+          self.added_contexts[v_name] = value
+        else:
+          raise SiReError("Tried to add a context ({0} - new value: {1}) which already has a value ({2}).".format(v_name, value, self.added_contexts[v_name]))
     else:
       raise SiReError("Tried to add context ({0}) which does not exist in skeleton! ".format(v_name))
   
@@ -287,7 +290,7 @@ class AbsoluteStanfordPcfg(Absolute):
     self.wfwrggppp = "int0xx"
     #Backward
     self.wbwrggppp = "int0xx"
-
+  
 
 class AbsoluteStanfordDependency(Absolute):
   """The standard context feature set using absolute values instead of relational."""
@@ -301,6 +304,14 @@ class AbsoluteStanfordDependency(Absolute):
     self.wgpdr = "bool"
     #Word grandparent to greatgrandparent relation
     self.wggpdr = "bool"
+    #Word parent general dependency relation
+    self.wpgdr = "bool"
+    #Number of children
+    self.dnc = "int0xx"
+    #Tree distance to left word in num arcs
+    self.dtdlw = "intxx"
+    #Tree distance to right word in num arcs
+    self.dtdrw = "intxx"
     #Word absolute distance to parent relation
     self.wdpr = "intxx"
     #Word absolute distance to grandparent relation
@@ -319,6 +330,14 @@ class RelationalStanfordDependency(Relational):
     self.wgpdr = "bool"
     #Word grandparent to greatgrandparent relation
     self.wggpdr = "bool"
+    #Word parent general dependency relation
+    self.wpgdr = "bool"
+    #Number of children
+    self.dnc = "int0xx"
+    #Tree distance to left word in num arcs
+    self.dtdlw = "intxx"
+    #Tree distance to right word in num arcs
+    self.dtdrw = "intxx"
     #Word relational distance to parent relation
     self.wdpr = "floatxx"
     #Word relational distance to grandparent relation

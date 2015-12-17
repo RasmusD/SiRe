@@ -14,6 +14,8 @@
 #limitations under the License.                                          #
 ##########################################################################
 
+from error_messages import SiReError
+
 class stanfordPcfgTree:
   def __init__(self, label=None, parent=None, children=[]):
     self.label = label
@@ -115,6 +117,25 @@ class stanfordDependencyTree:
   def get_utt_pos(self, item):
     return item.utt_pos
   
+  #This simplifies the parent_relation to a group of more general relations
+  #This is based on the overarching classes from http://nlp.stanford.edu/software/dependencies_manual.pdf
+  def get_parent_general_relation(self):
+    pr = self.parent_relation
+    if pr in ["auxpass", "cop"]: #aux
+      return "aux"
+    elif pr in ["agent", "root", "dep", "aux", "arg", "obj", "subj", "cc", "conj", "expl", "mod", "parataxis", "punct", "ref", "sdep", "goeswith", "xsubj", "discourse"]: #nonreduced - discourse is not in manual hierarcy but should nto be reduced
+      return pr
+    elif pr in ["acomp", "ccomp", "xcomp", "pcomp"]: #The stanford manuals hierarchy has forgotten pcomp but this should be the cat
+      return "comp"
+    elif pr in ["dobj", "iobj", "pobj"]:
+      return "obj"
+    elif pr in ["nsubj", "nsubjpass", "csubj", "csubjpass"]:
+      return "subj"
+    elif pr in ["amod", "appos", "advcl", "det", "predet", "preconj", "vmod", "mwe", "mark", "advmod", "neg", "rcmod", "quantmod", "nn", "npadvmod", "tmod", "num", "number", "prep", "poss", "possessive", "prt"]:
+      return "mod"
+    else:
+      raise SiReError("Undefined parent_relation ({0}) for simplification! Are you using the stanford parser?".format(pr))
+  
   def make_tree(self, relation_list):
     #First we make a dictionary of each word and what relations it is the parent of
     rel_dct = {}
@@ -195,3 +216,25 @@ class stanfordDependencyTree:
       for child in self.children:
         print child.print_tree(tabs+1)
 
+#Returns the distance in number of arcs between two nodes in a dependency tree
+def dep_distance_in_arcs(n1, n2):
+  #we include itself as if it is a parent of the other node we want to stop
+  n1_parents = [n1]
+  while n1.parent != None:
+    n1_parents += [n1.parent]
+    n1 = n1.parent
+  n2_parents = [n2]
+  while n2.parent != None:
+    n2_parents += [n2.parent]
+    n2 = n2.parent
+  #The lowest common node is the one that is in both first encountered in one of the lists that is in the other
+  #This is quadratic but we're never going to have enough levels for it to matter.
+  for i1, p1 in enumerate(n1_parents):
+    for i2, p2 in enumerate(n2_parents):
+      if p1 == p2:
+        #We can just add them together because when i1/i2==0 it is themselves.
+        #So if p1 is the parent of p2, i1 == 0 and i2 the number of levels between them.
+        return i1+i2
+  print n1_parents
+  print n2_parents
+  raise SiReError("The two nodes are not in the same tree! Cannot find a distance!")

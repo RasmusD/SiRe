@@ -18,6 +18,7 @@ import context_skeletons, copy
 from context_utils import strintify
 from context_utils import strfloatify
 from context_utils import to_relational
+from parsetrees import dep_distance_in_arcs
 from error_messages import SiReError
 
 #This contains the methods for creating a variety of context types from an utterance.
@@ -421,6 +422,44 @@ def add_basic_stanford_dependency(context_skeleton, phoneme):
     c.add("wggpdr", w.greatgrandparent_dependency.parent_relation)
   else:
     c.add("wggpdr", "xx")
+  #Word parent general dependency relation
+  if w.parent_dependency.parent_relation != None:
+    c.add("wpgdr", w.parent_dependency.get_parent_general_relation())
+  else:
+    c.add("wpgdr", "xx")
+  #Number of children
+  if w.parent_dependency.children == None:
+    if phoneme.id in phoneme.parent_utt.phoneme_features.get_sil_phonemes(): #this is a pause
+      c.add("dnc", "xx")
+    else: #This is a leaf
+      c.add("dnc", "0")
+  else:
+    c.add("dnc", str(len(w.parent_dependency.children)))
+  #Tree distance to left word in num arcs
+  #If the current is a pau
+  if w.phonemes[0].id in phoneme.parent_utt.phoneme_features.get_sil_phonemes():
+    c.add("dtdrw", "xx")
+    c.add("dtdlw", "xx")
+  else:
+    if w.pos_in_utt() > 0:
+      wl = w.parent_utt.words[w.pos_in_utt()-1]
+      #If prev word is sil
+      if wl.phonemes[0].id in phoneme.parent_utt.phoneme_features.get_sil_phonemes():
+        c.add("dtdlw", "xx")
+      else:
+        c.add("dtdlw", str(dep_distance_in_arcs(w.parent_dependency, wl.parent_dependency)))
+    else:
+        c.add("dtdlw", "xx")
+    #Tree distance to right word in num arcs
+    try:
+      wr = w.parent_utt.words[w.pos_in_utt()+1]
+      #If next word is sil
+      if wr.phonemes[0].id in phoneme.parent_utt.phoneme_features.get_sil_phonemes():
+        c.add("dtdrw", "xx")
+      else:
+        c.add("dtdrw", str(dep_distance_in_arcs(w.parent_dependency, wr.parent_dependency)))
+    except IndexError:
+        c.add("dtdrw", "xx")
 
 def add_absolute_stanford_dependency(context_skeleton, phoneme):
   """Adds the absolute elements of stanford parse information to a phoneme context."""
@@ -429,6 +468,12 @@ def add_absolute_stanford_dependency(context_skeleton, phoneme):
   w = phoneme.parent_word
   ###### Stanford Dependency Parse Information ######
   add_basic_stanford_dependency(c, phoneme)
+  #If the current phoneme is sil/pau etc. the label is None and we can just add "xx" all through
+  if w.parent_dependency.label == None and phoneme.id in phoneme.parent_utt.phoneme_features.get_sil_phonemes():
+    c.add("wdpr", "xx")
+    c.add("wdgpr", "xx")
+    c.add("wdggpr", "xx")
+    return
   #Word absolute distance to parent relation
   dep_pos = w.parent_dependency.utt_pos
   if w.parent_dependency.parent != None and w.parent_dependency.parent.label != "ROOT":
@@ -442,7 +487,7 @@ def add_absolute_stanford_dependency(context_skeleton, phoneme):
     c.add("wdgpr", str(abs(dep_pos-p_dep_pos)))
   else:
     c.add("wdgpr", "xx")
-  #Word absolute position in greatgrandparent phrase
+  #Word absolute position to greatgrandparent relation
   if w.greatgrandparent_dependency.parent != None and w.greatgrandparent_dependency.parent.label != "ROOT":
     p_dep_pos = w.greatgrandparent_dependency.parent.utt_pos
     c.add("wdggpr", str(abs(dep_pos-p_dep_pos)))
@@ -506,7 +551,7 @@ def get_question_sets(context_skeleton, qformat, fit_contexts=False, contexts_to
           c_utt.add_multiple(key, context.added_contexts[key])
     #Then we create questions based on these
     qs = make_questions(c, qformat, False, HHEd_fix)
-    q_utt = make_questions(c_utt, qformat, False, HHEd_fix)
+    q_utt = make_questions(c_utt, qformat, False, HHEd_fix, True)
     return (qs, q_utt)
   else:
     raise SiReError("Not Implemented yet! (Not fitting contexts for question set.)")
@@ -518,8 +563,16 @@ def get_question_sets(context_skeleton, qformat, fit_contexts=False, contexts_to
 #qformat = Return the questions in HMM format ("HMM") or Neural Network format ("NN").
 #generic = Return a generic question set not fitted to the data.
 #HHEd_fix = Make current phoneme context -phoneme+ as this is hardcoded in HHEd.
-def make_questions(context_skeleton, qformat, generic=True, HHEd_fix=False):
+def make_questions(context_skeleton, qformat, generic=True, HHEd_fix=False, utt=False):
   context_dict = context_skeleton.added_contexts
+  #We write out each context not used just for checks.
+  #TODO: Make it possible to throw an exception if context not used.
+  #TODO: Currently we ignore this when making GV contexts.
+  if utt == False:
+    for context in vars(context_skeleton).keys():
+      if context not in context_dict and context != "added_contexts":
+        print context_dict.keys()
+        print "Warning! Context ({0}) not used!".format(context)
   if qformat not in ["NN", "HMM"]:
     raise SiReError("Invalid question format {0}! Must be either HMM or NN!".format(qformat))
   questions = []
