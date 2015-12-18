@@ -68,8 +68,8 @@ class Utterance(object):
         print "Warning! args does not tell if we are using stanford parsing! Using default... (no)"
         args.stanford_pcfg_parse = False
       if args.stanford_pcfg_parse == False:
-        args.parsedict = False
-      proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanford_pcfg_parse, args.parsedict, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
+        args.pcfgdict = False
+      proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanford_pcfg_parse, args.pcfgdict, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
       self.txtloaded = True
     else:
       raise SiReError("Don't know what to do with intype - {0}".format(args.intype))
@@ -119,7 +119,7 @@ class Utterance(object):
     #If we should use the stanford dependency parse info
     if args.stanford_dependency_parse:
       print "Loading stanford dependency parse info to utt..."
-      if args.intype != "txt":
+      if args.intype != "txt" and self.txtloaded == False:
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
       utterance_load.load_stanford_dependency_parse(self, args.dependencydict[self.id])
     

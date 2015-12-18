@@ -63,6 +63,22 @@ def AbsoluteStanfordDependency(phoneme):
   add_absolute_stanford_dependency(c, phoneme)
   return c
 
+def RelationalStanfordCombined(phoneme):
+  """Creates an absolute context string of the given phoneme including information from a stanford parse."""
+  c = context_skeletons.RelationalStanfordCombined(phoneme.parent_utt.phoneme_features)
+  add_relational(c, phoneme)
+  add_relational_stanford_pcfg(c, phoneme)
+  add_relational_stanford_dependency(c, phoneme)
+  return c
+
+def AbsoluteStanfordCombined(phoneme):
+  """Creates an absolute context string of the given phoneme including information from a stanford parse."""
+  c = context_skeletons.AbsoluteStanfordCombined(phoneme.parent_utt.phoneme_features)
+  add_absolute(c, phoneme)
+  add_absolute_stanford_pcfg(c, phoneme)
+  add_absolute_stanford_dependency(c, phoneme)
+  return c
+
 def add_basic(context_skeleton, phoneme):
   """Adds the basic context set to a context skeleton. What is considered basic is currently what overlaps between relational and absolute. If the skeleton does not support the set this will fail."""
   utt = phoneme.parent_utt

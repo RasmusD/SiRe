@@ -102,7 +102,7 @@ def proto_from_hts_lab(lab):
 #If pron_reduced is set this will attempt to produce a reduced pronunciation for parts of the sentence as specifiied by reduction_level and
 #the scores in reduction_score_file.
 #Reduction_level must be minimally 0 (full reduction) and maximally 1 (no reduction).
-def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=False, stanfordparse=False, parsedict=None, pron_reduced=False, reduction_score_dir=None, reduction_level=1.0):
+def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=False, stanfordparse=False, pcfgdict=None, pron_reduced=False, reduction_score_dir=None, reduction_level=1.0):
   #Create words
   proto = {"utt":[]}
   proto["id"] = lab[0].split("/")[-1]
@@ -126,9 +126,9 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
         proto["utt"].append({"id":word[0], "syllables":[dictionary.get_single_entry(word[0], reduced=word[1], punct_as_sil=([","], "sil"))]})
       else:
         proto["utt"].append({"id":word[0], "syllables":[dictionary.get_single_entry(word[0], reduced=word[1])]})
-  else: #Else a parse should exist and we can get the pos tags from that.
+  else: #Else a pcfg parse should exist and we can get the pos tags from that.
     tree = parsetrees.stanfordPcfgTree()
-    tree.make_tree(parsedict[proto["id"]])
+    tree.make_tree(pcfgdict[proto["id"]])
     
     #Do we need some punctuation?
     if comma_is_pause == True:
@@ -284,6 +284,9 @@ def load_txt(utt, txtpath):
   txt = txt.lower()
   txt = txt.split()
   if len(txt) != utt.num_words_no_pau():
+    for w in utt.words:
+      print w.id
+      print txt
     raise SiReError("Text length ({0}) and number of words ({1}) in utt ({2}) does not match!".format(len(txt), utt.num_words_no_pau(), utt.id))
   #Now replace the phoneme based ids with txt based.
   i = 0

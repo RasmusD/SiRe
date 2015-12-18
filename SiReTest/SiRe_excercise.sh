@@ -31,29 +31,30 @@ mkdir outputs/questions
 
 #Excercise SiRe
 #From align_mlf
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -HHEd_fix
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -HHEd_fix -context_type absolute
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -target NN
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute -target NN
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -HHEd_fix -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -target NN || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute -target NN || { echo "Error at line: ${LINENO}"; exit 1; }
 
 #Parsing - there are more combinations but this should suffice
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/ -context_type absolute
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/ -context_type absolute
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/ -context_type absolute -questions -qpath outputs/questions/test -HHEd_fix
-python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/ -questions -qpath outputs/questions/test -HHEd_fix
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/ || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/ || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/ -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/ -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/ -context_type absolute -questions -qpath outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/ -questions -qpath outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -stanford_pcfg_parse -parsedir inputs/parse/ -questions -qpath outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
 
 #We start assuming things like -HHEd_fix just works to reduce number of runs
 
 #From hts_mlf
-python ../make_full_context_labs.py hts_mlf outputs/labs inputs/hts.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute
+python ../make_full_context_labs.py hts_mlf outputs/labs inputs/hts.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
 
 #From hts_labs
-python ../make_full_context_labs.py hts_lab outputs/labs inputs/HTS_Lab -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute
+python ../make_full_context_labs.py hts_lab outputs/labs inputs/HTS_Lab -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
 
 #THE FOLLOWING EXCERCISES NEED YOU TO HAVE COMBILEX AND SET A THE PATH TO IT YOURSELF!!!
 #From txt
@@ -64,13 +65,14 @@ then
   exit
 fi
 COMBILEXPATH=/work/rasmus/SiRe/combilex
-python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH
-python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause
-python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause -stanford_dependency_parse -parsedir inputs/parse
-python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause -stanford_pcfg_parse -parsedir inputs/parse
-python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -context_type absolute
-python ../make_full_context_labs.py txt outputs/labs inputs/txt -questions -qpath outputs/questions/test -combilexpath $COMBILEXPATH
-python ../make_full_context_labs.py txt outputs/labs inputs/txt -questions -qpath outputs/questions/test -combilexpath $COMBILEXPATH -context_type absolute
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause -stanford_dependency_parse -parsedir inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause -stanford_pcfg_parse -parsedir inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause -stanford_pcfg_parse -stanford_dependency_parse -parsedir inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -questions -qpath outputs/questions/test -combilexpath $COMBILEXPATH || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -questions -qpath outputs/questions/test -combilexpath $COMBILEXPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
 
 
 #Clean up

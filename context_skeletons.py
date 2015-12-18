@@ -344,3 +344,13 @@ class RelationalStanfordDependency(Relational):
     self.wdgpr = "floatxx"
     #Word relational position in greatgrandparent phrase
     self.wdggpr = "floatxx"
+
+class RelationalStanfordCombined(RelationalStanfordDependency, RelationalStanfordPcfg):
+  """A skeleton containing the combined pcfg and dependency contexts using relational values."""
+  def __init__(self, phoneme_features):
+    super(RelationalStanfordCombined, self).__init__(phoneme_features)
+
+class AbsoluteStanfordCombined(AbsoluteStanfordDependency, AbsoluteStanfordPcfg):
+  """A skeleton containing the combined pcfg and dependency contexts using relational values."""
+  def __init__(self, phoneme_features):
+    super(AbsoluteStanfordCombined, self).__init__(phoneme_features)

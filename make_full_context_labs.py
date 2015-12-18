@@ -40,7 +40,12 @@ def write_context_utt(utt, args):
   if args.questions == True:
     cs = []
   for phone in utt.phonemes:
-    if args.stanford_pcfg_parse == True:
+    if args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
+      if args.context_type == "relational":
+        context = contexts.RelationalStanfordCombined(phone)
+      elif args.context_type == "absolute":
+        context = contexts.AbsoluteStanfordCombined(phone)
+    elif args.stanford_pcfg_parse == True:
       if args.context_type == "relational":
         context = contexts.RelationalStanfordPcfg(phone)
       elif args.context_type == "absolute":
@@ -65,7 +70,12 @@ def write_context_utt(utt, args):
     write_questions(cs, args)
 
 def write_questions(context_set, args):
-  if args.stanford_pcfg_parse == True:
+  if args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
+    if args.context_type == "relational":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordCombined(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+    elif args.context_type == "absolute":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordCombined(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+  elif args.stanford_pcfg_parse == True:
     if args.context_type == "relational":
       qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordPcfg(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
@@ -140,11 +150,9 @@ if __name__ == "__main__":
   
   if args.stanford_pcfg_parse:
     args.pcfgdict = read_stanford_pcfg_parses(args.parsedir)
-    args.parsedict = read_stanford_pcfg_parses(args.parsedir)
   
   if args.stanford_dependency_parse:
     args.dependencydict = read_stanford_dependency_parses(args.parsedir)
-    args.parsedict = read_stanford_dependency_parses(args.parsedir)
   
   
   if args.intype == "txt":
