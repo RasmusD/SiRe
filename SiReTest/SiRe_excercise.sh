@@ -21,8 +21,12 @@
 #A number of tests at the end requires manual setting of a few paths - they do not run as standard.
 #To run them pass "all" as the first argument when running this script.
 
-#Make sure we work in the directory that this script is in. We expect this to be a subdir in the SiRe folder structure.
-cd "$(dirname $(readlink -f $0))"
+#Make sure we work in the directory that this script is in.
+if [ "${PWD##*/}" != "SiReTest" ]
+then
+  echo "Not in test directory!"
+  exit
+fi
 
 #Set up
 mkdir outputs
