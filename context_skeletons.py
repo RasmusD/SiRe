@@ -179,7 +179,7 @@ class Base(object):
 class Absolute(Base):
   """The standard context feature set using absolute values instead of relational."""
   def __init__(self, phoneme_features):
-    #Initiate the relational class
+    #Initiate the absolute class
     super(Absolute, self).__init__(phoneme_features)
     #Change the relational variables from floats to ints
     #Phoneme
@@ -201,6 +201,26 @@ class Absolute(Base):
     self.wfwup = "int0"
     #Backward pos in utt
     self.wbwup = "int0"
+
+class Festival(Absolute):
+  """A context feature set equivalent to that produced by Festival for HTS."""
+  def __init__(self, phoneme_features):
+    #Initiate the absolute class
+    super(Festival, self).__init__(phoneme_features)
+    #General pos
+    self.rgpos = "bool"
+    self.cgpos = "bool"
+    self.lgpos = "bool"
+    #Cur Syll Accent
+    self.csacc = "int0"
+    #Number of accented syllables before current syll
+    self.nasbcs = "int0"
+    #Number of accented syllables after current syll
+    self.nasacs = "int0"
+    #Distance to previous accented syllable
+    self.pasd = "intxx"
+    #Distance to next accented syllable
+    self.nasd = "intxx"
 
 class Relational(Base):
   """The standard context feature set using absolute values instead of relational."""

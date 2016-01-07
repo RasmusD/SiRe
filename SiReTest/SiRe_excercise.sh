@@ -51,6 +51,8 @@ python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txt
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_pcfg_parse -parsedir inputs/parse/ -context_type absolute -questions -qpath outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -parsedir inputs/parse/ -questions -qpath outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -stanford_dependency_parse -stanford_pcfg_parse -parsedir inputs/parse/ -questions -qpath outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -festival_features || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -txtdir inputs/txt/ -festival_features -stanford_pcfg_parse -parsedir inputs/parse/ || { echo "Error at line: ${LINENO}"; exit 1; }
 
 #We start assuming things like -HHEd_fix just works to reduce number of runs
 
@@ -68,7 +70,7 @@ then
   rm -r outputs
   exit
 fi
-COMBILEXPATH=/work/rasmus/SiRe/combilex
+COMBILEXPATH=/Users/RasmusDall/SiRe/combilex
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -comma_is_pause -stanford_dependency_parse -parsedir inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
@@ -77,6 +79,7 @@ python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $C
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -combilexpath $COMBILEXPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -questions -qpath outputs/questions/test -combilexpath $COMBILEXPATH || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py txt outputs/labs inputs/txt -questions -qpath outputs/questions/test -combilexpath $COMBILEXPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py txt outputs/labs inputs/txt -questions -qpath outputs/questions/test -combilexpath $COMBILEXPATH -festival_features || { echo "Error at line: ${LINENO}"; exit 1; }
 
 
 #Clean up

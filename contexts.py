@@ -14,7 +14,7 @@
 #limitations under the License.                                          #
 ##########################################################################
 
-import context_skeletons, copy
+import context_skeletons, copy, pos, prosody
 from context_utils import strintify
 from context_utils import strfloatify
 from context_utils import to_relational
@@ -77,6 +77,13 @@ def AbsoluteStanfordCombined(phoneme):
   add_absolute(c, phoneme)
   add_absolute_stanford_pcfg(c, phoneme)
   add_absolute_stanford_dependency(c, phoneme)
+  return c
+
+def Festival(phoneme):
+  """Creates a Festival Equivalent context string of the given phoneme."""
+  c = context_skeletons.Festival(phoneme.parent_utt.phoneme_features)
+  add_absolute(c, phoneme)
+  add_festival(c, phoneme)
   return c
 
 def add_basic(context_skeleton, phoneme):
@@ -543,6 +550,47 @@ def add_relational_stanford_dependency(context_skeleton, phoneme):
     c.add("wdggpr", str(abs(dep_pos-p_dep_pos)))
   else:
     c.add("wdggpr", "xx")
+
+def add_festival(context_skeleton, phoneme):
+  c = context_skeleton
+  #Remove full pos if exists
+  #They shouldn't though - but this is safety if these are added to parsed things.
+  if hasattr(c, "cpos"):
+    del c.cpos
+  if hasattr(c, "rpos"):
+    del c.rpos
+  if hasattr(c, "lpos"):
+    del c.lpos
+  #General pos
+  w = phoneme.parent_word
+  c.add("rgpos", pos.get_festival_general_pos(w.pos))
+  c.add("cgpos", pos.get_festival_general_pos(w.pos))
+  c.add("lgpos", pos.get_festival_general_pos(w.pos))
+  #Cur Syll Accent
+  c.add("csacc", phoneme.parent_syllable.accent)
+  #Number of accented syllables before current syll
+  n = 0
+  last_accent_dist = "xx"
+  utt_pos = phoneme.parent_syllable.pos_in_utt()
+  for i, cs in enumerate(phoneme.parent_utt.syllables[:utt_pos]):
+    if cs.accent == 1:
+      n += 1
+      last_accent_dist = utt_pos-i
+  c.add("nasbcs", n)
+  #Number of accented syllables after current syll
+  n = 0
+  next_accent_dist = "xx"
+  if phoneme.parent_utt.num_syllables() != utt_pos+1:
+    for i, cs in enumerate(phoneme.parent_utt.syllables[utt_pos+1:]):
+      if cs.accent == 1:
+        n += 1
+        if next_accent_dist == "xx":
+          next_accent_dist = i+1
+  c.add("nasacs", n)
+  #Distance to previous accented syllable
+  c.add("pasd", last_accent_dist)
+  #Distance to next accented syllable
+  c.add("nasd", next_accent_dist)
 
 #Returns a question set and a GV/utt question set.
 #context_skeleton = The type of question set to output.

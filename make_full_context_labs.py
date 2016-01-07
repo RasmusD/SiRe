@@ -40,7 +40,9 @@ def write_context_utt(utt, args):
   if args.questions == True:
     cs = []
   for phone in utt.phonemes:
-    if args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
+    if args.festival_features == True:
+      context = contexts.Festival(phone)
+    elif args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
       if args.context_type == "relational":
         context = contexts.RelationalStanfordCombined(phone)
       elif args.context_type == "absolute":
@@ -70,7 +72,9 @@ def write_context_utt(utt, args):
     write_questions(cs, args)
 
 def write_questions(context_set, args):
-  if args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
+  if args.festival_features == True:
+    qs, q_utt = contexts.get_question_sets(context_skeletons.Festival(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+  elif args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
     if args.context_type == "relational":
       qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordCombined(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
@@ -117,6 +121,7 @@ if __name__ == "__main__":
   parser.add_argument('-target', type=str, help="The target type of the output labs and questions.", choices=['HMM', 'NN'], default='HMM')
   parser.add_argument('-stanford_pcfg_parse', action="store_true", help="Add stanford pcfg parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
   parser.add_argument('-stanford_dependency_parse', action="store_true", help="Add stanford dependency parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
+  parser.add_argument('-festival_features', action="store_true", help="Outputs a set of features equivalent to that produced by Festival for HTS. Note this will take precedence over the -stanford_pcfg_parse option which in that case will provide the POS tags instead of using the simple_festival_pos_predict method. It will also ignore the -context_type flag and always use absolute values.")
   parser.add_argument('-context_type', type=str, choices=['absolute', 'relational'], help="The type of positional contexts to add.", default='relational')
   parser.add_argument('-parsedir', type=str, help="The path to the parses.", default="parse")
   parser.add_argument('-HHEd_fix', action="store_true", help="Applies a fix to the contexts around the current phoneme to be compatible with hardcoded delimiters in HHEd.")
@@ -129,7 +134,11 @@ if __name__ == "__main__":
   
   #We can't use commas as pause if we are not creating labs from text.
   if args.comma_is_pause and args.intype != "txt":
-    raise SiReError("It makes no sense to insert pauses at commas when you already have the pauses from the alignment!")
+    raise SiReError("It makes no sense to insert pauses at commas when you already have the pauses from the alignment or labs!")
+  
+  #We make sure we do the right context_type if Festival labs are produced
+  if args.festival_features == True:
+    args.context_type = 'absolute'
   
   #Check if this is well-formed
   if args.pron_reduced:
