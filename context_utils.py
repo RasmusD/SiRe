@@ -81,6 +81,31 @@ def check_value(context_skeleton, variable_name, value):
     raise SiReError("Unknown attribute type ({0})!".format(attr))
   raise SiReError("Value ({0}) is not valid for variable type ({1}) variable ({2}) in \n {3}".format(value, attr, variable_name, context_skeleton))
 
+#Get the categorical position of a segment
+#With_sil indicates a segment where we always start and end with a silence segment (phon/syll/word)
+#In that case the first and last return xx and the beginning and end is one from those elements
+def get_pos_cat(phoneme_pos, num_phonemes, with_sil=False):
+  if with_sil == True:
+    if phoneme_pos == 0:
+      return "xx"
+    elif phoneme_pos == num_phonemes - 1:
+      return "xx"
+    elif phoneme_pos == 1:
+      return "beg"
+    elif phoneme_pos == num_phonemes - 2:
+      return "end"
+    else:
+      return "mid"
+  else:
+    if num_phonemes == 1:
+      return "one"
+    elif phoneme_pos == 0:
+      return "beg"
+    elif phoneme_pos == num_phonemes - 1:
+      return "end"
+    else:
+      return "mid"
+
 #Return the string of the int of the float multiplied by 100.
 def strintify(fl):
   #Just to make sure we deal with a float

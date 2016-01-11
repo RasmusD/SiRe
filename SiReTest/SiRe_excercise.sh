@@ -38,8 +38,10 @@ mkdir outputs/questions
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -HHEd_fix -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -HHEd_fix -context_type categorical || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type categorical || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -target NN || { echo "Error at line: ${LINENO}"; exit 1; }
 python ../make_full_context_labs.py align_mlf outputs/labs inputs/align.mlf -questions -qpath outputs/questions/test -HHEd_fix -context_type absolute -target NN || { echo "Error at line: ${LINENO}"; exit 1; }
 

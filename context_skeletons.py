@@ -176,6 +176,40 @@ class Base(object):
       s = s.replace("cp:"+self.added_contexts["cp"], "cp:-"+self.added_contexts["cp"]+"+")
     return s+"|"
 
+class Categorical(Base):
+  """The standard context feature set using categorical values instead of relational."""
+  def __init__(self, phoneme_features):
+    #Initiate the absolute class
+    super(Categorical, self).__init__(phoneme_features)
+    #Change the relational variables from floats to ints
+    #Phoneme
+    #C Phoneme Syllable pos
+    self.cpsp = "bool"
+    #L Phoneme Syllable pos
+    self.lpsp = "bool"
+    #R Phoneme Syllable pos
+    self.rpsp = "bool"
+    #C Phoneme Word pos
+    self.cpwp = "bool"
+    #L Phoneme Word pos
+    self.lpwp = "bool"
+    #R Phoneme Word pos
+    self.rpwp = "bool"
+    #Syllable
+    #C Syllable pos in word
+    self.cswp = "bool"
+    #L Syllable pos in word
+    self.lswp = "bool"
+    #R Syllable pos in word
+    self.rswp = "bool"
+    #Word
+    #C pos in utt
+    self.cwup = "bool"
+    #L pos in utt
+    self.lwup = "bool"
+    #R pos in utt
+    self.rwup = "bool"
+
 class Absolute(Base):
   """The standard context feature set using absolute values instead of relational."""
   def __init__(self, phoneme_features):

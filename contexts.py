@@ -18,10 +18,17 @@ import context_skeletons, copy, pos, prosody
 from context_utils import strintify
 from context_utils import strfloatify
 from context_utils import to_relational
+from context_utils import get_pos_cat
 from parsetrees import dep_distance_in_arcs
 from error_messages import SiReError
 
 #This contains the methods for creating a variety of context types from an utterance.
+
+def Categorical(phoneme):
+  """Creates a categorical context string of the given phoneme."""
+  c = context_skeletons.Categorical(phoneme.parent_utt.phoneme_features)
+  add_categorical(c, phoneme)
+  return c
 
 def Relational(phoneme):
   """Creates a relational context string of the given phoneme."""
@@ -263,6 +270,95 @@ def add_basic(context_skeleton, phoneme):
   
   ##### EXPERIMENTAL DO NOT COMMIT! #####
 #  c.add("ut", "read")
+
+
+def add_categorical(context_skeleton, phoneme):
+  """Adds the categorical context set. Categorical means that positions in segments are categorical."""
+  utt = phoneme.parent_utt
+  phoneme_features = utt.phoneme_features
+  c = context_skeleton
+  syll = phoneme.parent_syllable
+  word = phoneme.parent_word
+  #Add the basic features
+  add_basic(c, phoneme)
+  #Get the R and L phonemes
+  p_pos = phoneme.pos_in_utt()
+  try:
+    rp = utt.phonemes[p_pos+1]
+  except IndexError:
+    rp = None
+  if phoneme.pos_in_utt() > 0:
+    lp = utt.phonemes[p_pos-1]
+  else:
+    lp = None
+  
+  #Add current phoneme syll and word pos
+  #Phoneme pos in syll
+  if phoneme.id in phoneme_features.get_sil_phonemes():
+    c.add("cpsp", "xx")
+    c.add("cpwp", "xx")
+  else:
+    c.add("cpsp", get_pos_cat(phoneme.pos_in_syllable(), syll.num_phonemes()))
+    c.add("cpwp", get_pos_cat(phoneme.pos_in_word(), word.num_phonemes()))
+  #Add left phoneme syll and word pos
+  if lp == None or lp.id in phoneme_features.get_sil_phonemes():
+    c.add("lpsp", "xx")
+    c.add("lpwp", "xx")
+  else:
+    c.add("lpsp", get_pos_cat(lp.pos_in_syllable(), lp.parent_syllable.num_phonemes()))
+    c.add("lpwp", get_pos_cat(lp.pos_in_word(), lp.parent_word.num_phonemes()))
+  #Add right phoneme syll and word pos
+  if rp == None or rp.id in phoneme_features.get_sil_phonemes():
+    c.add("rpsp", "xx")
+    c.add("rpwp", "xx")
+  else:
+    c.add("rpsp", get_pos_cat(rp.pos_in_syllable(), rp.parent_syllable.num_phonemes()))
+    c.add("rpwp", get_pos_cat(rp.pos_in_word(), rp.parent_word.num_phonemes()))
+  #Add syllable word pos
+  s_pos = phoneme.parent_syllable.pos_in_utt()
+  try:
+    rs = utt.syllables[s_pos+1]
+  except IndexError:
+    rs = None
+  if syll.pos_in_utt() > 0:
+    ls = utt.syllables[s_pos-1]
+  else:
+    ls = None
+  #C Syllable pos in word
+  c.add("cswp", get_pos_cat(syll.pos_in_word(), syll.parent_word.num_syllables()))
+  #L Syllable pos in word
+  if ls == None:
+    c.add("lswp", "xx")
+  else:
+    c.add("lswp", get_pos_cat(ls.pos_in_word(), ls.parent_word.num_syllables()))
+  #R Syllable pos in word
+  if rs == None:
+    c.add("rswp", "xx")
+  else:
+    c.add("rswp", get_pos_cat(rs.pos_in_word(), rs.parent_word.num_syllables()))
+  #Add pos in utt
+  #Word pos in utterance
+  w_pos = phoneme.parent_word.pos_in_utt()
+  try:
+    rw = utt.words[w_pos+1]
+  except IndexError:
+    rw = None
+  if word.pos_in_utt() > 0:
+    lw = utt.words[w_pos-1]
+  else:
+    lw = None
+  #C Word pos in utt
+  c.add("cwup", get_pos_cat(word.pos_in_utt(), word.parent_utt.num_words(), True))
+  #L Word pos in utt
+  if lw == None:
+    c.add("lwup", "xx")
+  else:
+    c.add("lwup", get_pos_cat(lw.pos_in_utt(), lw.parent_utt.num_words(), True))
+  #R Word pos in utt
+  if rw == None:
+    c.add("rwup", "xx")
+  else:
+    c.add("rwup", get_pos_cat(rw.pos_in_utt(), rw.parent_utt.num_words(), True))
 
 def add_relational(context_skeleton, phoneme):
   """Adds the relational context set. Relational means that positions in segments are relational."""
