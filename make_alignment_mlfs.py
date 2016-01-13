@@ -16,7 +16,13 @@
 
 #Methods for writing out the necessary files for forced alignment.
 
-import argparse, dictionary, os, utterance, io, lattice_tools
+#Load the SiReImports.pth file
+import site
+site.addsitedir(".")
+
+#Other imports
+import argparse, dictionary, os, utterance, lattice_tools
+import SiReIO as io
 from error_messages import SiReError
 
 #Writes out an mlf for initialising alignment and one with short pauses added.
