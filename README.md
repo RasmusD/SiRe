@@ -7,7 +7,7 @@ But it is useful for me and should slowly develop into something useful to other
 
 If you try it out, here is what it can do:
 
-- Load standard HTS (2.3beta) full-context mlfs and convert them to two other linguistic feature sets.
+- Load standard HTS (2.3beta for sure, but should work with most) full-context mlfs and convert them to two other linguistic feature sets.
 - Output a relational and parsed linguistic featureset.
 - Output a standard absolute linguistic set and a parsed version of this.
 - Output labels suitable to work with HMM (HTS 2.3beta) and DNN (HTS NN 2.3alpha) systems.
@@ -26,6 +26,13 @@ How to make it work:
 - The main workhorse is the make_*.py files - run them with -h to see what to specify.
 - It SHOULD print lots of warnings or errors if something fishy is going on.
 - Any bugs please report to rasmus@dall.dk - I am happy to receive them and provide any support asap.
+- Run the script in SiReTest to check that all works (not a complete guarantee).
+
+Directories:
+- SiReCore contains the core elements of SiRe.
+- SiReData contains scripts to manipulate data and txt files.
+- SiReTest contains a script and files to excercise the most important aspects of SiRe.
+- SiReUtils contains utility scripts not central to SiRe (currently some simple visualitsation methods).
 
 Comments, suggestions, requests:
 - Please send to rasmus@dall.dk and I will consider them asap.
