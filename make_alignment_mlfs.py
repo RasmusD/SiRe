@@ -22,7 +22,7 @@ site.addsitedir(".")
 
 #Other imports
 import argparse, dictionary, os, utterance, lattice_tools
-import SiReIO as io
+import sire_io as io
 from error_messages import SiReError
 
 #Writes out an mlf for initialising alignment and one with short pauses added.

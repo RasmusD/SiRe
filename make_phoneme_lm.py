@@ -24,7 +24,7 @@ site.addsitedir(".")
 
 #Other imports
 import argparse, subprocess
-import SiReIO as io
+import sire_io as io
 
 #It is assumed that the input mlf uses "#1" and "#2" to mark syllable stress at the beginning of syllables. This is changed to "sb"
 #"." to mark word internal syllable boundaries. This is changed to "sb".

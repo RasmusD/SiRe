@@ -23,7 +23,7 @@ import site
 site.addsitedir("../")
 
 import argparse, os, subprocess, dictionary, lattice_tools
-import SiReIO as io
+import sire_io as io
 
 #Combines all txt files in a dir to one txt file where the others are written line by line.
 def combine_txt(indirpath, outfilepath, overwrite=False):

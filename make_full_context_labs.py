@@ -20,7 +20,7 @@ site.addsitedir(".")
 
 #Rest of imports
 import argparse, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, phoneme_features
-import SiReIO as io
+import sire_io as io
 from datetime import datetime
 from error_messages import SiReError
 
