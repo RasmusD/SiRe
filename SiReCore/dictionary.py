@@ -62,41 +62,38 @@ class Dictionary(object):
         pos = entry[0].split("|")[0]
         reduced = False
         entry = " (".join(entry[1:])[:-1]
-      #The entry is done
+      #Make syll structure
+      sylls = [x.strip("()") for x in entry.split(") (")]
+      word = {"pos":pos, "reduced":reduced, "syllables":[]}
+      for syll in sylls:
+        c_syll = {"id":"", "phonemes":[], "stress":None}
+        syll = syll.split(") ")
+        c_syll["stress"] = syll[1]
+        #Make the phonemes
+        for phon in syll[0].split():
+          c_phon = {"id":None, "stress":None, "start":None, "end":None}
+          c_phon["id"] = phon
+          #Phone stress not encoded directly in combilex surface form dicts.
+          c_phon["stress"] = None
+          c_syll["phonemes"].append(c_phon)
+        c_syll["id"] = syll[0].replace(" ", "")
+        word["syllables"].append(c_syll)
       if name in self.raw_dictionary_entries:
-        self.raw_dictionary_entries[name] += [{"pos":pos, "reduced":reduced, "phonetics":entry}]
+        self.raw_dictionary_entries[name] += [word]
       else:
-        self.raw_dictionary_entries[name] = [{"pos":pos, "reduced":reduced, "phonetics":entry}]
+        self.raw_dictionary_entries[name] = [word]
     self.phoneme_feats = phoneme_features.CombilexPhonemes()
     print "Done."
   
-  #Makes entry phonetics as if it existed in the dictionary.
-  #Phonemisation = The phonemisation in a whitespace delimited string - please use numbers as stress indicators
-  #and syllable boundary markers. 0 = no stress and 1 = stressed. E.g. "p l a y 0 i N 1"
-  #TODO - Make it possible to output in cmudict format beside combilex.
-  def make_entry_phonetics(self, phonemisation):
-    entry = ""
-    p_in_s = 0
-    #Add each phoneme
-    for i, p in enumerate(phonemisation.split()):
-      if p.isalpha() and self.phoneme_feats.is_phoneme(p, fail=True):
-        if p_in_s == 0:
-          if i != 0:
-            entry += " (("+p
-          else:
-            entry += "(("+p
-        else:
-          entry += " "+p
-        p_in_s += 1
-      else:
-        #Check this is an int
-        try:
-          int(p)
-        except ValueError:
-          raise SiReError("Something wrong with phonemisation {0}!".format(phonemisation))
-        entry += ") "+p+")"
-        p_in_s = 0
-    return entry
+  #Returns a whitespace delimited phoneme string of an entry
+  def get_entry_phonemes(self, entry, with_syll_stress=False):
+    phonemes = ""
+    for s in entry["syllables"]:
+      for p in s["phonemes"]:
+        phonemes += " "+p["id"]
+      if with_syll_stress == True:
+        phonemes += " "+s["stress"]
+    return phonemes.strip()
   
   #Makes a dictionary entry as if it exists in the dictionary.
   #Pos = the words pos to use
@@ -104,8 +101,21 @@ class Dictionary(object):
   #and syllable boundary markers. 0 = no stress and 1 = stressed. E.g. "p l a y 0 i N 1"
   #Reduced = Is this a reduced form?
   def make_entry(self, pos, phonemisation, reduced=False):
-    phonetics = self.make_entry_phonetics(phonemisation)
-    return [{"pos":pos, "reduced":reduced, "phonetics":phonetics}]
+    entry = {"pos":pos, "reduced":reduced, "syllables":[]}
+    c_syll = {"id":"", "phonemes":[], "stress":None}
+    c_phon = {"id":None, "stress":None, "start":None, "end":None}
+    phonemes = phonemisation.split()
+    for i, p in enumerate(phonemes):
+      if p.isalpha():
+        c_syll["id"] += p
+        c_phon["id"] = p
+        c_syll["phonemes"].append(c_phon)
+        c_phon = {"id":None, "stress":None, "start":None, "end":None}
+      elif p in ["0", "1", "2"]:
+        c_syll["stress"] = p
+        entry["syllables"].append(c_syll)
+        c_syll = {"id":"", "phonemes":[], "stress":None}
+    return entry
   
   def get_entries(self, word, punct_as_sil=None):
     try:
@@ -113,21 +123,19 @@ class Dictionary(object):
     except KeyError:
       #If this has underscores we try to pronounce each letter individually.
       if "_" in word:
-        w_phon = []
+        #The total phoneme string
+        w_phon = ""
         for w in word.split("_"):
           #Get the entry
           ent = self.get_single_entry(w)
-          #Get the phoneme string
-          ent = " ".join(self.convert_entry_phonetics_to_phoneme_string(ent, True, True, True))
-          #Remove unnecessary syllable parts while keeping stress info
-          ent = ent.replace("#", "")
-          ent = ent.replace(" . ", " ")
-          w_phon.append(ent)
+          #Get the phoneme string with syllable stress
+          ent = self.get_entry_phonemes(ent, True)
+          w_phon += " "+ent
         print "Warning! \"{0}\" looks like it should be pronounced {1} and is a proper noun. I'm doing that. Is it right?".format(word, w_phon)
-        return self.make_entry("nnp", " ".join(w_phon))
+        return [self.make_entry("nnp", w_phon.strip(), reduced=False)]
       elif punct_as_sil and word in punct_as_sil[0]:
         if punct_as_sil[1] in self.phoneme_feats.get_sil_phonemes():
-          return self.make_entry(punct_as_sil[1], punct_as_sil[1]+" 0")
+          return [self.make_entry(punct_as_sil[1], punct_as_sil[1]+" 0")]
         else:
           raise SiReError("Cannot add punctuation {0} as silence as sil phoneme specified ({1}) is not valid! Must be in {3}.".format(word, punct_as_sil[1], phoneme_feats.get_sil_phonemes()))
       else:
@@ -145,23 +153,23 @@ class Dictionary(object):
     entries = self.get_entries(word, punct_as_sil)
     if len(entries) > 1:
       pos_added = False
-      c_best = entries[0]["phonetics"]
+      c_best = entries[0]
       for entry in entries:
         #If we have a pos tag to go by
         if pos != None:
           if pos in entry["pos"]:
             if entry["reduced"] == reduced:
-              return entry["phonetics"]
+              return entry
             else:
-              c_best = entry["phonetics"]
+              c_best = entry
               pos_added = True
           #If we have a non-reduced word and we do not have one with the correct
           #pos we overwrite the previous best.
           elif entry["reduced"] == False and pos_added == False:
-            c_best = entry["phonetics"]
+            c_best = entry
         #If we don't have a pos tag to go by but match the reduction desired
         elif entry["reduced"] == reduced:
-          return entry["phonetics"]
+          return entry
       if pos_added == False and pos != None:
         print "Warning: Could not find word with correct POS of \"{0}\" for POS {1}!\nReturning word which may be wrongly reduced.".format(word, pos)
         return c_best
@@ -172,13 +180,25 @@ class Dictionary(object):
       e = entries[0]
       if e["reduced"] != reduced:
         print "Warning: I only had one entry in the dictionary and it was not reduced correctly! It is {0} that \"{1}\" should have been reduced.".format(reduced, word)
-      return e["phonetics"]
+      return e
   
   #Returns the output of get_single_entry in the form used for alignment.
   #Output is list of phonemes.
   def get_single_align_entry(self, word, pos=None):
     entry = self.get_single_entry(word, pos)
-    return self.convert_entry_phonetics_to_phoneme_string(entry, True)
+    return self.get_align_phonemes(entry)
+  
+  def get_align_phonemes(self, entry):
+    entry = self.get_phoneme_string(entry, with_syll_stress=True).split()
+    #Fix syllable stress markers and boundaries
+    for i, p in enumerate(entry):
+      if p in ["1", "2"]:
+        entry[i] = "#"+p
+      elif p == "0":
+        #If it is mid-word
+        if i+1 != len(entry):
+          entry[i] = "."
+    return entry
   
   #Returns a list of alignment strings for each variant of a word in dict.
   #no_syll_stress makes each syllable boundary marked with a common tag "sb" instead of stress info.
@@ -186,32 +206,6 @@ class Dictionary(object):
     entries = self.get_entries(word)
     phonemes = []
     for entry in entries:
-      phonemes.append(self.convert_entry_phonetics_to_phoneme_string(entry["phonetics"], syll_info=True, only_mid_word_sylls=True))
+      phonemes.append(self.get_align_phonemes(entry))
     #Some might be duplicates in terms of pronunciation, we remove those.
     return list_utils.unique_list_of_lists(phonemes)
-  
-  #Converts the standard combilex phonetics to alignment phonemes.
-  #If syll_info then we include syllable boundaries and syllable stress info.
-  def convert_entry_phonetics_to_phoneme_string(self, entry_phonetics, syll_info=False, with_no_stress=False, append_syll_stress=False, only_mid_word_sylls=False):
-    phonemes = []
-    sylls = [x.strip("()") for x in entry_phonetics.split(") (")]
-    s_len = len(sylls)-1
-    for i, syll in enumerate(sylls):
-      syll = syll.split(") ")
-      #Preppend stress
-      if syll_info == True and append_syll_stress == False and only_mid_word_sylls == False:
-        if with_no_stress == True:
-          phonemes.append("#"+syll[1])
-        elif syll[1] != "0":
-          phonemes.append("#"+syll[1])
-      phonemes += syll[0].split()
-      #Append stress
-      if syll_info == True and append_syll_stress == True and only_mid_word_sylls == False:
-        if with_no_stress == True:
-          phonemes.append("#"+syll[1])
-        elif syll[1] != "0":
-          phonemes.append("#"+syll[1])
-      #Append a syllable boundary marker.
-      if syll_info == True and i != s_len:
-        phonemes.append(".")
-    return phonemes

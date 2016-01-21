@@ -102,14 +102,21 @@ def proto_from_hts_lab(lab):
 #If pron_reduced is set this will attempt to produce a reduced pronunciation for parts of the sentence as specifiied by reduction_level and
 #the scores in reduction_score_file.
 #Reduction_level must be minimally 0 (full reduction) and maximally 1 (no reduction).
-def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=False, stanfordparse=False, pcfgdict=None, pron_reduced=False, reduction_score_dir=None, reduction_level=1.0):
+def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=False, stanfordparse=False, pcfgdict=None, pron_reduced=False, lm_score_dir=None, reduction_level=1.0, phoneme_lm_prons=False):
   #Create words
   proto = {"utt":[]}
   proto["id"] = lab[0].split("/")[-1]
   #First we check if we need to reduce some words, and which
-  if pron_reduced == True:
-    if os.path.isdir(reduction_score_dir):
-      words = reduce_word_tuples(lab[1:], os.path.join(reduction_score_dir, proto["id"]+".scored"), reduction_level)
+  if pron_reduced == True and phoneme_lm_prons == True:
+    raise SiReError("Cannot produce reduced pronunciations in combination with phoneme LM based pronunciation choice.")
+  elif pron_reduced == True:
+    if os.path.isdir(lm_score_dir):
+      words = reduce_word_tuples(lab[1:], os.path.join(lm_score_dir, proto["id"]+".scored"), reduction_level)
+    else:
+      raise SiReError("The directory with reduction scores does not exist!")
+  elif phoneme_lm_prons == True:
+    if os.path.isdir(lm_score_dir):
+      raise SiReError("Not implemented yet! Phoneme_lm_scoring. ")
     else:
       raise SiReError("The directory with reduction scores does not exist!")
   else:
@@ -118,14 +125,14 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
   #If no parse exists (i.e. no pos tags) we will simply grab the first pronunciation we can find that is not reduced (if one exist).
   #We also forget the pos tag of that in the process.
   #We start with silence.
-  proto["utt"].append({"id":"sil", "syllables":[dictionary.make_entry_phonetics(general_sil_phoneme+" 0")]})
+  proto["utt"].append({"id":"sil", "syllables":dictionary.make_entry(general_sil_phoneme, general_sil_phoneme+" 0", False)["syllables"]})
   if not stanfordparse:
     for word in words:
       #If we need to keep some punctuation
       if comma_is_pause == True:
-        proto["utt"].append({"id":word[0], "syllables":[dictionary.get_single_entry(word[0], reduced=word[1], punct_as_sil=([","], "sil"))]})
+        proto["utt"].append({"id":word[0], "syllables":dictionary.get_single_entry(word[0], reduced=word[1], punct_as_sil=([","], "sil"))["syllables"]})
       else:
-        proto["utt"].append({"id":word[0], "syllables":[dictionary.get_single_entry(word[0], reduced=word[1])]})
+        proto["utt"].append({"id":word[0], "syllables":dictionary.get_single_entry(word[0], reduced=word[1])["syllables"]})
   else: #Else a pcfg parse should exist and we can get the pos tags from that.
     tree = parsetrees.stanfordPcfgTree()
     tree.make_tree(pcfgdict[proto["id"]])
@@ -149,32 +156,21 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
         c_best = dictionary.get_single_entry(word[0], pos, word[1], punct_as_sil=([","], "sil"))
       else:
         c_best = dictionary.get_single_entry(word[0], pos, word[1])
-      proto["utt"].append({"id":word[0], "syllables":[c_best]})
+      proto["utt"].append({"id":word[0], "syllables":c_best["syllables"]})
   #We end with silence.
-  proto["utt"].append({"id":"sil", "syllables":[dictionary.make_entry_phonetics(general_sil_phoneme+" 0")]})
-  #Make syllables and split dictionary format
+  word = {"id":"sil", "syllables":dictionary.make_entry(general_sil_phoneme, general_sil_phoneme+" 0", False)["syllables"]}
+  proto["utt"].append(word)
+  #Add phony times to phonemes
   #Phony phoneme duration counter
   cur_dur = 0
   for word in proto["utt"]:
-    sylls = [x.strip("()") for x in word["syllables"][0].split(") (")]
-    word["syllables"] = []
-    for syll in sylls:
-      c_syll = {"id":"", "phonemes":[], "stress":None}
-      syll = syll.split(") ")
-      c_syll["stress"] = syll[1]
-      #Make the phonemes
-      for phon in syll[0].split():
-        c_phon = {"id":None, "stress":None, "start":None, "end":None}
-        c_phon["id"] = phon
-        c_phon["start"] = cur_dur
+    for syll in word["syllables"]:
+      #Add phony time to phonemes
+      for phon in syll["phonemes"]:
+        phon["start"] = cur_dur
         #Add 100ms in HTK lab format
         cur_dur += 1000000
-        c_phon["end"] = cur_dur
-        #Phone stress not encoded directly in combilex dict.
-        c_phon["stress"] = None
-        c_syll["phonemes"].append(c_phon)
-      c_syll["id"] = syll[0].replace(" ", "")
-      word["syllables"].append(c_syll)
+        phon["end"] = cur_dur
   return proto
 
 #Add parse information from a stanford pcfg parsed sentence

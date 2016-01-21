@@ -50,11 +50,11 @@ class Utterance(object):
       #Check if args has all the necessary elements and insert defaults if not.
       if not hasattr(args, 'pron_reduced') or args.pron_reduced == False:
         args.pron_reduced = False
-        args.reduction_score_dir = None
+        args.lm_score_dir = None
         args.reduction_level = 1.0
       else:
         #If we are we need to check if we know enough to do it and fail if we don't.
-        if not hasattr(args, 'reduction_score_dir'):
+        if not hasattr(args, 'lm_score_dir'):
           raise SiReError("You have asked to produce a reduced phonemisation but no path to a directory containing LM word probabilities to base the reduction on.")
         if not hasattr(args, 'reduction_level'):
           raise SiReError("You have asked to produce a reduced phonemisation but not specified to which degree the sentence should be reduced.")
@@ -69,7 +69,7 @@ class Utterance(object):
         args.stanford_pcfg_parse = False
       if args.stanford_pcfg_parse == False:
         args.pcfgdict = False
-      proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanford_pcfg_parse, args.pcfgdict, args.pron_reduced, args.reduction_score_dir, args.reduction_level)
+      proto = utterance_load.proto_from_txt(lab, args.dictionary, args.general_sil_phoneme, args.comma_is_pause, args.stanford_pcfg_parse, args.pcfgdict, args.pron_reduced, args.lm_score_dir, args.reduction_level)
       self.txtloaded = True
     else:
       raise SiReError("Don't know what to do with intype - {0}".format(args.intype))

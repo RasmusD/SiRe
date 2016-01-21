@@ -123,7 +123,6 @@ if __name__ == "__main__":
   parser.add_argument('intype', type=str, help='The type of input.', choices=['align_mlf', 'hts_mlf', 'hts_lab', 'txt'])
   parser.add_argument('labdir', type=str, help="The output lab dir.")
   parser.add_argument('inpath', type=str, help='The input path. The path to the mlf if that is the input. A dir path if labs or txt as input.')
-  parser.add_argument('-pron_reduced', type=str, nargs=2, help='Produce labels with a reduced pronunciation based on LM scores. REDUTCION_LEVEL should be a float between 1.0 (fully pronunced) and 0.0 (fully reduced).', metavar=('REDUCTION_LEVEL', 'LM_SCORE_DIR_PATH'))
   parser.add_argument('-txtdir', type=str, help="The directory containing the original txt files. If producing input from txt this is set to equal INPATH and does not need to be set.", default="txt")
   parser.add_argument('-combilexpath', type=str, help="The path to the combilex dictionary directory. It will look for two files - combilex.dict and combilex.add - and retrieve all entries from these.", default=None)
   parser.add_argument('-questions', action="store_true", help="Write out a question set fitting the input dataset.")
@@ -137,7 +136,18 @@ if __name__ == "__main__":
   parser.add_argument('-HHEd_fix', action="store_true", help="Applies a fix to the contexts around the current phoneme to be compatible with hardcoded delimiters in HHEd.")
   parser.add_argument('-comma_is_pause', action='store_true', help="If making labs from txt, commas mark where to pause and so we should pause.")
   parser.add_argument('-general_sil_phoneme', type=str, help="If making labs from txt, use this as the silence phoneme.", default="sil")
+  
+  #A few mutually exclusive groups
+  #TODO should be more
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument('-pron_reduced', type=str, nargs=2, help='Produce labels with a reduced pronunciation based on word level LM scores. REDUCTION_LEVEL should be a float between 1.0 (fully pronunced) and 0.0 (fully reduced).', metavar=('REDUCTION_LEVEL', 'LM_SCORE_DIR_PATH'))
+  group.add_argument('-pron_phoneme_lm', type=str, help='Produce labels with a pronunciation based on phoneme level LM scores. LM_SCORE_DIR_PATH is the path to the stored best paths.', metavar=('LM_SCORE_DIR_PATH'))
   args = parser.parse_args()
+  
+  #Just a check - argparse does not have mutually inclusive groups.
+  if args.pron_reduced or args.pron_phoneme_lm:
+    if args.intype != "txt":
+      raise SiReError("If producing LM based pronunciations you must be making utterances from text!")
   
   #The phoneme set used - hardcoded as currently only combilex is possible.
   args.phoneme_features = phoneme_features.CombilexPhonemes()
@@ -156,7 +166,7 @@ if __name__ == "__main__":
       raise SiReError("Cannot make reduced pronunciation from non-textual input!")
     try:
       args.reduction_level = float(args.pron_reduced[0])
-      args.reduction_score_dir = args.pron_reduced[1]
+      args.lm_score_dir = args.pron_reduced[1]
       if args.reduction_level > 1.0 or args.reduction_level < 0.0:
         raise SiReError("REDUCTION_LEVEL must be between 1.0 and 0.0! Was {0}".format(args.pron_reduced[0]))
       else:

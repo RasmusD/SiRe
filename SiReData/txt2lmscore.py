@@ -19,6 +19,7 @@
 #LM probability.
 
 #Load the SiReImports.pth file
+#Note this assumes we are in the SiReData dir when calling the script.
 import site
 site.addsitedir("../")
 
@@ -82,7 +83,7 @@ def create_lattices_and_list(txtlist, outdirpath, dictionary, overwrite=False):
   for txt in txtlist:
     path = os.path.join(outdirpath, txt[0]+".phoneme_slf")
     #Make the slf
-    slf = lattice_tools.make_phoneme_slf(txt[1:], dictionary, pronoun_variant=True)
+    slf = lattice_tools.make_phoneme_slf(txt[1:], dictionary, pronoun_variant=True, no_syll_stress=True)
     #Write it out
     wf = io.open_writefile_safe(path, overwrite)
     for l in slf:
@@ -117,7 +118,8 @@ if __name__ == "__main__":
     if args.lm_type == "WORD_NGRAM":
       options = " -debug 2 -tolower -unk"
     elif args.lm_type == "PHONEME_NGRAM":
-      options = " -viterbi-decode"
+#      options = " -viterbi-decode -read-htk -order 4 -debug 1 -no-expansion -nbest-decode 10 -out-nbest-dir "+args.outdirpath
+      options = " -viterbi-decode -read-htk -order 4 -debug 1 -no-expansion -nbest-decode 10"
       if args.f:
         options += " -overwrite"
   
@@ -136,4 +138,4 @@ if __name__ == "__main__":
       create_lattices_and_list(txt, args.outdirpath, dictionary, args.f)
     #Then score them
     lattice_list_path = os.path.join(args.outdirpath, "lattices.list")
-    subprocess.call(args.ngram_binary_path+" -lm "+args.lm_path+" -lattice-list "+lattice_list_path+options, shell=True)
+    subprocess.call(args.lm_binary+" -lm "+args.lm_path+" -in-lattice-list "+lattice_list_path+options+" > "+os.path.join(args.outdirpath, "scored.txt"), shell=True)
