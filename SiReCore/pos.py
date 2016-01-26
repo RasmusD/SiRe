@@ -25,10 +25,77 @@ def is_festival_content(pos):
     return False
   return True
 
-def get_festival_general_pos(pos):
-  if is_festival_content(pos):
+#Returns a general pos tag equivalent ot what Festival does
+def get_festival_general_pos(word):
+  if is_festival_content(word.pos):
     return "content"
-  return pos
+  return word.pos
+
+#Returns a general pos tag which corresponds to the following simplifications:
+#cc -> conj
+#cd -> cd
+#dt -> dt
+#ex -> ex
+#fw -> fw
+#in -> conj
+#jj -> adj
+#jjr -> adj
+#jjs -> adj
+#ls -> ls
+#md -> md
+#nn -> noun
+#nns -> noun
+#nnp -> noun
+#nnps -> noun (some nouns are considered pps as in festival tags see code)
+#pdt -> dt
+#pos -> pos
+#prp -> noun
+#prp$ -> noun
+#rb -> adv
+#rbr -> adv
+#rbs -> adv
+#rp -> rp
+#sym -> sym
+#to -> conj
+#uh -> uh
+#vb -> verb
+#vbd -> verb
+#vbg -> verb
+#vbn -> verb
+#vbp -> verb
+#vbz -> verb (a set of verbs are considered aux as in the festival tags see code)
+#wdt -> wh
+#wp -> wh
+#wp$ -> wh
+#wrb -> wh
+def get_sire_general_pos(word):
+  if word.pos in ["cd", "dt", "ex", "fw", "ls", "md", "pos", "rp", "uh", "sym", "sil"]:
+    return word.pos
+  elif word.id in ["is", "am", "are", "was", "were", "has", "have", "had", "be"]: #This is derived from the festival aux set which else would be verb here.
+    return "aux"
+  elif word.id in ["her", "his", "their", "its", "our" ,"their", "its", "mine"]: #This is derived from the festival pps set which else would be noun here.
+    return "pps"
+  elif word.pos in ["cc", "in", "to"]:
+    return "conj"
+  elif word.pos in ["jj", "jjr", "jjs"]:
+    return "adj"
+  elif word.pos in ["nn", "nns", "nnp", "nnps", "prp", "prp$"]:
+    return "noun"
+  elif word.pos == "pdt":
+    return "dt"
+  elif word.pos in ["rb", "rbr", "rbs"]:
+    return "adv"
+  elif word.pos in ["vb", "vbd", "vbg", "vbn", "vbp", "vbz"]:
+    return "verb"
+  elif word.pos in ["wdt", "wp", "wp$", "wrb"]:
+    return "wh"
+  elif word.pos in [".", ",", ":", ";", "\"", "'", "(", "?", ")", "!"]:
+    return "punc"
+  else:
+    if word.pos == "content":
+      raise SiReError("To do the SiRe pos tag generalisation you must not be doing simple_festival_pos_predict but use a proper tagger!")
+    else:
+      raise SiReError("Cannot categorise pos tag ({0})!".format(word.pos))
 
 #An implementation of the english_guess_pos method from festival in pos.scm
 #Festival description of method:

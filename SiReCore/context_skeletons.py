@@ -315,10 +315,6 @@ class RelationalStanfordPcfg(Relational):
   def __init__(self, phoneme_features):
     super(RelationalStanfordPcfg, self).__init__(phoneme_features)
     ###### Stanford Parse Information ######
-    #Part of speech
-    self.lwpos = "bool"
-    self.cwpos = "bool"
-    self.rwpos = "bool"
     #Word parent phrase
     self.wpp = "bool"
     #Word grandpparent phrase
@@ -347,10 +343,6 @@ class AbsoluteStanfordPcfg(Absolute):
     #Initiate the absolute class
     super(AbsoluteStanfordPcfg, self).__init__(phoneme_features)
     ###### Stanford Parse Information ######
-    #Part of speech
-    self.lwpos = "bool"
-    self.cwpos = "bool"
-    self.rwpos = "bool"
     #Word parent phrase
     self.wpp = "bool"
     #Word grandpparent phrase

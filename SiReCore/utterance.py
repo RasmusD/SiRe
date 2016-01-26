@@ -129,11 +129,8 @@ class Utterance(object):
     #We need to know the words
     if args.intype != "txt" and self.txtloaded == False:
       utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
-    #If we have a pcfg parse we have a proper POS tag mechanism and they have already been added - we just simplify them
-    if args.stanford_pcfg_parse:
-      for word in self.words:
-        word.pos = pos.get_festival_general_pos(word.pos)
-    else:
+    #If we have a pcfg parse we have a proper POS tag mechanism and they have already been added
+    if not args.stanford_pcfg_parse:
       pos.simple_festival_pos_predict(self)
     prosody.simple_festival_accent_predict(self)
     

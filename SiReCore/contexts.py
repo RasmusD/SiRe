@@ -42,7 +42,8 @@ def RelationalStanfordPcfg(phoneme):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
   c = context_skeletons.RelationalStanfordPcfg(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
-  add_festival(c, phoneme)
+  #We have proper pos tags to simplify
+  add_festival(c, phoneme, False)
   add_relational_stanford_pcfg(c, phoneme)
   return c
 
@@ -54,6 +55,7 @@ def RelationalStanfordDependency(phoneme):
   add_relational_stanford_dependency(c, phoneme)
   return c
 
+#This set is equivalent to what Festival does.
 def Absolute(phoneme):
   """Creates an absolute context string of the given phoneme."""
   c = context_skeletons.Absolute(phoneme.parent_utt.phoneme_features)
@@ -65,7 +67,8 @@ def AbsoluteStanfordPcfg(phoneme):
   """Creates an absolute context string of the given phoneme including information from a stanford parse."""
   c = context_skeletons.AbsoluteStanfordPcfg(phoneme.parent_utt.phoneme_features)
   add_absolute(c, phoneme)
-  add_festival(c, phoneme)
+  #We have proper pos tags to simplify
+  add_festival(c, phoneme, False)
   add_absolute_stanford_pcfg(c, phoneme)
   return c
 
@@ -81,7 +84,8 @@ def RelationalStanfordCombined(phoneme):
   """Creates an absolute context string of the given phoneme including information from a stanford parse."""
   c = context_skeletons.RelationalStanfordCombined(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
-  add_festival(c, phoneme)
+  #We have proper pos tags to simplify
+  add_festival(c, phoneme, False)
   add_relational_stanford_pcfg(c, phoneme)
   add_relational_stanford_dependency(c, phoneme)
   return c
@@ -90,16 +94,10 @@ def AbsoluteStanfordCombined(phoneme):
   """Creates an absolute context string of the given phoneme including information from a stanford parse."""
   c = context_skeletons.AbsoluteStanfordCombined(phoneme.parent_utt.phoneme_features)
   add_absolute(c, phoneme)
-  add_festival(c, phoneme)
+  #We have proper pos tags to simplify
+  add_festival(c, phoneme, False)
   add_absolute_stanford_pcfg(c, phoneme)
   add_absolute_stanford_dependency(c, phoneme)
-  return c
-
-def Festival(phoneme):
-  """Creates a Festival Equivalent context string of the given phoneme."""
-  c = context_skeletons.Festival(phoneme.parent_utt.phoneme_features)
-  add_absolute(c, phoneme)
-  add_festival(c, phoneme)
   return c
 
 def add_basic(context_skeleton, phoneme):
@@ -455,28 +453,8 @@ def add_absolute(context_skeleton, phoneme):
 def add_basic_stanford_pcfg(context_skeleton, phoneme):
   """Adds the basic elements of stanford parse information to a phoneme context."""
   c = context_skeleton
-  ###### Stanford Parse Information ######
-  #Part of speech of word
   w = phoneme.parent_word
-  w_pos_in_utt = w.pos_in_utt()
-  if w_pos_in_utt > 0:
-    lw = w.parent_utt.words[w_pos_in_utt - 1]
-  else:
-    lw = "xx"
-  diff = w.parent_utt.num_words() - 1 - w_pos_in_utt
-  if diff > 0:
-    rw = w.parent_utt.words[w_pos_in_utt + 1]
-  else:
-    rw = "xx"
-  if lw == "xx":
-    c.add("lwpos", "xx")
-  else:
-    c.add("lwpos", lw.pos)
-  c.add("cwpos", w.pos)
-  if rw == "xx":
-    c.add("rwpos", "xx")
-  else:
-    c.add("rwpos", rw.pos)
+  ###### Stanford Parse Information ######
   #Word parent phrase
   c.add("wpp", w.parent_phrase.label)
   #Word grandpparent phrase
@@ -657,21 +635,27 @@ def add_relational_stanford_dependency(context_skeleton, phoneme):
     c.add("wdggpr", "xx")
 
 #These are features necessary for festival equivalence, but generally doubtful how much they add.
-def add_festival(context_skeleton, phoneme):
+#Festival_gpos - use the festival pos generalisation or the sire_generalisation. Sire_generalisation requires a propor pos tagger (e.g. through parsing)
+def add_festival(context_skeleton, phoneme, festival_gpos=True):
   c = context_skeleton
-  #Remove full pos if exists
-  #They shouldn't though - but this is safety if these are added to parsed things.
-  if hasattr(c, "cpos"):
-    del c.cpos
-  if hasattr(c, "rpos"):
-    del c.rpos
-  if hasattr(c, "lpos"):
-    del c.lpos
   #General pos
   w = phoneme.parent_word
-  c.add("rgpos", pos.get_festival_general_pos(w.pos))
-  c.add("cgpos", pos.get_festival_general_pos(w.pos))
-  c.add("lgpos", pos.get_festival_general_pos(w.pos))
+  #If we are not the first word.
+  #Note this starts from 1 as pos_in_utt returns output of len()
+  w_pos = w.pos_in_utt() - 1
+  if festival_gpos == True:
+    gpos_method = pos.get_festival_general_pos
+  else:
+    gpos_method = pos.get_sire_general_pos
+  if w_pos > 0:
+    c.add("rgpos", gpos_method(phoneme.parent_utt.words[w_pos-1]))
+  else:
+    c.add("rgpos", "xx")
+  c.add("cgpos", gpos_method(w))
+  if w_pos < phoneme.parent_utt.num_words() - 1:
+    c.add("lgpos", gpos_method(phoneme.parent_utt.words[w_pos+1]))
+  else:
+    c.add("lgpos", "xx")
   #Cur Syll Accent
   c.add("csacc", phoneme.parent_syllable.accent)
   #Number of accented syllables before current syll

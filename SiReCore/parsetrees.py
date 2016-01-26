@@ -25,7 +25,7 @@ class stanfordPcfgTree:
   
   def make_tree(self, parenthesis_string):
     #Prep a lsit of the right format
-    tree = parenthesis_string.replace("(", " ( ").replace(")", " ) ").split()
+    tree = parenthesis_string.lower().replace("(", " ( ").replace(")", " ) ").split()
     tmp = []
     #Combine words with their pos tag
     for i, x in enumerate(tree):
