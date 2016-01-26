@@ -116,6 +116,8 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
       raise SiReError("The directory with reduction scores does not exist!")
   elif phoneme_lm_prons == True:
     if os.path.isdir(lm_score_dir):
+      #As we do not keep stress information for the phoneme LM to score we may have a few potential versions of each word.
+      words = find_potential_words(lab[1:], os.path.join(lm_score_dir, proto["id"]+".path"))
       raise SiReError("Not implemented yet! Phoneme_lm_scoring. ")
     else:
       raise SiReError("The directory with reduction scores does not exist!")
@@ -158,8 +160,7 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
         c_best = dictionary.get_single_entry(word[0], pos, word[1])
       proto["utt"].append({"id":word[0], "syllables":c_best["syllables"]})
   #We end with silence.
-  word = {"id":"sil", "syllables":dictionary.make_entry(general_sil_phoneme, general_sil_phoneme+" 0", False)["syllables"]}
-  proto["utt"].append(word)
+  proto["utt"].append({"id":"sil", "syllables":dictionary.make_entry(general_sil_phoneme, general_sil_phoneme+" 0", False)["syllables"]})
   #Add phony times to phonemes
   #Phony phoneme duration counter
   cur_dur = 0

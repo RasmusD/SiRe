@@ -123,18 +123,19 @@ class Utterance(object):
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
       utterance_load.load_stanford_dependency_parse(self, args.dependencydict[self.id])
     
-    #If we output a Festival context set we should modify the UTT a bit further.
-    if args.festival_features:
-      #We need to know the words
-      if args.intype != "txt" and self.txtloaded == False:
-        utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
-      #If we have a pcfg parse we have a proper POS tag mechanism and they have already been added - we just simplify them
-      if args.stanford_pcfg_parse:
-        for word in self.words:
-          word.pos = pos.get_festival_general_pos(word.pos)
-      else:
-        pos.simple_festival_pos_predict(self)
-      prosody.simple_festival_accent_predict(self)
+#    #If we output a Festival context set we should modify the UTT a bit further.
+#    if args.festival_features:
+    #Right now we always use the full festival features.
+    #We need to know the words
+    if args.intype != "txt" and self.txtloaded == False:
+      utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
+    #If we have a pcfg parse we have a proper POS tag mechanism and they have already been added - we just simplify them
+    if args.stanford_pcfg_parse:
+      for word in self.words:
+        word.pos = pos.get_festival_general_pos(word.pos)
+    else:
+      pos.simple_festival_pos_predict(self)
+    prosody.simple_festival_accent_predict(self)
     
 #    #Replacing UH - test!
 #    if not self.txtloaded:

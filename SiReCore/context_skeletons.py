@@ -209,6 +209,22 @@ class Categorical(Base):
     self.lwup = "bool"
     #R pos in utt
     self.rwup = "bool"
+    
+    #Accent and pos features to complete festival equivalent
+    #General pos
+    self.rgpos = "bool"
+    self.cgpos = "bool"
+    self.lgpos = "bool"
+    #Cur Syll Accent
+    self.csacc = "int0"
+    #Number of accented syllables before current syll
+    self.nasbcs = "int0"
+    #Number of accented syllables after current syll
+    self.nasacs = "int0"
+    #Distance to previous accented syllable
+    self.pasd = "intxx"
+    #Distance to next accented syllable
+    self.nasd = "intxx"
 
 class Absolute(Base):
   """The standard context feature set using absolute values instead of relational."""
@@ -235,12 +251,8 @@ class Absolute(Base):
     self.wfwup = "int0"
     #Backward pos in utt
     self.wbwup = "int0"
-
-class Festival(Absolute):
-  """A context feature set equivalent to that produced by Festival for HTS."""
-  def __init__(self, phoneme_features):
-    #Initiate the absolute class
-    super(Festival, self).__init__(phoneme_features)
+    
+    #Accent and pos features to complete festival equivalent
     #General pos
     self.rgpos = "bool"
     self.cgpos = "bool"
@@ -281,6 +293,22 @@ class Relational(Base):
     self.wfwup = "float"
     #Backward pos in utt
     self.wbwup = "float"
+    
+    #Accent and pos features to complete festival equivalent
+    #General pos
+    self.rgpos = "bool"
+    self.cgpos = "bool"
+    self.lgpos = "bool"
+    #Cur Syll Accent
+    self.csacc = "int0"
+    #Number of accented syllables before current syll
+    self.nasbcs = "int0"
+    #Number of accented syllables after current syll
+    self.nasacs = "int0"
+    #Distance to previous accented syllable
+    self.pasd = "intxx"
+    #Distance to next accented syllable
+    self.nasd = "intxx"
 
 class RelationalStanfordPcfg(Relational):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""

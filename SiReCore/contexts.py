@@ -28,18 +28,21 @@ def Categorical(phoneme):
   """Creates a categorical context string of the given phoneme."""
   c = context_skeletons.Categorical(phoneme.parent_utt.phoneme_features)
   add_categorical(c, phoneme)
+  add_festival(c, phoneme)
   return c
 
 def Relational(phoneme):
   """Creates a relational context string of the given phoneme."""
   c = context_skeletons.Relational(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
+  add_festival(c, phoneme)
   return c
 
 def RelationalStanfordPcfg(phoneme):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
   c = context_skeletons.RelationalStanfordPcfg(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
+  add_festival(c, phoneme)
   add_relational_stanford_pcfg(c, phoneme)
   return c
 
@@ -47,6 +50,7 @@ def RelationalStanfordDependency(phoneme):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
   c = context_skeletons.RelationalStanfordDependency(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
+  add_festival(c, phoneme)
   add_relational_stanford_dependency(c, phoneme)
   return c
 
@@ -54,12 +58,14 @@ def Absolute(phoneme):
   """Creates an absolute context string of the given phoneme."""
   c = context_skeletons.Absolute(phoneme.parent_utt.phoneme_features)
   add_absolute(c, phoneme)
+  add_festival(c, phoneme)
   return c
 
 def AbsoluteStanfordPcfg(phoneme):
   """Creates an absolute context string of the given phoneme including information from a stanford parse."""
   c = context_skeletons.AbsoluteStanfordPcfg(phoneme.parent_utt.phoneme_features)
   add_absolute(c, phoneme)
+  add_festival(c, phoneme)
   add_absolute_stanford_pcfg(c, phoneme)
   return c
 
@@ -67,6 +73,7 @@ def AbsoluteStanfordDependency(phoneme):
   """Creates an absolute context string of the given phoneme including information from a stanford parse."""
   c = context_skeletons.AbsoluteStanfordDependency(phoneme.parent_utt.phoneme_features)
   add_absolute(c, phoneme)
+  add_festival(c, phoneme)
   add_absolute_stanford_dependency(c, phoneme)
   return c
 
@@ -74,6 +81,7 @@ def RelationalStanfordCombined(phoneme):
   """Creates an absolute context string of the given phoneme including information from a stanford parse."""
   c = context_skeletons.RelationalStanfordCombined(phoneme.parent_utt.phoneme_features)
   add_relational(c, phoneme)
+  add_festival(c, phoneme)
   add_relational_stanford_pcfg(c, phoneme)
   add_relational_stanford_dependency(c, phoneme)
   return c
@@ -82,6 +90,7 @@ def AbsoluteStanfordCombined(phoneme):
   """Creates an absolute context string of the given phoneme including information from a stanford parse."""
   c = context_skeletons.AbsoluteStanfordCombined(phoneme.parent_utt.phoneme_features)
   add_absolute(c, phoneme)
+  add_festival(c, phoneme)
   add_absolute_stanford_pcfg(c, phoneme)
   add_absolute_stanford_dependency(c, phoneme)
   return c
@@ -647,6 +656,7 @@ def add_relational_stanford_dependency(context_skeleton, phoneme):
   else:
     c.add("wdggpr", "xx")
 
+#These are features necessary for festival equivalence, but generally doubtful how much they add.
 def add_festival(context_skeleton, phoneme):
   c = context_skeleton
   #Remove full pos if exists
