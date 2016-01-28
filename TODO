@@ -38,6 +38,8 @@ Consider To Add/Change:
 - Also consider only either splitting or merging. If nto splitting could simply let words be both beginning and end.
 - Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.
 - Consider if it could be useful to split combilex words with the possesive 's added as this is also done when parsing and would give better POS agreement. Alternatively we should merge parse words, but that may be difficult due to the parse tree also needing modification then.
+- Move add_festival from contexts to basic contexts.
+- Make contexts figure out which type of context to create using args.
 
 Nice to add:
 - Actual tests.

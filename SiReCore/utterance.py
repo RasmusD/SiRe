@@ -336,3 +336,20 @@ class Word:
   
   def end_time(self):
     return self.phonemes[-1].end
+  
+  #Returns the previous word in the utterance. Returns "xx" if this is the first word in the utt.
+  def get_prev_word(self):
+    if self.pos_in_utt() == 0:
+      return "xx"
+    else:
+      return self.parent_utt.words[self.pos_in_utt() - 1]
+  
+  #Returns the next word in the utterance. Returns "xx" if this is the last word in the utt.
+  def get_next_word(self):
+    #Pos in utt starts from 0, len starts at 1, so add 1
+    pos = self.pos_in_utt() + 1
+    if pos == len(self.parent_utt.words):
+      return "xx"
+    else:
+      #We want the next one and have already added one to pos.
+      return self.parent_utt.words[pos]

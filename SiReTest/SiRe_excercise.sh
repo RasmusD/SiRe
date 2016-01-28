@@ -56,6 +56,7 @@ python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs
 python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -stanford_pcfg_parse -parsedir SiReTest/inputs/parse/ -context_type absolute -questions -qpath SiReTest/outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
 python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -stanford_dependency_parse -parsedir SiReTest/inputs/parse/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
 python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -stanford_dependency_parse -stanford_pcfg_parse -parsedir SiReTest/inputs/parse/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -stanford_dependency_parse -stanford_pcfg_parse -parsedir SiReTest/inputs/parse/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type categorical || { echo "Error at line: ${LINENO}"; exit 1; }
 
 #We start assuming things like -HHEd_fix just works to reduce number of runs
 
@@ -82,6 +83,7 @@ python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt S
 python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -combilexpath $COMBILEXPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
 python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -combilexpath $COMBILEXPATH || { echo "Error at line: ${LINENO}"; exit 1; }
 python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -combilexpath $COMBILEXPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -combilexpath $COMBILEXPATH -context_type categorical || { echo "Error at line: ${LINENO}"; exit 1; }
 
 
 #Clean up

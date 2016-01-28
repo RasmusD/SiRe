@@ -310,6 +310,37 @@ class Relational(Base):
     #Distance to next accented syllable
     self.nasd = "intxx"
 
+class CategoricalStanfordPcfg(Categorical):
+  """An extension of the categorical base set including information from a stanford parsing of the sentence."""
+  def __init__(self, phoneme_features):
+    super(CategoricalStanfordPcfg, self).__init__(phoneme_features)
+    ###### Stanford Parse Information ######
+    #Word parent phrase
+    self.wpp = "bool"
+    #Word grandpparent phrase
+    self.wgpp = "bool"
+    #Word greatgrandparent phrase
+    self.wggpp = "bool"
+    
+    #R Word categorical position in parent phrase
+    self.rwcppp = "bool"
+    #C Word categorical position in parent phrase
+    self.cwcppp = "bool"
+    #L Word categorical position in parent phrase
+    self.lwcppp = "bool"
+    #R Word categorical position in grandparent phrase
+    self.rwcgppp = "bool"
+    #C Word categorical position in grandparent phrase
+    self.cwcgppp = "bool"
+    #L Word categorical position in grandparent phrase
+    self.lwcgppp = "bool"
+    #R Word categorical position in greatgrandparent phrase
+    self.rwcggppp = "bool"
+    #C Word categorical position in greatgrandparent phrase
+    self.cwcggppp = "bool"
+    #L Word categorical position in greatgrandparent phrase
+    self.lwcggppp = "bool"
+
 class RelationalStanfordPcfg(Relational):
   """An extension of the relational base set including information from a stanford parsing of the sentence."""
   def __init__(self, phoneme_features):
@@ -364,10 +395,9 @@ class AbsoluteStanfordPcfg(Absolute):
     self.wfwrggppp = "int0xx"
     #Backward
     self.wbwrggppp = "int0xx"
-  
 
 class AbsoluteStanfordDependency(Absolute):
-  """The standard context feature set using absolute values instead of relational."""
+  """An extension of the absolute base set including information from a stanford dependency parsing of the sentence."""
   def __init__(self, phoneme_features):
     #Initiate the absolute class
     super(AbsoluteStanfordDependency, self).__init__(phoneme_features)
@@ -393,8 +423,35 @@ class AbsoluteStanfordDependency(Absolute):
     #Word absolute position in greatgrandparent phrase
     self.wdggpr = "intxx"
 
+class CategoricalStanfordDependency(Categorical):
+  """An extension of the categorical base set including information from a stanford dependency parsing of the sentence."""
+  def __init__(self, phoneme_features):
+    #Initiate the absolute class
+    super(CategoricalStanfordDependency, self).__init__(phoneme_features)
+    ###### Stanford Dependency Parse Information ######
+    #Word parent dependency relation
+    self.wpdr = "bool"
+    #Word parent to grandparent relation
+    self.wgpdr = "bool"
+    #Word grandparent to greatgrandparent relation
+    self.wggpdr = "bool"
+    #Word parent general dependency relation
+    self.wpgdr = "bool"
+    #Number of children
+    self.dnc = "int0xx"
+    #Tree distance to left word in num arcs
+    self.dtdlw = "intxx"
+    #Tree distance to right word in num arcs
+    self.dtdrw = "intxx"
+    #Word absolute distance to parent relation
+    self.wdpr = "bool"
+    #Word absolute distance to grandparent relation
+    self.wdgpr = "bool"
+    #Word absolute position in greatgrandparent phrase
+    self.wdggpr = "bool"
+
 class RelationalStanfordDependency(Relational):
-  """An extension of the relational base set including information from a stanford parsing of the sentence."""
+  """An extension of the relational base set including information from a stanford dependency parsing of the sentence."""
   def __init__(self, phoneme_features):
     super(RelationalStanfordDependency, self).__init__(phoneme_features)
     ###### Stanford Dependency Parse Information ######
@@ -428,3 +485,8 @@ class AbsoluteStanfordCombined(AbsoluteStanfordDependency, AbsoluteStanfordPcfg)
   """A skeleton containing the combined pcfg and dependency contexts using relational values."""
   def __init__(self, phoneme_features):
     super(AbsoluteStanfordCombined, self).__init__(phoneme_features)
+
+class CategoricalStanfordCombined(CategoricalStanfordDependency, CategoricalStanfordPcfg):
+  """A skeleton containing the combined pcfg and dependency contexts using categorical values."""
+  def __init__(self, phoneme_features):
+    super(CategoricalStanfordCombined, self).__init__(phoneme_features)

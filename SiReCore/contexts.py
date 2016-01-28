@@ -19,6 +19,7 @@ from context_utils import strintify
 from context_utils import strfloatify
 from context_utils import to_relational
 from context_utils import get_pos_cat
+from context_utils import get_dep_pos_cat
 from parsetrees import dep_distance_in_arcs
 from error_messages import SiReError
 
@@ -29,6 +30,23 @@ def Categorical(phoneme):
   c = context_skeletons.Categorical(phoneme.parent_utt.phoneme_features)
   add_categorical(c, phoneme)
   add_festival(c, phoneme)
+  return c
+
+def CategoricalStanfordPcfg(phoneme):
+  """Creates a categorical context string of the given phoneme."""
+  c = context_skeletons.CategoricalStanfordPcfg(phoneme.parent_utt.phoneme_features)
+  add_categorical(c, phoneme)
+  #We have proper pos tags to simplify
+  add_festival(c, phoneme, False)
+  add_categorical_stanford_pcfg(c, phoneme)
+  return c
+
+def CategoricalStanfordDependency(phoneme):
+  """Creates a categorical context string of the given phoneme."""
+  c = context_skeletons.CategoricalStanfordDependency(phoneme.parent_utt.phoneme_features)
+  add_categorical(c, phoneme)
+  add_festival(c, phoneme)
+  add_categorical_stanford_dependency(c, phoneme)
   return c
 
 def Relational(phoneme):
@@ -78,6 +96,16 @@ def AbsoluteStanfordDependency(phoneme):
   add_absolute(c, phoneme)
   add_festival(c, phoneme)
   add_absolute_stanford_dependency(c, phoneme)
+  return c
+
+def CategoricalStanfordCombined(phoneme):
+  """Creates an absolute context string of the given phoneme including information from a stanford parse."""
+  c = context_skeletons.CategoricalStanfordCombined(phoneme.parent_utt.phoneme_features)
+  add_categorical(c, phoneme)
+  #We have proper pos tags to simplify
+  add_festival(c, phoneme, False)
+  add_categorical_stanford_pcfg(c, phoneme)
+  add_categorical_stanford_dependency(c, phoneme)
   return c
 
 def RelationalStanfordCombined(phoneme):
@@ -479,6 +507,39 @@ def add_relational_stanford_pcfg(context_skeleton, phoneme):
   c.add("wfwrggppp", str(to_relational(w.greatgrandparent_phrase.pos_in_parent, w.greatgrandparent_phrase.num_siblings, True, True)))
   c.add("wbwrggppp", str(to_relational(w.greatgrandparent_phrase.pos_in_parent, w.greatgrandparent_phrase.num_siblings, False, True)))
 
+def add_categorical_stanford_pcfg(context_skeleton, phoneme):
+  """Adds the categorical elements of stanford parse information to a phoneme context."""
+  c = context_skeleton
+  #Add basic info
+  add_basic_stanford_pcfg(c, phoneme)
+  #Word
+  rw = phoneme.parent_word.get_next_word()
+  cw = phoneme.parent_word
+  lw = phoneme.parent_word.get_prev_word()
+  utt = phoneme.parent_utt
+  #Right word categorical position in parent, grandparent and greatgrandparent phrase
+  if rw == "xx":
+    c.add("rwcppp", "xx")
+    c.add("rwcgppp", "xx")
+    c.add("rwcggppp", "xx")
+  else:
+    c.add("rwcppp", get_pos_cat(rw.pos_in_utt(), len(utt.words), with_sil=True))
+    c.add("rwcgppp", get_pos_cat(rw.pos_in_utt(), len(utt.words), with_sil=True))
+    c.add("rwcggppp", get_pos_cat(rw.pos_in_utt(), len(utt.words), with_sil=True))
+  #Current word categorical position in parent, grandparent and greatgrandparent phrase
+  c.add("cwcppp", get_pos_cat(cw.pos_in_utt(), len(utt.words), with_sil=True))
+  c.add("cwcgppp", get_pos_cat(cw.pos_in_utt(), len(utt.words), with_sil=True))
+  c.add("cwcggppp", get_pos_cat(cw.pos_in_utt(), len(utt.words), with_sil=True))
+  #Left word categorical position in parent, grandparent and greatgrandparent phrase
+  if lw == "xx":
+    c.add("lwcppp", "xx")
+    c.add("lwcgppp", "xx")
+    c.add("lwcggppp", "xx")
+  else:
+    c.add("lwcppp", get_pos_cat(lw.pos_in_utt(), len(utt.words), with_sil=True))
+    c.add("lwcgppp", get_pos_cat(lw.pos_in_utt(), len(utt.words), with_sil=True))
+    c.add("lwcggppp", get_pos_cat(lw.pos_in_utt(), len(utt.words), with_sil=True))
+
 def add_absolute_stanford_pcfg(context_skeleton, phoneme):
   """Adds the absolute elements of stanford parse information to a phoneme context."""
   c = context_skeleton
@@ -505,7 +566,6 @@ def add_absolute_stanford_pcfg(context_skeleton, phoneme):
     c.add("wbwrggppp", str(w.greatgrandparent_phrase.num_siblings))
   else:
     c.add("wbwrggppp", str(w.greatgrandparent_phrase.num_siblings - 1 - w.greatgrandparent_phrase.pos_in_parent))
-
 
 def add_basic_stanford_dependency(context_skeleton, phoneme):
   """Adds the basic elements of stanford dependency parse information to a phoneme context."""
@@ -631,6 +691,40 @@ def add_relational_stanford_dependency(context_skeleton, phoneme):
   if w.greatgrandparent_dependency.parent != None and w.greatgrandparent_dependency.parent.label != "ROOT":
     p_dep_pos = to_relational(w.greatgrandparent_dependency.parent.utt_pos-1, w.parent_utt.num_words()-1, True)
     c.add("wdggpr", str(abs(dep_pos-p_dep_pos)))
+  else:
+    c.add("wdggpr", "xx")
+
+def add_categorical_stanford_dependency(context_skeleton, phoneme):
+  """Adds the categorical elements of stanford parse information to a phoneme context."""
+  c = context_skeleton
+  #Word
+  w = phoneme.parent_word
+  utt = phoneme.parent_utt
+  ###### Stanford Dependency Parse Information ######
+  add_basic_stanford_dependency(c, phoneme)
+  #If the current phoneme is sil/pau etc. the label is None and we can just add "xx" all through
+  if w.parent_dependency.label == None and phoneme.id in phoneme.parent_utt.phoneme_features.get_sil_phonemes():
+    c.add("wdpr", "xx")
+    c.add("wdgpr", "xx")
+    c.add("wdggpr", "xx")
+    return
+  #Word categorical distance to parent relation
+  dep_pos = w.parent_dependency.utt_pos
+  if w.parent_dependency.parent != None and w.parent_dependency.parent.label != "ROOT":
+    p_dep_pos = w.parent_dependency.parent.utt_pos
+    c.add("wdpr", get_dep_pos_cat(dep_pos, p_dep_pos, len(utt.words), with_sil=True))
+  else:
+    c.add("wdpr", "xx")
+  #Word categorical distance to grandparent relation
+  if w.grandparent_dependency.parent != None and w.grandparent_dependency.parent.label != "ROOT":
+    p_dep_pos = w.grandparent_dependency.parent.utt_pos
+    c.add("wdgpr", get_dep_pos_cat(dep_pos, p_dep_pos, len(utt.words), with_sil=True))
+  else:
+    c.add("wdgpr", "xx")
+  #Word categorical distance to greatgrandparent relation
+  if w.greatgrandparent_dependency.parent != None and w.greatgrandparent_dependency.parent.label != "ROOT":
+    p_dep_pos = w.greatgrandparent_dependency.parent.utt_pos
+    c.add("wdggpr", get_dep_pos_cat(dep_pos, p_dep_pos, len(utt.words), with_sil=True))
   else:
     c.add("wdggpr", "xx")
 

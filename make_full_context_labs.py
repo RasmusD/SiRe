@@ -41,33 +41,40 @@ def read_stanford_dependency_parses(dirpath):
 #Writes out a label context.
 #If args.questions is true it returns a list of
 #contexts for each phoneme to make questions about.
+#Actually it could be useful to let contexts sort this out. See TODO
 def write_context_utt(utt, args):
   wf = open(os.path.join(args.labdir, utt.id+".lab"), "w")
   if args.questions == True:
     cs = []
   for phone in utt.phonemes:
-    if args.context_type == "categorical":
-      context = contexts.Categorical(phone)
-    elif args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
+    if args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
       if args.context_type == "relational":
         context = contexts.RelationalStanfordCombined(phone)
       elif args.context_type == "absolute":
         context = contexts.AbsoluteStanfordCombined(phone)
+      elif args.context_type == "categorical":
+        context = contexts.CategoricalStanfordCombined(phone)
     elif args.stanford_pcfg_parse == True:
       if args.context_type == "relational":
         context = contexts.RelationalStanfordPcfg(phone)
       elif args.context_type == "absolute":
         context = contexts.AbsoluteStanfordPcfg(phone)
+      elif args.context_type == "categorical":
+        context = contexts.CategoricalStanfordPcfg(phone)
     elif args.stanford_dependency_parse == True:
       if args.context_type == "relational":
         context = contexts.RelationalStanfordDependency(phone)
       elif args.context_type == "absolute":
         context = contexts.AbsoluteStanfordDependency(phone)
+      elif args.context_type == "categorical":
+        context = contexts.CategoricalStanfordDependency(phone)
     else:
       if args.context_type == "relational":
         context = contexts.Relational(phone)
       elif args.context_type == "absolute":
         context = contexts.Absolute(phone)
+      elif args.context_type == "categorical":
+        context = contexts.Categorical(phone)
     if args.questions == True:
       cs.append(context)
     wf.write(context.get_context_string(args.HHEd_fix))
@@ -78,28 +85,34 @@ def write_context_utt(utt, args):
     write_questions(cs, args)
 
 def write_questions(context_set, args):
-  if args.context_type == "categorical":
-    qs, q_utt = contexts.get_question_sets(context_skeletons.Categorical(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
-  elif args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
+  if args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
     if args.context_type == "relational":
       qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordCombined(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
       qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordCombined(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+    elif args.context_type == "categorical":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.CategoricalStanfordCombined(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
   elif args.stanford_pcfg_parse == True:
     if args.context_type == "relational":
       qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordPcfg(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
       qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordPcfg(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+    elif args.context_type == "categorical":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.CategoricalStanfordPcfg(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
   elif args.stanford_dependency_parse == True:
     if args.context_type == "relational":
       qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordDependency(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
       qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordDependency(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+    elif args.context_type == "categorical":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.CategoricalStanfordDependency(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
   else:
     if args.context_type == "relational":
       qs, q_utt = contexts.get_question_sets(context_skeletons.Relational(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
       qs, q_utt = contexts.get_question_sets(context_skeletons.Absolute(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+    elif args.context_type == "categorical":
+      qs, q_utt = contexts.get_question_sets(context_skeletons.Categorical(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
   for q in qs:
     args.qfile.write(q+"\n")
   for q in q_utt:

@@ -14,6 +14,7 @@
 #limitations under the License.                                          #
 ##########################################################################
 
+import math
 from error_messages import SiReError
 
 #Return a float to two decimal places giving
@@ -84,12 +85,16 @@ def check_value(context_skeleton, variable_name, value):
 #Get the categorical position of a segment
 #With_sil indicates a segment where we always start and end with a silence segment (phon/syll/word)
 #In that case the first and last return xx and the beginning and end is one from those elements
+#We assume num_phonemes is output of len (i.e. starts at 1)
+#And that phoneme_pos is a list pos (i.e. starts at 0)
 def get_pos_cat(phoneme_pos, num_phonemes, with_sil=False):
   if with_sil == True:
     if phoneme_pos == 0:
       return "xx"
     elif phoneme_pos == num_phonemes - 1:
       return "xx"
+    elif num_phonemes == 3:
+      return "one"
     elif phoneme_pos == 1:
       return "beg"
     elif phoneme_pos == num_phonemes - 2:
@@ -105,6 +110,26 @@ def get_pos_cat(phoneme_pos, num_phonemes, with_sil=False):
       return "end"
     else:
       return "mid"
+
+#Gets the categorical distance between two dependency relations.
+#This is defined as:
+#Close: within 1/10th (round up) of the total sent length (min 1)
+#Mid: within 1/2 (round down) the total sent length (min 2)
+#Long: over 1/2 the total sent length (min 3)
+#Shortsent: if the sentence is less than 4 words (excluding leading and trailing pause segments) this is returned.
+def get_dep_pos_cat(w1_pos, w2_pos, num_words, with_sil=True):
+  dist = abs(w1_pos - w2_pos)
+  #This discards leading and trailing sil
+  if with_sil == True:
+    num_words -= 2
+  if num_words <= 3:
+    return "shortsent"
+  elif int(math.ceil(num_words/10.0)) <= dist:
+    return "close"
+  elif int(math.floor(num_words/2.0)) <= dist:
+    return "mid"
+  else:
+    return "long"
 
 #Return the string of the int of the float multiplied by 100.
 def strintify(fl):
