@@ -55,16 +55,15 @@ def get_phoneme_strings(labs):
   return n_labs
 
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser(description='Create a txt file with phoneme strings for phoneme LM creation.')
+  parser = argparse.ArgumentParser(description='Create a dir of txt files with phoneme strings for phoneme LM creation.')
   parser.add_argument('input_mlf', type=str, help="The input mlf.")
-  parser.add_argument('txtpath', type=str, help="The output text filepath.")
-  parser.add_argument('lmpath', type=str, help="The output lm filepath.")
+  parser.add_argument('outpath', type=str, help="The output directory path.")
   parser.add_argument('ngram_binary_path', type=str, help="The path to the LM making binary. For SRILM this is the ngram-count binary.")
   parser.add_argument('-lm_binary_options', type=str, help="Additional arguments to be sent to the ngram binary as options. Overwrites the defaults options: -order 4 -interpolate -gt3min 1 -wbdiscount -debug 3", nargs=argparse.REMAINDER, default='-order 4 -interpolate -gt3min 1 -wbdiscount -debug 3'.split())
   parser.add_argument('-f', action='store_true', help="Force overwrite of outputpath file if it exists.")
   args = parser.parse_args()
   
-  wf = io.open_writefile_safe(args.txtpath, args.f)
+  wf = io.open_writefile_safe(os.path.join(args.outpath, "sents.txt"), args.f)
   
   labs = io.parse_mlf(io.open_file_line_by_line(args.input_mlf), "align_mlf")
   

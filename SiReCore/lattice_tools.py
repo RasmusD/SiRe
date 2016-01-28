@@ -47,11 +47,11 @@ def make_phoneme_slf(words, dictionary, pronoun_variant=False, no_syll_stress=Fa
   #Add each pronounciation allowed for the word
   for wi, word in enumerate(words):
     if pronoun_variant:
-      entries = dictionary.get_all_align_entries(word, no_syll_stress)
+      entries = dictionary.get_all_lattice_entries(word, no_syll_stress)
       for entry in entries:
         nodes, arcs, N, L = make_word_nodes_arcs(entry, nodes, arcs, N, L, w_start_node, w_end_node)
     else:
-      entry = dictionary.get_single_align_entry(word)
+      entry = dictionary.get_single_lattice_entry(word, no_syll_stress)
       nodes, arcs, N, L = make_word_nodes_arcs(entry, nodes, arcs, N, L, w_start_node, w_end_node)
     #Now the new start_node is the previous end node
     w_start_node = w_end_node

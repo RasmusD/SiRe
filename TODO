@@ -19,6 +19,7 @@ Need to add:
 - Option to choose which pause phoneme to use for alignment.
 - Combilex uses three levels of syllable stress (0, 1, 2) but they are not order (0 - no stress, 1 - primary stress, 2 - secondary stress) which is annoying as higher/lower than questions become meaningless as a consequence (or at least harder for the dec tree to deal with). This should be changed when loading combilex but is kept currently for compatibility reasons.
 - In fact the loading of the dictionary entries should generally be redone such that the phonemisation is not stored as a weird bracketed string but rather as a mini utt with syllables containing a phoneme string and a stress value (and when loading this we can of course switch the values to make them ordered).
+- Option to use punct as sil and change general sil phoneme when making lattices and mlfs.
 
 Should be added:
 - When splitting n't words should put the n with the t and not split those.

@@ -157,7 +157,7 @@ class Dictionary(object):
       for entry in entries:
         #If we have a pos tag to go by
         if pos != None:
-          if pos in entry["pos"]:
+          if pos == entry["pos"]:
             if entry["reduced"] == reduced:
               return entry
             else:
@@ -182,14 +182,17 @@ class Dictionary(object):
         print "Warning: I only had one entry in the dictionary and it was not reduced correctly! It is {0} that \"{1}\" should have been reduced.".format(reduced, word)
       return e
   
-  #Returns the output of get_single_entry in the form used for alignment.
+  #Returns the output of get_single_entry in the form used for alignment or phoneme ngram rescoring.
   #Output is list of phonemes.
-  def get_single_align_entry(self, word, pos=None):
+  def get_single_lattice_entry(self, word, no_syll_stress, pos=None):
     entry = self.get_single_entry(word, pos)
-    return self.get_align_phonemes(entry)
+    if no_syll_stress == True:
+      return self.get_phoneme_ngram_phonemes(entry)
+    else:
+      return self.get_align_phonemes(entry)
   
   def get_align_phonemes(self, entry):
-    entry = self.get_phoneme_string(entry, with_syll_stress=True).split()
+    entry = self.get_entry_phonemes(entry, with_syll_stress=True).split()
     #Fix syllable stress markers and boundaries
     for i, p in enumerate(entry):
       if p in ["1", "2"]:
@@ -200,12 +203,41 @@ class Dictionary(object):
           entry[i] = "."
     return entry
   
-  #Returns a list of alignment strings for each variant of a word in dict.
-  #no_syll_stress makes each syllable boundary marked with a common tag "sb" instead of stress info.
-  def get_all_align_entries(self, word, no_syll_stress=False):
+  #Returns a list of strings for each variant of a word in dict.
+  def get_all_lattice_entries(self, word, no_syll_stress):
     entries = self.get_entries(word)
     phonemes = []
     for entry in entries:
-      phonemes.append(self.get_align_phonemes(entry))
+      if no_syll_stress == True:
+        phonemes.append(self.get_phoneme_ngram_phonemes(entry))
+      else:
+        phonemes.append(self.get_align_phonemes(entry))
     #Some might be duplicates in terms of pronunciation, we remove those.
     return list_utils.unique_list_of_lists(phonemes)
+  
+  #Returns a list of phoneme lm strings for each variant of a word in dict.
+  def get_all_phoneme_ngram_entries(self, word):
+    entries = self.get_entries(word)
+    phonemes = []
+    for entry in entries:
+      phonemes.append(self.get_phoneme_ngram_phonemes(entry))
+    #Some might be duplicates in terms of pronunciation, we remove those.
+    return list_utils.unique_list_of_lists(phonemes)
+  
+  #Here syllable stress markers are replaced with a syllable boundary makrer "sb".
+  def get_phoneme_ngram_phonemes(self, entry):
+    entry = self.get_entry_phonemes(entry, with_syll_stress=True).split()
+    #Fix syllable stress markers and boundaries
+    to_remove = []
+    for i, p in enumerate(entry):
+      if p in ["0", "1", "2"]:
+        #If it is mid-word we replace it with sb
+        if i+1 != len(entry):
+          entry[i] = "sb"
+        else:
+          #If it is end of word it must be removed
+          to_remove.append(p)
+    #Remove end of word stress markers
+    for p in to_remove:
+      entry.remove(p)
+    return entry

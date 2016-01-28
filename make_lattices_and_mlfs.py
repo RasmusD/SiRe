@@ -35,7 +35,7 @@ from error_messages import SiReError
 #alignments to make it work.
 #NOTE: No stress is NOT marked #0, it is simply assumed it is unstressed if unmarked.
 #If syll_info is set to false we don't write out the syllable stress markers and dots for syll boundaries.
-def write_initial_alignment_mlfs(utt, spmlf, nospmlf, no_syll_info=False):
+def write_initial_alignment_mlfs(utt, spmlf, nospmlf):
   spmlf.write("\"*/"+utt.id+".lab\"\n")
   nospmlf.write("\"*/"+utt.id+".lab\"\n")
   
@@ -43,7 +43,7 @@ def write_initial_alignment_mlfs(utt, spmlf, nospmlf, no_syll_info=False):
   for wi, word in enumerate(utt.words):
     slen = len(word.syllables)-1
     for si, syllable in enumerate(word.syllables):
-      if syllable.stress != "0" and no_syll_info == False:
+      if syllable.stress != "0":
         spmlf.write("#"+syllable.stress+"\n")
       for phoneme in syllable.phonemes:
         #If the phoneme is a stop we split it in closure and release.
@@ -55,7 +55,7 @@ def write_initial_alignment_mlfs(utt, spmlf, nospmlf, no_syll_info=False):
         else:
           spmlf.write(phoneme.id+"\n")
           nospmlf.write(phoneme.id+"\n")
-      if si != slen and no_syll_info == False:
+      if si != slen:
         spmlf.write(".\n")
     #At the end of a word which is not "sil" we add sp model
     if wi != wlen and word.id != "sil":
@@ -76,21 +76,43 @@ def write_slf_alignment_lattices(outpath, sent, slfdirpath, dictionary, pronoun_
     wf.write(l)
   wf.close()
 
+#Writes out an HTK SLF lattice for phoneme ngram re-scoring.
+def write_slf_phoneme_ngram_lattices(outpath, sent, slfdirpath, dictionary):
+  #Make the SLF
+  slf = lattice_tools.make_phoneme_slf(sent, dictionary, pronoun_variant=True, no_syll_stress=True)
+  
+  #Write it out
+  wf = open(os.path.join(slfdirpath, outpath), "w")
+  for l in slf:
+    wf.write(l)
+  wf.close()
+
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Create alignment mlfs and slfs.')
-  parser.add_argument('-txtdir', type=str, help="The directory containing the original txt files.", default="txt")
-  parser.add_argument('-outdir', type=str, help="The outpath directory.", default="align")
+  parser.add_argument('txtdir', type=str, help="The directory containing the txt files with the sentences to create lattices/mlfs from.")
+  parser.add_argument('combilexpath', type=str, help="The path to the combilex dictionary directory.")
+  parser.add_argument('outdir', type=str, help="The outpath directory.")
   parser.add_argument('-mlf', action="store_true", help="Output mlfs.")
   parser.add_argument('-mlfname', type=str, help="The name to prepend the output mlfs, if making mlfs.", default="txt")
-  parser.add_argument('-slf', action="store_true", help="Output slfs.")
-  parser.add_argument('-pronoun_variant', action="store_true", help="Create pronounciation variant slfs.")
-  parser.add_argument('-no_syll_info', action="store_true", help="If set no syllable stress and boundary information is included in mlfs.")
-  parser.add_argument('combilexpath', type=str, help="The path to the combilex dictionary directory.")
+  parser.add_argument('-pronoun_variant', action="store_true", help="Create pronounciation variant slfs. Always true when creating phoneme ngram slfs.")
+  
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument('-slf_phoneme', action="store_true", help="Output phoneme ngram rescoring suitable slfs.")
+  group.add_argument('-slf_align', action="store_true", help="Output alignment suitable slfs.")
+  
   args = parser.parse_args()
+  
+  if args.mlf == True and args.slf_phoneme == True:
+    raise SiReError("It makes no sense to make mlfs at the same time as phoneme slfs.")
+  
+  
+  if args.mlf != True and args.slf_phoneme != True and args.slf_align != True:
+    raise SiReError("You must be doing at least one mlf or slf type.")
   
   #Used for utt creation
   args.intype = "txt"
-  args.stanfordparse = False
+  args.stanford_pcfg_parse = False
+  args.stanford_dependency_parse = False
   args.dictionary = dictionary.Dictionary(args.combilexpath)
   
   if args.pronoun_variant and not args.slf:
@@ -113,9 +135,11 @@ if __name__ == "__main__":
       #Make an utt
       utt = utterance.Utterance(txt, args)
       #Write out mlfs for standard alignment methods.
-      write_initial_alignment_mlfs(utt, wfsp, wfnosp, args.no_syll_info)
-    if args.slf:
+      write_initial_alignment_mlfs(utt, wfsp, wfnosp)
+    if args.slf_align:
       write_slf_alignment_lattices(txt[0]+'.slf', txt[1:], args.outdir, args.dictionary, args.pronoun_variant)
+    elif args.slf_phoneme:
+      write_slf_phoneme_ngram_lattices(txt[0]+'.slf', txt[1:], args.outdir, args.dictionary)
   
   if args.mlf:
     wfsp.close()
