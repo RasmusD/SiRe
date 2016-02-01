@@ -14,19 +14,14 @@
 #limitations under the License.                                          #
 ##########################################################################
 
-import argparse, dictionary, io
+#Load the SiReImports.pth file
+import site
+site.addsitedir(".")
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser(description='Checks if words in a dictionary.')
-  parser.add_argument('indir', type=str, help='The input dir of txt files.')
-  parser.add_argument('combilexpath', type=str, help='The path to the directory containing combilex.')
-  parser.add_argument('-outfile', type=str, help='The output filepath if an output of words not in the dictionary is desired.')
-  args = parser.parse_args()
-  
-  txt = io.load_txt_dir(args.indir)
-  
-  dct = dictionary.Dictionary(args.combilexpath)
-  
+#Get other imports
+import argparse, dictionary, sire_io
+
+def get_oov_words(txt, dct):
   oov = []
   
   for t in txt:
@@ -39,8 +34,26 @@ if __name__ == "__main__":
     if len(tmp) > 1:
       oov.append(tmp)
   
+  return oov
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description='Checks if word(s) is in combilex.')
+  parser.add_argument('indir', type=str, help='The input dir of txt files.')
+  parser.add_argument('combilexpath', type=str, help='The path to the directory containing combilex.')
+  parser.add_argument('-outfile', type=str, help='The output filepath if an output of words not in the dictionary is desired.')
+  args = parser.parse_args()
+  
+  txt = io.load_txt_dir(args.indir)
+  
+  dct = dictionary.Dictionary(args.combilexpath)
+  
+  oov = get_oov_words(txt, dct)
+  
   if args.outfile:
-    pass
+    wf = io.open_writefile_safe(args.outfile)
+    for l in oov:
+      wf.write(" ".join(l)+"\n")
+    wf.close()
   else:
     for l in oov:
       print " ".join(l)

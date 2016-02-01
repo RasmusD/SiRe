@@ -110,14 +110,14 @@ class Utterance(object):
       word.add_syllables()
     
     #If we should use the stanford pcfg parse info
-    if args.stanford_pcfg_parse:
+    if hasattr(args, 'stanford_pcfg_parse') and args.stanford_pcfg_parse:
       print "Loading stanford pcfg parse info to utt..."
       if args.intype != "txt":
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
       utterance_load.load_stanford_pcfg_parse(self, args.pcfgdict[self.id], args.comma_is_pause)
     
     #If we should use the stanford dependency parse info
-    if args.stanford_dependency_parse:
+    if hasattr(args, 'stanford_dependency_parse') and args.stanford_dependency_parse:
       print "Loading stanford dependency parse info to utt..."
       if args.intype != "txt" and self.txtloaded == False:
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
@@ -155,16 +155,27 @@ class Utterance(object):
   def num_words_no_pau(self, keep_comma=False):
     return len(self.get_words_no_pau(keep_comma))
   
+  def num_phonemes_no_pau(self):
+    return len(self.get_phonemes_no_pau())
+  
   #Gets the words without pausing
   #Used when comparing to stanford parse etc.
   def get_words_no_pau(self, keep_comma=False):
     tmp = []
+    ignore = self.phoneme_features.get_sil_phonemes()
     for word in self.words:
-      ignore = self.phoneme_features.get_sil_phonemes()
       if keep_comma == False:
         ignore += [","]
       if word.id not in ignore:
         tmp.append(word)
+    return tmp
+  
+  def get_phonemes_no_pau(self):
+    tmp = []
+    ignore = self.phoneme_features.get_sil_phonemes()
+    for p in self.phonemes:
+      if p.id not in ignore:
+        tmp.append(p)
     return tmp
 
 class Phoneme:
