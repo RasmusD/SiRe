@@ -63,6 +63,7 @@ def merge_hvite_state_align_and_full_context_lab(state_align_labs, full_context_
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Utility question file related methods.')
   parser.add_argument('-merge_hvite_state_with_full_context', nargs=3, help="Merge an HVite state level alignment MLF with full-context labels in a directory and output state-level full-context labels to another.", metavar=('mlf_path', 'lab_dir', 'out_dir'))
+  parser.add_argument('-collapse_closure', action="store_true", help="Collapses stops split into closure and release into one when merging state_align_labs with full_context_labs.")
   parser.add_argument('-f', action="store_true", help="Force overwrite of files in output dir.")
   args = parser.parse_args()
   
@@ -70,6 +71,14 @@ if __name__ == "__main__":
     full_context_labs = sire_io.open_labdir_line_by_line(args.merge_hvite_state_with_full_context[1])
     mlf = sire_io.open_file_line_by_line(args.merge_hvite_state_with_full_context[0])
     state_labs = sire_io.parse_mlf(mlf, "align_mlf")
+    if args.collapse_closure == True:
+      for x, lab in enumerate(state_labs):
+        for i, l in enumerate(lab):
+          if '_cl' in l[-1]:
+            if state_labs[x][i+3][-1]+'_cl' == l[-1]:
+              state_labs[x][i+3] = lab[i+3][:4]
+            else:
+              raise SiReError("Something wrong with {0}".format(l))
     merged = merge_hvite_state_align_and_full_context_lab(state_labs, full_context_labs)
     outdirpath = args.merge_hvite_state_with_full_context[2]
     for lab in merged:
