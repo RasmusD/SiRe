@@ -134,19 +134,27 @@ def split_word(word, split_pos):
   #Slice out the original word
   w_p_u = word.pos_in_utt()
   utt.words = utt.words[:w_p_u] + [w1, w2] + utt.words[w_p_u + 1:]
-  #Fix syllables
+  #Fix syllables and phonemes
   w1.syllables = word.syllables[:-1]
   w2.syllables = [word.syllables[-1]]
+  w1.phonemes = []
+  w2.phonemes = []
   for s in w1.syllables:
     s.parent_word = w1
+    for p in s.phonemes:
+      w1.phonemes.append(p)
+      p.parent_word = w1
   w2.syllables[0].parent_word = w2
-  #Fix phonemes
-  w1.phonemes = word.phonemes[:-len(word.syllables[-1].phonemes)]
-  w2.phonemes = word.phonemes[-len(word.syllables[-1].phonemes):]
-  for p in w1.phonemes:
-    p.parent_word = w1
-  for p in w2.phonemes:
+  for p in w2.syllables[0].phonemes:
+    w2.phonemes.append(p)
     p.parent_word = w2
+#  #Fix phonemes
+#  w1.phonemes = word.phonemes[:-len(word.syllables[-1].phonemes)]
+#  w2.phonemes = word.phonemes[-len(word.syllables[-1].phonemes):]
+#  for p in w1.phonemes:
+#    p.parent_word = w1
+#  for p in w2.phonemes:
+#    p.parent_word = w2
   
   #Delete the original word. If all has gone well this should be fine.
   del word
@@ -160,6 +168,7 @@ def split_syll(syll, acceptable_phoneme_set, word_spanning_phonemes=[]):
   #A special case for phonemes which may have ended up spanning across what would normally
   #be two words or if all phonemes related to the "2nd" word has been deleted.
   #E.g. I@ in we're (w I@) or u in who'd (h u).
+  #Or a deleted stop in I'd (aI).
   #In this case we add a new "phony" syllable with no duration. So it affects contexts
   #but does not take any frames.
   if syll.phonemes[-1].id in word_spanning_phonemes:
