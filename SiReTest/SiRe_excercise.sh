@@ -66,6 +66,11 @@ python make_full_context_labs.py hts_mlf SiReTest/outputs/labs SiReTest/inputs/h
 #From hts_labs
 python make_full_context_labs.py hts_lab SiReTest/outputs/labs SiReTest/inputs/HTS_Lab SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
 
+#From sire_labs
+python make_full_context_labs.py sire_lab SiReTest/outputs/labs SiReTest/inputs/SiRe_Lab/absolute SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py sire_lab SiReTest/outputs/labs SiReTest/inputs/SiRe_Lab/relational SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type relational || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py sire_lab SiReTest/outputs/labs SiReTest/inputs/SiRe_Lab/categorical SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type categorical || { echo "Error at line: ${LINENO}"; exit 1; }
+
 #THE FOLLOWING EXCERCISES NEED YOU TO HAVE COMBILEX AND SET A THE PATH TO IT YOURSELF!!!
 #From txt
 if [ "$1" != "all" ]

@@ -129,7 +129,7 @@ def finalise_questions(qpath):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Create full context labels from a variety of input.')
-  parser.add_argument('intype', type=str, help='The type of input.', choices=['align_mlf', 'hts_mlf', 'hts_lab', 'txt'])
+  parser.add_argument('intype', type=str, help='The type of input.', choices=['align_mlf', 'hts_mlf', 'hts_lab', 'txt', 'sire_lab'])
   parser.add_argument('labdir', type=str, help="The output lab dir.")
   parser.add_argument('inpath', type=str, help='The input path. The path to the mlf if that is the input. A dir path if labs or txt as input.')
   parser.add_argument('txtdir', type=str, help="The directory containing the original txt files. If producing input from txt this is set to equal INPATH and is technically superfluous, but necessary for other contexts.")
@@ -203,6 +203,8 @@ if __name__ == "__main__":
   elif args.intype == "hts_lab":
     labs = io.open_labdir_line_by_line(args.inpath)
     args.intype = "hts_mlf"
+  elif args.intype == "sire_lab":
+    labs = io.open_labdir_line_by_line(args.inpath)
   else:
     if not os.path.exists(args.inpath):
       raise SiReError("Input path to mlf does no exist!")

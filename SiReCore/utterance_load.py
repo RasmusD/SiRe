@@ -52,6 +52,83 @@ def proto_from_align_lab(lab):
   
   return proto
 
+#Create a prototype utterance from a SiRe label which has had at least the basic set of features added.
+#Note that this will not load e.g. parsing information. Only the basic set is loaded from this and everything else must be added later!
+#TODO - support the loading of other features, e.g. parsing from these labels.
+def proto_from_sire_lab(lab, context_type, HHEd_fix):
+  proto = {"utt":[]}
+  proto["id"] = lab[0]
+  lab.pop(0)
+  c_word = {"id":"", "syllables":[]}
+  c_syll = {"id":"", "phonemes":[], "stress":None}
+  for i, line in enumerate(lab):
+    c_phon = {"id":None, "stress":None, "start":None, "end":None}
+    # Create phonemes
+    if HHEd_fix == True:
+      c_phon["id"] = line[-1].split("|cp:-")[1].split("+|rp:")[0]
+    else:
+      c_phon["id"] = line[-1].split("|cp:")[1].split("|rp:")[0]
+    c_phon["start"] = line[0]
+    c_phon["end"] = line[1]
+    # SiRe labs do not currently contain stress information at the phoneme level as a standard
+    # This could have been added if an alignment MLF containing this info was used originially
+    c_phon["stress"] = None
+    # Add phonemes to syll
+    # If phonemes is beginning of syll prev syll is done
+    #This depends on what type of positional context was used to create the labels
+    beg_syll = False
+    if context_type == "absolute":
+      if line[-1].split("|pfwsp:")[1].split("|")[0] in ["0"]:
+        beg_syll = True
+    elif context_type == "relational":
+      #0 should be used for silence positions in the relational case, with "100" for normal things
+      if line[-1].split("|pfwsp:")[1].split("|")[0] in ["0", "100"]:
+        beg_syll = True
+    elif context_type == "categorical":
+      if line[-1].split("|cpsp:")[1].split("|")[0] in ["xx", "beg", "one"]:
+        beg_syll = True
+    else:
+      raise SiReError("Unsupported context_type {0}!".format(context_type))
+    if beg_syll == True:
+      for p in c_syll["phonemes"]:
+        c_syll["id"] += p["id"]
+      # Add syll to word
+      c_word["syllables"].append(c_syll)
+      # If new syll is beginning of word, prev word is done
+      #This depends on what type of positional context was used to create the labels
+      beg_word = False
+      if context_type == "absolute":
+        if line[-1].split("|pfwwp:")[1].split("|")[0] in ["0"]:
+          beg_word = True
+      elif context_type == "relational":
+        #0 should be used for silence positions in the relational case, with "100" for normal things
+        if line[-1].split("|pfwwp:")[1].split("|")[0] in ["0", "100"]:
+          beg_word = True
+      elif context_type == "categorical":
+        if line[-1].split("|cpwp:")[1].split("|")[0] in ["xx", "beg", "one"]:
+          beg_word = True
+      else:
+        raise SiReError("Unsupported context_type {0}!".format(context_type))
+      if beg_word == True:
+        for s in c_word["syllables"]:
+          c_word["id"] += s["id"]
+        proto["utt"].append(c_word)
+        c_word = {"id":"", "syllables":[]}
+      c_syll = {"id":"", "phonemes":[c_phon], "stress":line[-1].split("|css:")[1].split("|")[0]}
+    else:
+      c_syll["phonemes"].append(c_phon)
+    # If this is the last phoneme we are done
+    if i == len(lab) - 1:
+      for p in c_syll["phonemes"]:
+        c_syll["id"] += p["id"]
+      c_word["syllables"].append(c_syll)
+      for s in c_word["syllables"]:
+          c_word["id"] += c_syll["id"]
+      proto["utt"].append(c_word)
+  # The first is empty so we can pop
+  proto["utt"].pop(0)
+  return proto
+
 def proto_from_hts_lab(lab):
   proto = {"utt":[]}
   proto["id"] = lab[0]

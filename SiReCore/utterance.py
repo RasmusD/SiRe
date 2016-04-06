@@ -46,6 +46,14 @@ class Utterance(object):
     elif args.intype == "hts_mlf":
       proto = utterance_load.proto_from_hts_lab(lab)
       self.txtloaded = False
+    elif args.intype == "sire_lab":
+      #As we need additional information here we check if args contains it
+      if not hasattr(args, "context_type"):
+        raise SiReError("You're trying to create an utterance from a SiRe label but have not told what kind of positional context_type was used!")
+      if not hasattr(args, "HHEd_fix"):
+        raise SiReError("You're trying to create an utterance from a SiRe label but have not told if HHEd_fix was used to create the labels!")
+      proto = utterance_load.proto_from_sire_lab(lab, args.context_type, args.HHEd_fix)
+      self.txtloaded = False
     elif args.intype == "txt":
       #Check if args has all the necessary elements and insert defaults if not.
       if not hasattr(args, 'pron_reduced') or args.pron_reduced == False:
@@ -180,8 +188,8 @@ class Utterance(object):
 
 class Phoneme:
   """A class representing a phoneme."""
-  def __init__(self):
-    self.id = None
+  def __init__(self, p_id=None):
+    self.id = p_id
   
   def load_from_proto(self, proto_phone, p_syll_pos, p_utt_pos, p_word_pos, syll, word, utt):
     self.id = proto_phone["id"]
@@ -220,6 +228,36 @@ class Phoneme:
   
   def get_feats_dict(self):
     return self.parent_utt.phoneme_features.get_phoneme_feats_dict(self.id)
+  
+  def get_left_phoneme(self):
+    pos = self.pos_in_utt()
+    if pos == 0:
+      return Phoneme("xx")
+    else:
+      return self.parent_utt.phonemes[pos-1]
+  
+  def get_left_left_phoneme(self):
+    pos = self.pos_in_utt()
+    if pos <= 1:
+      return Phoneme("xx")
+    else:
+      return self.parent_utt.phonemes[pos-2]
+  
+  def get_right_phoneme(self):
+    pos = self.pos_in_utt()
+    u_len = self.parent_utt.num_phonemes() - 1
+    if pos == u_len:
+      return Phoneme("xx")
+    else:
+      return self.parent_utt.phonemes[pos+1]
+  
+  def get_righ_right_phoneme(self):
+    pos = self.pos_in_utt()
+    u_len = self.parent_utt.num_phonemes() - 2
+    if pos >= u_len:
+      return Phoneme("xx")
+    else:
+      return self.parent_utt.phonemes[pos+2]
 
 class Syllable:
   """A class representing a syllable."""
