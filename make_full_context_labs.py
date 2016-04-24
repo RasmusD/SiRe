@@ -159,6 +159,8 @@ if __name__ == "__main__":
   
   #The phoneme set used - hardcoded as currently only combilex is possible.
   args.phoneme_features = phoneme_features.CombilexPhonemes()
+  #We use festival features always - hardcoded here as we want them in all full-context labs but not in e.g. corpus analysis
+  args.festival_features = True
   
   #We can't use commas as pause if we are not creating labs from text.
   if args.comma_is_pause and args.intype != "txt":

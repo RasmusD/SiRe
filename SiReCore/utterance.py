@@ -131,16 +131,16 @@ class Utterance(object):
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
       utterance_load.load_stanford_dependency_parse(self, args.dependencydict[self.id])
     
-#    #If we output a Festival context set we should modify the UTT a bit further.
-#    if args.festival_features:
-    #Right now we always use the full festival features.
-    #We need to know the words
-    if args.intype != "txt" and self.txtloaded == False:
-      utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
-    #If we have a pcfg parse we have a proper POS tag mechanism and they have already been added
-    if not args.stanford_pcfg_parse:
-      pos.simple_festival_pos_predict(self)
-    prosody.simple_festival_accent_predict(self)
+    #If we output a Festival context set we should modify the UTT a bit further.
+    #Right now we use the full festival features as standard, but some operations, like corpus analysis, does not rely on this and it is a nuisance to have the text a requirement so this is still just an option.
+    if args.festival_features == True:
+      #We need to know the words
+      if args.intype != "txt" and self.txtloaded == False:
+        utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
+      #If we have a pcfg parse we have a proper POS tag mechanism and they have already been added
+      if not args.stanford_pcfg_parse:
+        pos.simple_festival_pos_predict(self)
+      prosody.simple_festival_accent_predict(self)
     
 #    #Replacing UH - test!
 #    if not self.txtloaded:
@@ -258,6 +258,12 @@ class Phoneme:
       return Phoneme("xx")
     else:
       return self.parent_utt.phonemes[pos+2]
+  
+  #Returns the duration of the phone
+  #Note that if the utterance was created from text
+  #then this duration is phony and not valid.
+  def get_duration(self):
+    return int(self.end)-int(self.start)
 
 class Syllable:
   """A class representing a syllable."""
@@ -385,6 +391,11 @@ class Word:
   
   def end_time(self):
     return self.phonemes[-1].end
+  
+  #Gets the durations of the word.
+  #NOTE: This will be a phony if utt created from text.
+  def get_duration(self):
+    return int(self.phonemes[-1].end) - int(self.phonemes[0].start)
   
   #Returns the previous word in the utterance. Returns "xx" if this is the first word in the utt.
   def get_prev_word(self):
