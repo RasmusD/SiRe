@@ -7,22 +7,23 @@ But it is useful for me and should slowly develop into something useful to other
 
 If you try it out, here is what it can do:
 
-- Load standard HTS (2.3beta for sure, but should work with most) full-context mlfs and convert them to two other linguistic feature sets.
-- Output a relational and parsed linguistic featureset.
-- Output a standard absolute linguistic set and a parsed version of this.
+- Load standard HTS (2.3beta for sure, but should work with most) and convert them to several other linguistic feature sets (see below).
+- Load an mlf created from alignment using the Festival multisyn tools/HTK and create full-context labels.
+- Load txt, if you also have the combilex dictionary, files and create full-context labels.
+- Output feature sets using three positional segment representations: absolute, relational and categorical.
+- Output the above feature sets with features added absed on PCFG and/or Dependency parsing from the stanford parser. (Paper under review showing effect of parsing features and different positional representations currently uner review - draft available upon request)
 - Output labels suitable to work with HMM (HTS 2.3beta) and DNN (HTS NN 2.3alpha) systems.
 - Output a question set consistent with the linguistic features encountered in training data for both HMM and DNN.
 - Merge question sets.
 - It should be easy to define a new linguistic feature context set allowing for rapid experimentation.
-- Load an mlf created from alignment using the multisyn tools and create full-context labels.
-- Load txt, if you also have the combilex dictionary, files and create full-context labels.
-- Create mlfs and slfs suitable for alignment using the CSTR Festival multisyn tools.
-- Interface with the Stanford parser to create a parse usable for context labelling.
+- Create mlfs and slfs suitable for alignment using the Festival multisyn tools or HTK.
+- Do some corpus analysis and assorted simple tools.
 - Use NGRAM statistics for pronunciation reduction.
 - More to come... see TODO
 
 How to make it work:
 - You need python 2.7+, lower may work if you have the argparse module installed (developed on 2.7.3 which has it by default)
+- Visualisation tools and plots by corporautils need matplotlib in addition.
 - The main workhorse is the make_*.py files - run them with -h to see what to specify.
 - It SHOULD print lots of warnings or errors if something fishy is going on.
 - Any bugs please report to rasmus@dall.dk - I am happy to receive them and provide any support asap.
@@ -32,7 +33,7 @@ Directories:
 - SiReCore contains the core elements of SiRe.
 - SiReData contains scripts to manipulate data and txt files.
 - SiReTest contains a script and files to excercise the most important aspects of SiRe.
-- SiReUtils contains utility scripts not central to SiRe (currently some simple visualitsation methods).
+- SiReUtils contains utility scripts not central to SiRe.
 
 Comments, suggestions, requests:
 - Please send to rasmus@dall.dk and I will consider them asap.
