@@ -18,14 +18,29 @@ import os, sys
 from error_messages import SiReError
 
 #Opens each .lab file in a dir line by line.
-def open_labdir_line_by_line(path):
+def open_labdir_line_by_line(path, dur_lab=False):
   l = os.listdir(path)
   labs = []
-  for i, lab in enumerate(l):
-    if ".lab" in lab:
-      tmp = [lab.split(".")[0]]
-      tmp += [x.split() for x in open(os.path.join(path, lab), "r").readlines()]
-      labs.append(tmp)
+  if dur_lab == False:
+    for i, lab in enumerate(l):
+      if ".lab" in lab:
+        tmp = [lab.split(".")[0]]
+        tmp += [x.split() for x in open(os.path.join(path, lab), "r").readlines()]
+        labs.append(tmp)
+  elif dur_lab == True:
+    for i, lab in enumerate(l):
+      if ".dur" in lab:
+        c_pos = 0
+        tmp = [lab.split(".")[0]]
+        for x in open(os.path.join(path, lab), "r").readlines():
+          if ".state[" not in x:
+            x = x.split()
+            frames = int(x[-3].split("=")[1])
+            tmp += [[str(c_pos*50000), str((c_pos+frames)*50000), x[0]]]
+            c_pos += frames
+        labs.append(tmp)
+  else:
+    raise SiReError("dur_lab must be boolean!")
   return labs
 
 #Opens a file and returns a list containing each line as a seperate item.

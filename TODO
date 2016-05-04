@@ -52,3 +52,4 @@ Nice to add:
 - Plotting f0 on own plot.
 - Adding alignment info to plot?
 - Support for loading of parsing features etc. when loading a SiRe created full-context label.
+- Migration to Python 3.x

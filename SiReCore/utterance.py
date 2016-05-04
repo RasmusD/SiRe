@@ -270,7 +270,7 @@ class Syllable:
   
   #An empty syll.
   #Using this can be dangerous if you don't add everything necesary later.
-  def __init__(self):
+  def __init__(self, s_id=None):
     self.id = None
   
   def load_from_proto(self, proto_syll, current_phoneme_utt_pos, s_word_pos, s_utt_pos, word, utt):
@@ -331,6 +331,20 @@ class Syllable:
   def get_vowel_feats_dict(self):  
     return self.parent_utt.phoneme_features.get_phone_feats_dict(self.vowel_id)
   
+  def get_left_syllable(self):
+    pos = self.pos_in_utt()
+    if pos == 0:
+      return "xx"
+    else:
+      return self.parent_utt.syllables[pos-1]
+  
+  def get_right_syllable(self):
+    pos = self.pos_in_utt()
+    u_len = self.parent_utt.num_syllables() - 1
+    if pos == u_len:
+      return "xx"
+    else:
+      return self.parent_utt.syllables[pos+1]
 
 
 class Word:

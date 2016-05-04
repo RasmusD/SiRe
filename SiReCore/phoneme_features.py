@@ -159,8 +159,17 @@ class CombilexPhonemes(object):
     features["V"] = ["v", "u", "xx"]
     return features
 
+  #Note that is_consonant and is_vowel are not completely opposite as silence phones are considered neither.
+  #I.e. if you want to check if something is a vowel do not do is_consonant(phone) == False as this will also
+  #Apply to silence.
   def is_vowel(self, phoneme):
-    if self.phonemes[phoneme][7] == "v":
+    if self.phonemes[phoneme][0] == "v":
+      return True
+    else:
+      return False
+
+  def is_consonant(self, phoneme):
+    if self.phonemes[phoneme][0] == "c":
       return True
     else:
       return False
