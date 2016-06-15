@@ -198,9 +198,12 @@ class Dictionary(object):
       if p in ["1", "2"]:
         entry[i] = "#"+p
       elif p == "0":
-        #If it is mid-word
+        #If it is mid-word make it a dot
         if i+1 != len(entry):
           entry[i] = "."
+    #Remove 0 stress markers left over
+    while "0" in entry:
+      entry.remove("0")
     return entry
   
   #Returns a list of strings for each variant of a word in dict.

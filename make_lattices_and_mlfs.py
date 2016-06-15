@@ -77,9 +77,9 @@ def write_slf_alignment_lattices(outpath, sent, slfdirpath, dictionary, pronoun_
   wf.close()
 
 #Writes out an HTK SLF lattice for phoneme ngram re-scoring.
-def write_slf_phoneme_ngram_lattices(outpath, sent, slfdirpath, dictionary):
+def write_slf_phoneme_ngram_lattices(outpath, sent, slfdirpath, dictionary, no_syll_stress):
   #Make the SLF
-  slf = lattice_tools.make_phoneme_slf(sent, dictionary, pronoun_variant=True, no_syll_stress=True)
+  slf = lattice_tools.make_phoneme_slf(sent, dictionary, pronoun_variant=True, no_syll_stress=no_syll_stress)
   
   #Write it out
   wf = open(os.path.join(slfdirpath, outpath), "w")
@@ -95,6 +95,7 @@ if __name__ == "__main__":
   parser.add_argument('-mlf', action="store_true", help="Output mlfs.")
   parser.add_argument('-mlfname', type=str, help="The name to prepend the output mlfs, if making mlfs.", default="txt")
   parser.add_argument('-pronoun_variant', action="store_true", help="Create pronounciation variant slfs. Always true when creating phoneme ngram slfs.")
+  parser.add_argument('-no_syll_stress', action="store_true", help="Create pronounciation variant slfs for ngram rescoring without syllable stress information.")
   
   group = parser.add_mutually_exclusive_group()
   group.add_argument('-slf_phoneme', action="store_true", help="Output phoneme ngram rescoring suitable slfs.")
@@ -115,8 +116,11 @@ if __name__ == "__main__":
   args.stanford_dependency_parse = False
   args.dictionary = dictionary.Dictionary(args.combilexpath)
   
-  if args.pronoun_variant and not args.slf:
-    raise SiReError("Cannot create pronounciation variant mlfs. Please output slfs.")
+  if args.pronoun_variant:
+    if args.slf_phoneme or args.slf_align:
+      pass
+    else:
+      raise SiReError("Cannot create pronounciation variant mlfs. Please output slfs.")
   
   txtfiles = io.load_txt_dir(args.txtdir)
   
@@ -139,7 +143,7 @@ if __name__ == "__main__":
     if args.slf_align:
       write_slf_alignment_lattices(txt[0]+'.slf', txt[1:], args.outdir, args.dictionary, args.pronoun_variant)
     elif args.slf_phoneme:
-      write_slf_phoneme_ngram_lattices(txt[0]+'.slf', txt[1:], args.outdir, args.dictionary)
+      write_slf_phoneme_ngram_lattices(txt[0]+'.slf', txt[1:], args.outdir, args.dictionary, args.no_syll_stress)
   
   if args.mlf:
     wfsp.close()

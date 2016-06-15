@@ -23,14 +23,14 @@ import site
 site.addsitedir(".")
 
 #Other imports
-import argparse, subprocess
+import argparse, subprocess, os
 import sire_io as io
 
 #It is assumed that the input mlf uses "#1" and "#2" to mark syllable stress at the beginning of syllables. This is changed to "sb"
 #"." to mark word internal syllable boundaries. This is changed to "sb".
 #"sp" to mark word boundaries. These may have some duration if there is a mid sentential pause and is replaced with "sil" if that is the case else kept as marker of word boundary.
 #"_cl" to mark the closure of a stop. This is discarded.
-def get_phoneme_strings(labs):
+def get_phoneme_strings(labs, no_syll_stress):
   n_labs = []
   for i, lab in enumerate(labs):
     tmp = []
@@ -44,7 +44,10 @@ def get_phoneme_strings(labs):
       if "_cl" not in phon[-1]:
         if phon[-1] in [".", "#1", "#2"]:
           if lab[n-1][-1] not in ["sp", "sil"]:
-            tmp.append("sb")
+            if no_syll_stress == True:
+              tmp.append("sb")
+            else:
+              tmp.append(phon[-1])
         #Use sp as sil if it has any length
         #Else we simply keep it to mark a word boundary
         elif phon[-1] == "sp" and phon[0] != phon[1]:
@@ -61,18 +64,23 @@ if __name__ == "__main__":
   parser.add_argument('ngram_binary_path', type=str, help="The path to the LM making binary. For SRILM this is the ngram-count binary.")
   parser.add_argument('-lm_binary_options', type=str, help="Additional arguments to be sent to the ngram binary as options. Overwrites the defaults options: -order 4 -interpolate -gt3min 1 -wbdiscount -debug 3", nargs=argparse.REMAINDER, default='-order 4 -interpolate -gt3min 1 -wbdiscount -debug 3'.split())
   parser.add_argument('-f', action='store_true', help="Force overwrite of outputpath file if it exists.")
+  parser.add_argument('-no_syll_stress', action='store_true', help="Replace syllable stress markers with a boundary marker sb.")
   args = parser.parse_args()
   
   wf = io.open_writefile_safe(os.path.join(args.outpath, "sents.txt"), args.f)
   
   labs = io.parse_mlf(io.open_file_line_by_line(args.input_mlf), "align_mlf")
   
-  labs = get_phoneme_strings(labs)
+  labs = get_phoneme_strings(labs, args.no_syll_stress)
   
   for lab in labs:
     wf.write(" ".join(lab)+"\n")
   wf.close()
   
+  txtpath = os.path.join(args.outpath, "sents.txt")
+  
+  lmpath = os.path.join(args.outpath, "ngram.lm")
+  
   #This allows for people to pass their own options to the ngram binary
   options = " "+" ".join(args.lm_binary_options)
-  subprocess.call(args.ngram_binary_path+" -text "+args.txtpath+" -lm "+args.lmpath+options, shell=True)
+  subprocess.call(args.ngram_binary_path+" -text "+txtpath+" -lm "+lmpath+options, shell=True)
