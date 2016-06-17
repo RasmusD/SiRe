@@ -79,7 +79,7 @@ def write_slf_alignment_lattices(outpath, sent, slfdirpath, dictionary, pronoun_
 #Writes out an HTK SLF lattice for phoneme ngram re-scoring.
 def write_slf_phoneme_ngram_lattices(outpath, sent, slfdirpath, dictionary, no_syll_stress):
   #Make the SLF
-  slf = lattice_tools.make_phoneme_slf(sent, dictionary, pronoun_variant=True, no_syll_stress=no_syll_stress)
+  slf = lattice_tools.make_phoneme_slf(sent, dictionary, pronoun_variant=True, no_syll_stress=no_syll_stress, SRILM_lattice_fix=True)
   
   #Write it out
   wf = open(os.path.join(slfdirpath, outpath), "w")

@@ -19,7 +19,7 @@
 #Makes an slf for a phoneme path
 #pronoun_variant outputs all variants of each word in the dictionary
 #no_syll_stress marks syllable boundaries only and with a common tag "sb" instead of syllable stress.
-def make_phoneme_slf(words, dictionary, pronoun_variant=False, no_syll_stress=False):
+def make_phoneme_slf(words, dictionary, pronoun_variant=False, no_syll_stress=False, SRILM_lattice_fix=False):
   #We can't write immediately as some lines depend on later lines
   slf = []
   slf.append("# Size of Network: N=num nodes, L=num arcs\n")
@@ -30,9 +30,14 @@ def make_phoneme_slf(words, dictionary, pronoun_variant=False, no_syll_stress=Fa
   slf.append("# List of nodes: I=node-number, W=word\n")
   nodes = []
   arcs = []
-  #We always start with sil
+  #We always start with sil - we have to add two and an arc for it to be processed
   nodes.append("I="+str(N)+" W=sil\n")
   N+=1
+  if SRILM_lattice_fix == True:
+    nodes.append("I="+str(N)+" W=sil\n")
+    arcs.append("J="+str(L)+" S="+str(N-1)+" E="+str(N)+"\n")
+    N+=1
+    L+=1
   #The first word starts at sil
   w_start_node = N-1
   #The first word ends at sil+1
