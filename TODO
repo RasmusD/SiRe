@@ -53,3 +53,4 @@ Nice to add:
 - Adding alignment info to plot?
 - Support for loading of parsing features etc. when loading a SiRe created full-context label.
 - Migration to Python 3.x
+- Make an all-in-one integrated label creation from phone lm instead of current seperate steps.
