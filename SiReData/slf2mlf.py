@@ -37,24 +37,25 @@ if __name__ == "__main__":
   mlf = ["#!MLF!#\n"]
   
   for slf in slfs:
-    bestpath = subprocess.check_output(args.latticetoolpath+" -in-lattice "+os.path.join(args.inpath, slf)+" -lm "+args.lmpath+" "+args.options, stderr=subprocess.STDOUT, shell=True)
-    bestpath = bestpath.split()
-    mlf.append("\"*/"+bestpath.pop(0)+".rec\"\n")
-    faketime = 0
-    for p in bestpath:
-      if p == "<s>" or p == "</s>":
-        pass
-      elif p in [".", "sp"]:
-        mlf.append(str(faketime)+" "+str(faketime)+" "+p+" 0.0 "+p+"\n")
-      elif p in ["#1", "#2"]:
-        # We first add the stress marker and then a "." to mark the boundary.
-        # Without the dot load_utterance from align mlf will not detect the syllable boundary.
-        mlf.append(str(faketime)+" "+str(faketime)+" "+p+" 0.0 "+p+"\n")
-        mlf.append(str(faketime)+" "+str(faketime)+" . 0.0 .\n")
-      else:
-        mlf.append(str(faketime)+" "+str(faketime+10000)+" "+p+" 0.0 "+p+"\n")
-        faketime+=10000
-    mlf.append(".\n")
+    if ".slf" in slf:
+      bestpath = subprocess.check_output(args.latticetoolpath+" -in-lattice "+os.path.join(args.inpath, slf)+" -lm "+args.lmpath+" "+args.options, stderr=subprocess.STDOUT, shell=True)
+      bestpath = bestpath.split()
+      mlf.append("\"*/"+bestpath.pop(0)+".rec\"\n")
+      faketime = 0
+      for p in bestpath:
+        if p == "<s>" or p == "</s>":
+          pass
+        elif p in [".", "sp"]:
+          mlf.append(str(faketime)+" "+str(faketime)+" "+p+" 0.0 "+p+"\n")
+        elif p in ["#1", "#2"]:
+          # We first add the stress marker and then a "." to mark the boundary.
+          # Without the dot load_utterance from align mlf will not detect the syllable boundary.
+          mlf.append(str(faketime)+" "+str(faketime)+" "+p+" 0.0 "+p+"\n")
+          mlf.append(str(faketime)+" "+str(faketime)+" . 0.0 .\n")
+        else:
+          mlf.append(str(faketime)+" "+str(faketime+10000)+" "+p+" 0.0 "+p+"\n")
+          faketime+=10000
+      mlf.append(".\n")
   
   
   wf = sire_io.open_writefile_safe(args.outmlfpath)

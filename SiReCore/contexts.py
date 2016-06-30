@@ -784,8 +784,8 @@ def add_festival(context_skeleton, phoneme, festival_gpos=True):
 #contexts_to_fit = The set of contexts to produce a fitted question set to.
 def get_question_sets(context_skeleton, qformat, fit_contexts=False, contexts_to_fit=None, HHEd_fix=False):
   #Should be unnecessary due to argparse, but just to be sure.
-  if qformat not in ["NN", "HMM"]:
-    raise SiReError("Invalid question format ({0})! Must be either HMM or NN!".format(qformat))
+  if qformat not in ["Nitech_NN", "HMM", "CSTR_NN"]:
+    raise SiReError("Invalid question format ({0})! Must be either HMM, Nitech_NN or CSTR_NN!".format(qformat))
   c = context_skeleton
   c_utt = copy.deepcopy(context_skeleton)
   questions = []
@@ -821,8 +821,8 @@ def make_questions(context_skeleton, qformat, generic=True, HHEd_fix=False, utt=
       if context not in context_dict and context != "added_contexts":
         print context_dict.keys()
         print "Warning! Context ({0}) not used!".format(context)
-  if qformat not in ["NN", "HMM"]:
-    raise SiReError("Invalid question format {0}! Must be either HMM or NN!".format(qformat))
+  if qformat not in ["Nitech_NN", "HMM", "CSTR_NN"]:
+    raise SiReError("Invalid question format ({0})! Must be either HMM, Nitech_NN or CSTR_NN!".format(qformat))
   questions = []
   if generic == False:
     for key in context_dict:
@@ -838,14 +838,14 @@ def make_questions(context_skeleton, qformat, generic=True, HHEd_fix=False, utt=
           #If this is current phoneme id we apply the HHEd_fix
           if HHEd_fix == True and key == "cp":
             val = "-"+str(val)+"+"
-          if qformat == "HMM":
+          if qformat == "HMM" or qformat == "CSTR_NN":
             questions.append("QS \""+key+"-"+str(val)+"\" {*|"+key+":"+str(val)+"|*}")
-          elif qformat == "NN":
+          elif qformat == "Nitech_NN":
             questions.append("LQ 0 \""+key+"-"+str(val)+"\" {*|"+key+":"+str(val)+"|*}")
       elif "float" in qtype:
         if qformat == "HMM":
           questions += make_hmm_relational_qs(vals, key, qtype)
-        elif qformat == "NN":
+        elif qformat == "Nitech_NN":
           for val in vals:
             #HHEd's pattern matching for both NN and HMM's uses '.' as a special
             #character. We therefore use the int version of the float value in the
@@ -854,17 +854,25 @@ def make_questions(context_skeleton, qformat, generic=True, HHEd_fix=False, utt=
               questions.append("LQ 1 0.0 \""+key+"-xx\" {*|"+key+":xx|*}")
             else:
               questions.append("LQ 1 "+str(val)+" \""+key+"-"+strintify(float(val))+"\" {*|"+key+":"+strintify(float(val))+"|*}")
+        elif qformat == "CSTR_NN":
+          #For CSTR's DNN system we just need to specify the question and not one for each value of the question if float or int.
+          #Note that floats needs to be strintified in the actual question.
+          questions.append("CQS \""+key+"\" {*|"+key+":(\d+)|*}")
       elif "int" in qtype:
-          if qformat == "HMM":
-            questions += make_hmm_relational_qs(vals, key, qtype)
-          elif qformat == "NN":
-            for val in vals:
-              #The NN relies on floats for the actual value so we use that there
-              #and the int in the naming. But we have to check for xx first.
-              if val == "xx":
-                questions.append("LQ 1 0.0 \""+key+"-xx\" {*|"+key+":xx|*}")
-              else:
-                questions.append("LQ 1 "+strfloatify(int(val))+" \""+key+"-"+str(val)+"\" {*|"+key+":"+str(val)+"|*}")
+        if qformat == "HMM":
+          questions += make_hmm_relational_qs(vals, key, qtype)
+        elif qformat == "Nitech_NN":
+          for val in vals:
+            #The NN relies on floats for the actual value so we use that there
+            #and the int in the naming. But we have to check for xx first.
+            if val == "xx":
+              questions.append("LQ 1 0.0 \""+key+"-xx\" {*|"+key+":xx|*}")
+            else:
+              questions.append("LQ 1 "+strfloatify(int(val))+" \""+key+"-"+str(val)+"\" {*|"+key+":"+str(val)+"|*}")
+        elif qformat == "CSTR_NN":
+          #For CSTR's DNN system we just need to specify the question and not one for each value of the question if float or int.
+          #Note that floats needs to be strintified in the actual question.
+          questions.append("CQS \""+key+"\" {*|"+key+":(\d+)|*}")
       else:
         raise SiReError("Odd question type, should not exist - {0}".format(qtype))
   else:

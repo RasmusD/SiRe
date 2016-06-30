@@ -42,7 +42,7 @@ def score_word_ngram(args):
   comb_file = os.path.join(args.outdirpath, "combined.txt")
   combine_txt(args.txtdir, comb_file, args.f)
   if args.no_tmp_file:
-    return subprocess.communicate(args.lm_binary+" -ppl "+comb_file+" -lm "+args.lm_path + options)
+    return subprocess.check_output(args.lm_binary+" -ppl "+comb_file+" -lm "+args.lm_path + options, shell=True)
   else:
     subprocess.call(args.lm_binary+" -ppl "+comb_file+" -lm "+args.lm_path + options +" > "+os.path.join(args.outdirpath, "scored.txt"), shell=True)
     return open(os.path.join(args.outdirpath, "scored.txt"), "r").read()

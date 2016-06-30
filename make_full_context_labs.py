@@ -136,7 +136,7 @@ if __name__ == "__main__":
   parser.add_argument('-combilexpath', type=str, help="The path to the combilex dictionary directory. It will look for two files - combilex.dict and combilex.add - and retrieve all entries from these.", default=None)
   parser.add_argument('-questions', action="store_true", help="Write out a question set fitting the input dataset.")
   parser.add_argument('-qpath', type=str, help="The path to write the question set to. Default is \"questions/DATETIMENOW.hed\".", default=os.path.join("questions", str(datetime.now())+".hed"))
-  parser.add_argument('-target', type=str, help="The target type of the output labs and questions.", choices=['HMM', 'NN'], default='HMM')
+  parser.add_argument('-target', type=str, help="The target type of the output labs and questions.", choices=['HMM', 'Nitech_NN', 'CSTR_NN'], default='HMM')
   parser.add_argument('-stanford_pcfg_parse', action="store_true", help="Add stanford pcfg parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
   parser.add_argument('-stanford_dependency_parse', action="store_true", help="Add stanford dependency parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
   parser.add_argument('-context_type', type=str, choices=['absolute', 'relational', 'categorical'], help="The type of positional contexts to add.", default='relational')
