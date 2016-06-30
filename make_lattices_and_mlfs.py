@@ -35,7 +35,7 @@ from error_messages import SiReError
 #alignments to make it work.
 #NOTE: No stress is NOT marked #0, it is simply assumed it is unstressed if unmarked.
 #If syll_info is set to false we don't write out the syllable stress markers and dots for syll boundaries.
-def write_initial_alignment_mlfs(utt, spmlf, nospmlfm no_stop_split=False):
+def write_initial_alignment_mlfs(utt, spmlf, nospmlfm, no_stop_split=False):
   spmlf.write("\"*/"+utt.id+".lab\"\n")
   nospmlf.write("\"*/"+utt.id+".lab\"\n")
   
