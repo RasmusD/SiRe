@@ -35,7 +35,7 @@ from error_messages import SiReError
 #alignments to make it work.
 #NOTE: No stress is NOT marked #0, it is simply assumed it is unstressed if unmarked.
 #If syll_info is set to false we don't write out the syllable stress markers and dots for syll boundaries.
-def write_initial_alignment_mlfs(utt, spmlf, nospmlfm, no_stop_split=False):
+def write_initial_alignment_mlfs(utt, spmlf, nospmlf, no_stop_split=False):
   spmlf.write("\"*/"+utt.id+".lab\"\n")
   nospmlf.write("\"*/"+utt.id+".lab\"\n")
   
@@ -115,6 +115,7 @@ if __name__ == "__main__":
   args.intype = "txt"
   args.stanford_pcfg_parse = False
   args.stanford_dependency_parse = False
+  args.festival_features = False
   args.dictionary = dictionary.Dictionary(args.combilexpath)
   
   if args.pronoun_variant:
@@ -140,7 +141,7 @@ if __name__ == "__main__":
       #Make an utt
       utt = utterance.Utterance(txt, args)
       #Write out mlfs for standard alignment methods.
-      write_initial_alignment_mlfs(utt, wfsp, wfnosp, no_stop_split)
+      write_initial_alignment_mlfs(utt, wfsp, wfnosp, args.no_stop_split)
     if args.slf_align:
       write_slf_alignment_lattices(txt[0]+'.slf', txt[1:], args.outdir, args.dictionary, args.pronoun_variant)
     elif args.slf_phoneme:

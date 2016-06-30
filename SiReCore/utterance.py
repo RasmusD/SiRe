@@ -203,7 +203,7 @@ class Phoneme:
     self.parent_syllable = syll
     self.parent_word = word
     self.parent_utt = utt
-    if "states" in proto_phones:
+    if "states" in proto_phone:
       self.states = proto_phone["states"]
   
   #These are expensive operations I think.
