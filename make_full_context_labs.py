@@ -77,7 +77,27 @@ def write_context_utt(utt, args):
         context = contexts.Categorical(phone)
     if args.questions == True:
       cs.append(context)
-    wf.write(context.get_context_string(args.HHEd_fix))
+    if args.labtype == "Phone":
+      wf.write(context.get_context_string(args.HHEd_fix))
+    elif args.labtype == "AlignState":
+      base_string = context.get_context_string(args.HHEd_fix).split()
+      if phone.states:
+        if len(phone.states) != 5:
+          raise SiReError("Wrong number of states for phone {0}!".format(phone.id))
+        #S2
+        wf.write(phones.states[0][0]+" "+phones.states[0][1]+" "+base_string[-1]+"[2]"+base_string[-1]+"\n")
+        #S3
+        wf.write(phones.states[1][0]+" "+phones.states[1][1]+" "+base_string+"[3]\n")
+        #S4
+        wf.write(phones.states[2][0]+" "+phones.states[2][1]+" "+base_string+"[4]\n")
+        #S5
+        wf.write(phones.states[3][0]+" "+phones.states[3][1]+" "+base_string+"[5]\n")
+        #S6
+        wf.write(phones.states[4][0]+" "+phones.states[4][1]+" "+base_string+"[6]\n")
+      else:
+        print SiReError("No states in phone {0}! Faking phone states is not a feature currently.".format(phone.id))
+    else:
+      raise SiReError("Invalid labtype {0}!")
     wf.write("\n")
   wf.close()
   #This is an odd way of doing it but it works.
@@ -87,32 +107,32 @@ def write_context_utt(utt, args):
 def write_questions(context_set, args):
   if args.stanford_pcfg_parse == True and args.stanford_dependency_parse == True:
     if args.context_type == "relational":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordCombined(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordCombined(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordCombined(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordCombined(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
     elif args.context_type == "categorical":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.CategoricalStanfordCombined(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.CategoricalStanfordCombined(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
   elif args.stanford_pcfg_parse == True:
     if args.context_type == "relational":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordPcfg(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordPcfg(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordPcfg(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordPcfg(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
     elif args.context_type == "categorical":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.CategoricalStanfordPcfg(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.CategoricalStanfordPcfg(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
   elif args.stanford_dependency_parse == True:
     if args.context_type == "relational":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordDependency(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.RelationalStanfordDependency(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordDependency(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.AbsoluteStanfordDependency(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
     elif args.context_type == "categorical":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.CategoricalStanfordDependency(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.CategoricalStanfordDependency(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
   else:
     if args.context_type == "relational":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.Relational(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.Relational(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
     elif args.context_type == "absolute":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.Absolute(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.Absolute(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
     elif args.context_type == "categorical":
-      qs, q_utt = contexts.get_question_sets(context_skeletons.Categorical(args.phoneme_features), args.target, True, context_set, args.HHEd_fix)
+      qs, q_utt = contexts.get_question_sets(context_skeletons.Categorical(args.phoneme_features), args.qtype, True, context_set, args.HHEd_fix)
   for q in qs:
     args.qfile.write(q+"\n")
   for q in q_utt:
@@ -129,14 +149,15 @@ def finalise_questions(qpath):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Create full context labels from a variety of input.')
-  parser.add_argument('intype', type=str, help='The type of input.', choices=['align_mlf', 'hts_mlf', 'hts_lab', 'txt', 'sire_lab'])
+  parser.add_argument('intype', type=str, help='The type of input.', choices=['align_mlf', 'hts_mlf', 'hts_lab', 'txt', 'sire_lab', 'state_align_mlf'])
   parser.add_argument('labdir', type=str, help="The output lab dir.")
   parser.add_argument('inpath', type=str, help='The input path. The path to the mlf if that is the input. A dir path if labs or txt as input.')
   parser.add_argument('txtdir', type=str, help="The directory containing the original txt files. If producing input from txt this is set to equal INPATH and is technically superfluous, but necessary for other contexts.")
   parser.add_argument('-combilexpath', type=str, help="The path to the combilex dictionary directory. It will look for two files - combilex.dict and combilex.add - and retrieve all entries from these.", default=None)
   parser.add_argument('-questions', action="store_true", help="Write out a question set fitting the input dataset.")
   parser.add_argument('-qpath', type=str, help="The path to write the question set to. Default is \"questions/DATETIMENOW.hed\".", default=os.path.join("questions", str(datetime.now())+".hed"))
-  parser.add_argument('-target', type=str, help="The target type of the output labs and questions.", choices=['HMM', 'Nitech_NN', 'CSTR_NN'], default='HMM')
+  parser.add_argument('-qtype', type=str, help="The target type of the output questions.", choices=['HMM', 'Nitech_NN', 'CSTR_NN'], default='HMM')
+  parser.add_argument('-labtype', type=str, help="The target type of the output labels.", choices=['Phone', 'AlignState'], default='Phone')
   parser.add_argument('-stanford_pcfg_parse', action="store_true", help="Add stanford pcfg parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
   parser.add_argument('-stanford_dependency_parse', action="store_true", help="Add stanford dependency parse information from parses in provided dirpath. Note this assumes you have already run txt2parse to create a parse.")
   parser.add_argument('-context_type', type=str, choices=['absolute', 'relational', 'categorical'], help="The type of positional contexts to add.", default='relational')

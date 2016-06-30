@@ -52,6 +52,73 @@ def proto_from_align_lab(lab):
   
   return proto
 
+#This makes some assumptions about the lab format which is sampled below:
+#0 50000 s2 -78.739014 # -2090.613281 #
+#50000 200000 s3 -249.214050
+#200000 250000 s4 -84.849785
+#250000 300000 s5 -83.583138
+#300000 1400000 s6 -1594.227295
+#1400000 2200000 s2 -1361.197754 uh -1675.521729 uh
+#2200000 2250000 s3 -85.047012
+#2250000 2300000 s4 -75.808914
+#2300000 2350000 s5 -74.904594
+#2350000 2400000 s6 -78.563576
+#I.e.:
+#StateStart StateEnd State2 Prob Phone1 Prob Phone1
+#StateStart StateEnd State3 Prob
+#StateStart StateEnd State4 Prob
+#StateStart StateEnd State5 Prob
+#StateStart StateEnd State6 Prob
+#StateStart StateEnd State2 Prob Phone2 Prob Phone2
+#Etc.
+def proto_from_state_align_lab(lab):
+  proto = {}
+  proto["id"] = lab[0]
+  lab.pop(0)
+  #We make a temporary utterance bottom up starting with
+  #collapsing the state alignments.
+  new_lab = []
+  tmp = []
+  for line in lab:
+    if line[2] == "s2":
+      tmp.append(line)
+    elif line[2] == "s6":
+      #Append the state info
+      tmp.append(line)
+      if len(tmp) != 5:
+        raise SiReError("Not enough states in phone! 5 expected but I got {0}! Please check format.".format(len(tmp)))
+      new_lab.append(tmp)
+      tmp = []
+    else:
+      tmp.append(line)
+  lab = new_lab
+  ###Note this is currently not done as it creates complications
+  ###With the timings of each state. (phones tend not to be split in this case)
+  #Then reforming phonemes split for alignment.
+  #proto["utt"] = remake_stops(lab)
+  #Then make the phonemes with stress, start, end times and state information.
+  stress = 0
+  for i, p in enumerate(lab):
+    if p[-1] == "#1":
+      stress = 1
+      lab[i] = "out"
+    elif p[-1] == "#2":
+      stress = 2
+      lab[i] = "out"
+    else:
+      lab[i] = {"stress":stress, "id":lab[i][0][-1], "start":int(lab[i][0][0]), "end":int(lab[i][-1][1]), "states":lab[i]}
+      stress = 0
+  while "out" in lab:
+    lab.remove("out")
+  proto["utt"] = lab
+  proto["utt"] = make_phonemes(proto["utt"], add_state=True)
+  #Then syllables with start end times and stress.
+  proto["utt"] = make_sylls(proto["utt"])
+  #Then words with start and end times.
+  proto["utt"] = make_words(proto["utt"])
+  
+  return proto
+
 #Create a prototype utterance from a SiRe label which has had at least the basic set of features added.
 #Note that this will not load e.g. parsing information. Only the basic set is loaded from this and everything else must be added later!
 #TODO - support the loading of other features, e.g. parsing from these labels.

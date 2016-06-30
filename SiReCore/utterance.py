@@ -42,6 +42,8 @@ class Utterance(object):
     #Make a proto utt from the input
     if args.intype == "align_mlf":
       proto = utterance_load.proto_from_align_lab(lab)
+    elif args.intype == "state_align_mlf":
+      proto = utterance_load.proto_from_state_align_lab(lab)
       self.txtloaded = False
     elif args.intype == "hts_mlf":
       proto = utterance_load.proto_from_hts_lab(lab)
@@ -201,6 +203,8 @@ class Phoneme:
     self.parent_syllable = syll
     self.parent_word = word
     self.parent_utt = utt
+    if proto_phone["states"]:
+      self.states = proto_phone["states"]
   
   #These are expensive operations I think.
   #But necessary to keep things properly dynamic and has lots of benefits further on

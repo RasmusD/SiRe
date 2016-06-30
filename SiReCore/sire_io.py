@@ -96,7 +96,7 @@ def open_writefile_safe(filepath, overwrite=False):
 #Parse an mlf into the lines of containing labels.
 #Each labels is a list of each line split on whitespace.
 def parse_mlf(mlf, intype):
-  if intype == "align_mlf":
+  if intype in ["align_mlf", "state_align_mlf"]:
     ext = ".rec"
   elif intype == "hts_mlf":
     ext = ".lab"

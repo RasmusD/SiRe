@@ -35,7 +35,7 @@ from error_messages import SiReError
 #alignments to make it work.
 #NOTE: No stress is NOT marked #0, it is simply assumed it is unstressed if unmarked.
 #If syll_info is set to false we don't write out the syllable stress markers and dots for syll boundaries.
-def write_initial_alignment_mlfs(utt, spmlf, nospmlf):
+def write_initial_alignment_mlfs(utt, spmlf, nospmlfm no_stop_split=False):
   spmlf.write("\"*/"+utt.id+".lab\"\n")
   nospmlf.write("\"*/"+utt.id+".lab\"\n")
   
@@ -47,7 +47,7 @@ def write_initial_alignment_mlfs(utt, spmlf, nospmlf):
         spmlf.write("#"+syllable.stress+"\n")
       for phoneme in syllable.phonemes:
         #If the phoneme is a stop we split it in closure and release.
-        if phoneme.get_feats_dict()["CT"] == "s":
+        if phoneme.get_feats_dict()["CT"] == "s" and no_stop_split == False:
           spmlf.write(phoneme.id+"_cl\n")
           spmlf.write(phoneme.id+"\n")
           nospmlf.write(phoneme.id+"_cl\n")
@@ -96,6 +96,7 @@ if __name__ == "__main__":
   parser.add_argument('-mlfname', type=str, help="The name to prepend the output mlfs, if making mlfs.", default="txt")
   parser.add_argument('-pronoun_variant', action="store_true", help="Create pronounciation variant slfs. Always true when creating phoneme ngram slfs.")
   parser.add_argument('-no_syll_stress', action="store_true", help="Create pronounciation variant slfs for ngram rescoring without syllable stress information.")
+  parser.add_argument('-no_stop_split', action="store_true", help="If making mlfs do not split stops in two.")
   
   group = parser.add_mutually_exclusive_group()
   group.add_argument('-slf_phoneme', action="store_true", help="Output phoneme ngram rescoring suitable slfs.")
@@ -139,7 +140,7 @@ if __name__ == "__main__":
       #Make an utt
       utt = utterance.Utterance(txt, args)
       #Write out mlfs for standard alignment methods.
-      write_initial_alignment_mlfs(utt, wfsp, wfnosp)
+      write_initial_alignment_mlfs(utt, wfsp, wfnosp, no_stop_split)
     if args.slf_align:
       write_slf_alignment_lattices(txt[0]+'.slf', txt[1:], args.outdir, args.dictionary, args.pronoun_variant)
     elif args.slf_phoneme:
