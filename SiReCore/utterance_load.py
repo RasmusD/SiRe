@@ -75,23 +75,7 @@ def proto_from_state_align_lab(lab):
   proto = {}
   proto["id"] = lab[0]
   lab.pop(0)
-  #We make a temporary utterance bottom up starting with
-  #collapsing the state alignments.
-  new_lab = []
-  tmp = []
-  for line in lab:
-    if line[2] == "s2":
-      tmp.append(line)
-    elif line[2] == "s6":
-      #Append the state info
-      tmp.append(line)
-      if len(tmp) != 5:
-        raise SiReError("Not enough states in phone! 5 expected but I got {0}! Please check format.".format(len(tmp)))
-      new_lab.append(tmp)
-      tmp = []
-    else:
-      tmp.append(line)
-  lab = new_lab
+  #We make a temporary utterance bottom up
   ###Note this is currently not done as it creates complications
   ###With the timings of each state. (phones tend not to be split in this case)
   #Then reforming phonemes split for alignment.
@@ -99,10 +83,10 @@ def proto_from_state_align_lab(lab):
   #Then make the phonemes with stress, start, end times and state information.
   stress = 0
   for i, p in enumerate(lab):
-    if p[-1] == "#1":
+    if p[0][-1] == "#1":
       stress = 1
       lab[i] = "out"
-    elif p[-1] == "#2":
+    elif p[0][-1] == "#2":
       stress = 2
       lab[i] = "out"
     else:
@@ -111,7 +95,6 @@ def proto_from_state_align_lab(lab):
   while "out" in lab:
     lab.remove("out")
   proto["utt"] = lab
-  proto["utt"] = make_phonemes(proto["utt"], add_state=True)
   #Then syllables with start end times and stress.
   proto["utt"] = make_sylls(proto["utt"])
   #Then words with start and end times.

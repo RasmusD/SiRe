@@ -85,15 +85,15 @@ def write_context_utt(utt, args):
         if len(phone.states) != 5:
           raise SiReError("Wrong number of states for phone {0}!".format(phone.id))
         #S2
-        wf.write(phones.states[0][0]+" "+phones.states[0][1]+" "+base_string[-1]+"[2]"+base_string[-1]+"\n")
+        wf.write(phone.states[0][0]+" "+phone.states[0][1]+" "+base_string[-1]+"[2] "+base_string[-1]+"\n")
         #S3
-        wf.write(phones.states[1][0]+" "+phones.states[1][1]+" "+base_string+"[3]\n")
+        wf.write(phone.states[1][0]+" "+phone.states[1][1]+" "+base_string[-1]+"[3]\n")
         #S4
-        wf.write(phones.states[2][0]+" "+phones.states[2][1]+" "+base_string+"[4]\n")
+        wf.write(phone.states[2][0]+" "+phone.states[2][1]+" "+base_string[-1]+"[4]\n")
         #S5
-        wf.write(phones.states[3][0]+" "+phones.states[3][1]+" "+base_string+"[5]\n")
+        wf.write(phone.states[3][0]+" "+phone.states[3][1]+" "+base_string[-1]+"[5]\n")
         #S6
-        wf.write(phones.states[4][0]+" "+phones.states[4][1]+" "+base_string+"[6]\n")
+        wf.write(phone.states[4][0]+" "+phone.states[4][1]+" "+base_string[-1]+"[6]")
       else:
         print SiReError("No states in phone {0}! Faking phone states is not a feature currently.".format(phone.id))
     else:

@@ -106,14 +106,43 @@ def parse_mlf(mlf, intype):
   mlf.pop(0)
   labs = []
   tmp = []
-  for l in mlf:
-    tmp.append(l.split())
-    if l.strip() == ".":
-      if ext not in tmp[0][0]:
-        raise SiReError("Something wrong with lab:\n{0}".format(tmp))
+  end = len(mlf) - 1
+  for i, l in enumerate(mlf):
+    l = l.split()
+    if ext in l[0]:
+      if tmp == []:
+        tmp.append(l[0].split("*/")[1].split(".")[0])
       else:
-        tmp[0] = tmp[0][0].split("*/")[1].split(".")[0]
-        tmp.pop(-1)
+        if tmp[-1] == ["."]:
+          tmp.pop(-1)
+        labs.append(tmp)
+        tmp = []
+        tmp.append(l[0].split("*/")[1].split(".")[0])
+    elif i == end:
       labs.append(tmp)
+    else:
+      tmp.append(l)
+  # Collapse states
+  if intype == "state_align_mlf":
+    new_labs = []
+    for lab in labs:
+      n_lab = []
       tmp = []
+      for i, line in enumerate(lab):
+        #print line
+        if i == 0:
+          n_lab.append(line)
+        elif line[2] == "s2":
+          tmp.append(line)
+        elif line[2] == "s6":
+          #Append the state info
+          tmp.append(line)
+          if len(tmp) != 5:
+            raise SiReError("Not enough states in phone! 5 expected but I got {0}! Please check format.\n{1}".format(len(tmp), tmp))
+          n_lab.append(tmp)
+          tmp = []
+        else:
+          tmp.append(line)
+      new_labs.append(n_lab)
+    labs = new_labs
   return labs

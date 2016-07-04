@@ -151,7 +151,7 @@ class Utterance(object):
 #      if w.id.lower() in ["uh", "uhu", "um", "uhum"]:
 #        for p in w.phonemes:
 #          if p.id in ["@", "V"]:
-#            p.id = "V"
+#            p.id = "UHV"
   
   def num_phonemes(self):
     return len(self.phonemes)
