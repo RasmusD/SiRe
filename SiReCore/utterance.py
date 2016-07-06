@@ -42,6 +42,7 @@ class Utterance(object):
     #Make a proto utt from the input
     if args.intype == "align_mlf":
       proto = utterance_load.proto_from_align_lab(lab)
+      self.txtloaded = False
     elif args.intype == "state_align_mlf":
       proto = utterance_load.proto_from_state_align_lab(lab)
       self.txtloaded = False
