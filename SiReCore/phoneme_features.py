@@ -183,3 +183,67 @@ class CombilexPhonemes(object):
       if fail:
         raise SiReError("Phoneme ({0}) not a valid phoneme!".format(phoneme))
       return False
+
+
+class CMUPhonemes(CombilexPhonemes):
+    def __init__(self):
+        # Initialise it as a combilex phoneset
+        super(CombilexPhonemes, self).__init__()
+        # Clear the combilex phones
+        self.phonemes = {}
+        # Insert the CMUDict ones/arpabet
+        #The meaning of each element of the list is
+        #[0] - VOC: Vowel (v) or Consonant (c)
+        #[1] - VL: Vowel length: short (sh) long (l) dipthong (d) schwa (sc) consonant (c)
+        #[2] - VH: Vowel height: high (h) mid-high (mh) mid (m) mid-low (ml) low (l) consonant (c)
+        #[3] - VF: Vowel frontness: front (f) mid (m) back (b) consonant (c)
+        #[4] - VL: Vowel lip round: Rounded (r) unrounded (u) consonant (c)
+        #[5] - CT: Consonant Type: stop (s) fricative (f) affricative (af) nasal (n) liquid (l) approximant (ap) vowel (v)
+        #[6] - CA: Consonant Place of Articulation: labial (la) alveolar (a) palatal (p) labio-dental (ld) dental (d) velar (ve) glottal (g) vowel (vo)
+        #[7] - V: Voicing: Voiced (v) unvoiced (u)
+        self.phonemes["aa"] = ["v", "sh", "l", "b", "u", "v", "vo", "v"] #AA    odd       AA D
+        self.phonemes["ae"] = ["v", "sh", "ml", "f", "u", "v", "vo", "v"] #AE    at        AE T
+        self.phonemes["ah"] = ["v", "sc", "m", "m", "u", "v", "vo", "v"] # AH    hut       HH AH T <- Rasmus: I don't like this one, it covers both the Schwa and ^ IPA symbols and it is terribly broad. Here written as schwa.
+        self.phonemes["ao"] = ["v", "sh", "ml", "b", "r", "v", "vo", "v"] # AO    ought     AO T
+        self.phonemes["aw"] = ["v", "d", "l", "m", "u", "v", "vo", "v"] # AW    cow       K AW        <- Rasmus: This is set as a low high mid-vowel though arguably it is moving from low to high, front to back.
+        self.phonemes["ay"] = ["v", "d", "l", "m", "u", "v", "vo", "v"] # AY    hide      HH AY D     <- Rasmus: This is set as a low height vowel though arguably it is moving from low to high.
+        self.phonemes["b"] = ["c", "c", "c", "c", "c", "s", "la", "v"] #b
+        self.phonemes["ch"] = ["c", "c", "c", "c", "c", "af", "p", "u"] # CH    cheese    CH IY Z
+        self.phonemes["d"] = ["c", "c", "c", "c", "c", "s", "a", "v"] #d
+        self.phonemes["dh"] = ["c", "c", "c", "c", "c", "f", "d", "v"] #DH    thee      DH IY
+        self.phonemes["eh"] = ["v", "sh", "ml", "f", "u", "v", "vo", "v"] # EH    Ed        EH D
+        self.phonemes["er"] = ["v", "sh", "ml", "v", "u", "v", "vo", "v"] # ER    hurt      HH ER T
+        self.phonemes["ey"] = ["v", "d", "mh", "f", "u", "v", "vo", "v"] # EY    ate       EY T      <- Rasmus: This is set as a mid-high vowel though arguably it is moving from mid-high to high.
+        self.phonemes["f"] = ["c", "c", "c", "c", "c","f","ld", "u"] #f
+        self.phonemes["v"] = ["c", "c", "c", "c", "c","f","ld", "v"] #v
+        self.phonemes["g"] = ["c", "c", "c", "c", "c","s","ve", "v"] #g
+        self.phonemes["hh"] = ["c", "c", "c", "c", "c","f","g", "u"] #h
+        self.phonemes["ih"] = ["v", "s", "h", "f", "u","v","vo", "v"] # IH    it        IH T
+        self.phonemes["iy"] = ["v", "l", "h", "f", "u","v","vo", "v"] # IY    eat       IY T
+        self.phonemes["jh"] = ["c", "c", "c", "c", "c","af","p", "v"] # JH    gee       JH IY
+        self.phonemes["k"] = ["c", "c", "c", "c", "c","s","ve", "u"] #k
+        self.phonemes["l"] = ["c", "c", "c", "c", "c","l","a", "v"] #l
+        self.phonemes["m"] = ["c", "c", "c", "c", "c","n","la", "v"] #m
+        self.phonemes["n"] = ["c", "c", "c", "c", "c","n","a", "v"] #n
+        self.phonemes["ng"] = ["c", "c", "c", "c", "c","n","ve", "v"] #"ng" in "-ing" ending (when the g is not pronounced fully)
+        self.phonemes["ow"] = ["v", "d", "mh", "b", "r","v","vo", "v"] # OW    oat       OW T      <- Rasmus: This is set as a rounded vowel though arguably it is moving from rounded to unrounded.
+        self.phonemes["oy"] = ["v", "d", "ml", "b", "r","v","vo", "v"] # OY    toy       T OY      <- Rasmus: This is set as a rounded back mid-low vowel though arguably it is moving from rounded back mid-low to unrounded front high.
+        self.phonemes["p"] = ["c", "c", "c", "c", "c", "s", "la", "u"] #p 
+        self.phonemes["r"] = ["c", "c", "c", "c", "c", "l","a", "v"] # R     read      R IY D    <- In combilex this is an approximant but in arpabet/cmudict a liquid. To distinguish it from l it has here only the id.
+        self.phonemes["s"] = ["c", "c", "c", "c", "c","f","a", "u"] #s
+        self.phonemes["sh"] = ["c", "c", "c", "c", "c","f","p", "u"] # SH    she       SH IY
+        self.phonemes["t"] = ["c", "c", "c", "c", "c", "s", "a", "u"] #t
+        self.phonemes["th"] = ["c", "c", "c", "c", "c","f","d", "u"] # TH    theta     TH EY T AH
+        self.phonemes["uh"] = ["v", "s", "h", "b", "r","v","vo", "v"] # UH    hood      HH UH D
+        self.phonemes["uw"] = ["v", "l", "h", "b", "r","v","vo", "v"] # UW    two       T UW
+        self.phonemes["w"] = ["c", "c", "c", "c", "c","l","la", "v"] #w
+        self.phonemes["y"] = ["c", "c", "c", "c", "c","l","p", "v"] # Y     yield     Y IY L D
+        self.phonemes["z"] = ["c", "c", "c", "c", "c","f","a", "v"] # Z     zee       Z IY
+        self.phonemes["zh"] = ["c", "c", "c", "c", "c","f","p", "v"] # ZH    seizure   S IY ZH ER
+        self.phonemes["#"] = ["xx", "xx", "xx", "xx", "xx","xx","xx", "u"] #Around utt silence
+        self.phonemes["sil"] = ["xx", "xx", "xx", "xx", "xx","xx","xx", "u"] #silence
+        self.phonemes["pau"] = ["xx", "xx", "xx", "xx", "xx","xx","xx", "u"] #pause
+        #self.phonemes["sp"] = ["xx", "xx", "xx", "xx", "xx","xx","xx", "u"] #short pause - should preferably not exist
+        self.phonemes["xx"] = ["xx", "xx", "xx", "xx", "xx","xx","xx", "xx"] #Pre-utt
+        self.phonemes["novowel"] = ["c", "c", "c", "c", "c","xx","xx", "xx"] #If cur syll contains no vowel
+        self.phonemes["UH"] = ["v", "sh", "l", "m", "u","v","vo", "v"] #"uh" sound - for testing if seperating gives better results

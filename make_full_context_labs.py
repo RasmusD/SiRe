@@ -153,7 +153,8 @@ if __name__ == "__main__":
   parser.add_argument('labdir', type=str, help="The output lab dir.")
   parser.add_argument('inpath', type=str, help='The input path. The path to the mlf if that is the input. A dir path if labs or txt as input.')
   parser.add_argument('txtdir', type=str, help="The directory containing the original txt files. If producing input from txt this is set to equal INPATH and is technically superfluous, but necessary for other contexts.")
-  parser.add_argument('-combilexpath', type=str, help="The path to the combilex dictionary directory. It will look for two files - combilex.dict and combilex.add - and retrieve all entries from these.", default=None)
+  parser.add_argument('-dict', type=str, nargs=2, help="The path to the dictionary.", default=None, metavar=["DICTTYPE", "DICTPATH"])
+  parser.add_argument('-phoneset', type=str, help="The phoneset to use - combilex or cmudict. Is overwritten to fit the dictionary if one is used.", default="combilex", choices=["combilex", "cmudict"])
   parser.add_argument('-questions', action="store_true", help="Write out a question set fitting the input dataset.")
   parser.add_argument('-qpath', type=str, help="The path to write the question set to. Default is \"questions/DATETIMENOW.hed\".", default=os.path.join("questions", str(datetime.now())+".hed"))
   parser.add_argument('-qtype', type=str, help="The target type of the output questions.", choices=['HMM', 'Nitech_NN', 'CSTR_NN'], default='HMM')
@@ -177,9 +178,12 @@ if __name__ == "__main__":
   if args.pron_reduced or args.pron_phoneme_lm:
     if args.intype != "txt":
       raise SiReError("If producing LM based pronunciations you must be making utterances from text!")
-  
-  #The phoneme set used - hardcoded as currently only combilex is possible.
-  args.phoneme_features = phoneme_features.CombilexPhonemes()
+
+  #The phoneme set used
+  if args.phoneset == "combilex":
+    args.phoneme_features = phoneme_features.CombilexPhonemes()
+  else:
+    args.phoneme_features = phoneme_features.CMUPhonemes()
   #We use festival features always - hardcoded here as we want them in all full-context labs but not in e.g. corpus analysis
   args.festival_features = True
   
@@ -216,12 +220,10 @@ if __name__ == "__main__":
       raise SiReError("Input path is not a directory! It must be when creating labs from text.")
     args.txtdir = args.inpath
     labs = io.load_txt_dir(args.txtdir, args.comma_is_pause)
-    if args.combilexpath == None:
-      raise SiReError("No path to combilex. Please use -combilexpath option.")
-    elif not os.path.isdir(args.combilexpath):
-        raise SiReError("Combilex path is not valid ({0}).\nPlease specify the dir in which the combilex.dict and .add files are.".format(args.combilexpath))
-    args.dictionary = dictionary.Dictionary(args.combilexpath)
-    #The phoneme set used must match the dictionary - currently pointless as only combilex is possible and this is hardcoded above. But here for the future.
+    if args.dict == None:
+      raise SiReError("No path to dictionary. Please use -dict option.")
+    args.dictionary = dictionary.Dictionary(args.dict[1], args.dict[0])
+    #The phoneme set used must match the dictionary.
     args.phoneme_features = args.dictionary.phoneme_feats
   elif args.intype == "hts_lab":
     labs = io.open_labdir_line_by_line(args.inpath)

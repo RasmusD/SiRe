@@ -45,8 +45,8 @@ python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs
 python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix || { echo "Error at line: ${LINENO}"; exit 1; }
 python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
 python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type categorical || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -target NN || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type absolute -target NN || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -qtype Nitech_NN || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type absolute -qtype Nitech_NN || { echo "Error at line: ${LINENO}"; exit 1; }
 
 #Parsing - there are more combinations but this should suffice
 python make_full_context_labs.py align_mlf SiReTest/outputs/labs SiReTest/inputs/align.mlf SiReTest/inputs/txt/ -stanford_pcfg_parse -parsedir SiReTest/inputs/parse/ || { echo "Error at line: ${LINENO}"; exit 1; }
@@ -71,7 +71,7 @@ python make_full_context_labs.py sire_lab SiReTest/outputs/labs SiReTest/inputs/
 python make_full_context_labs.py sire_lab SiReTest/outputs/labs SiReTest/inputs/SiRe_Lab/relational SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type relational || { echo "Error at line: ${LINENO}"; exit 1; }
 python make_full_context_labs.py sire_lab SiReTest/outputs/labs SiReTest/inputs/SiRe_Lab/categorical SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -HHEd_fix -context_type categorical || { echo "Error at line: ${LINENO}"; exit 1; }
 
-#THE FOLLOWING EXCERCISES NEED YOU TO HAVE COMBILEX AND SET A THE PATH TO IT YOURSELF!!!
+#THE FOLLOWING EXCERCISES NEED YOU TO HAVE COMBILEX OR CMUDICT AND SET A THE PATH TO IT YOURSELF!!!
 #From txt
 if [ "$1" != "all" ]
 then
@@ -79,16 +79,17 @@ then
   rm -r SiReTest/outputs
   exit
 fi
-COMBILEXPATH=/Users/RasmusDall/SiRe/combilex
-python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -combilexpath $COMBILEXPATH || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -combilexpath $COMBILEXPATH -comma_is_pause || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -combilexpath $COMBILEXPATH -comma_is_pause -stanford_dependency_parse -parsedir SiReTest/inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -combilexpath $COMBILEXPATH -comma_is_pause -stanford_pcfg_parse -parsedir SiReTest/inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -combilexpath $COMBILEXPATH -comma_is_pause -stanford_pcfg_parse -stanford_dependency_parse -parsedir SiReTest/inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -combilexpath $COMBILEXPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -combilexpath $COMBILEXPATH || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -combilexpath $COMBILEXPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
-python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -combilexpath $COMBILEXPATH -context_type categorical || { echo "Error at line: ${LINENO}"; exit 1; }
+DICTPATH=/Users/Rasmus/SiRe/cmudict/syllabified.dict
+DICTTYPE="cmudict"
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -dict "cmudict" $DICTPATH || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -dict "cmudict" $DICTPATH -comma_is_pause || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -dict "cmudict" $DICTPATH -comma_is_pause -stanford_dependency_parse -parsedir SiReTest/inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -dict "cmudict" $DICTPATH -comma_is_pause -stanford_pcfg_parse -parsedir SiReTest/inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -dict "cmudict" $DICTPATH -comma_is_pause -stanford_pcfg_parse -stanford_dependency_parse -parsedir SiReTest/inputs/parse || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -dict "cmudict" $DICTPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -dict "cmudict" $DICTPATH || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -dict "cmudict" $DICTPATH -context_type absolute || { echo "Error at line: ${LINENO}"; exit 1; }
+python make_full_context_labs.py txt SiReTest/outputs/labs SiReTest/inputs/txt SiReTest/inputs/txt/ -questions -qpath SiReTest/outputs/questions/test -dict "cmudict" $DICTPATH -context_type categorical || { echo "Error at line: ${LINENO}"; exit 1; }
 
 
 #Clean up

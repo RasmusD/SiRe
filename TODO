@@ -17,8 +17,8 @@
 Need to add:
 - Option to choose which pause phoneme to use for alignment.
 - Combilex uses three levels of syllable stress (0, 1, 2) but they are not order (0 - no stress, 1 - primary stress, 2 - secondary stress) which is annoying as higher/lower than questions become meaningless as a consequence (or at least harder for the dec tree to deal with). This should be changed when loading combilex but is kept currently for compatibility reasons.
-- In fact the loading of the dictionary entries should generally be redone such that the phonemisation is not stored as a weird bracketed string but rather as a mini utt with syllables containing a phoneme string and a stress value (and when loading this we can of course switch the values to make them ordered).
 - Option to use punct as sil and change general sil phoneme when making lattices and mlfs.
+- Documentation
 
 Should be added:
 - When splitting n't words should put the n with the t and not split those.
@@ -27,15 +27,13 @@ Should be added:
 - Add option to pass own arguments to LM binary in txt2lmscore.py and possibly also to parser in txt2parse.py. This should be modelled on make_phoneme_lm
 - Reverse engineer the PBT tokenisation of the Stanford parser. Will avoid the hack of merging and splitting.
 - Option to use different silence phoneme for midsentential silence than sentence boundary silence.
-- Files in combilex dir should not be prespecified as combilex.dict and .add
 - Leafs should be renamed leaves
 
 Consider To Add/Change:
-- The dictionary should store its entries differently, probably as a dict containing a list of syllables which is a tuple of phonemes and stress value
 - Consider not creating full utt when making aligment mlfs and slfs at the same time. Currently phonemisations are sort of created twice.
 - It may be better to put check_dictionary into dictionary.py
 - The comma_is_pause option should probably be implemented differently.
-- Also consider only either splitting or merging. If nto splitting could simply let words be both beginning and end.
+- Also consider only either splitting or merging. If nto splitting could simply let words be both beginning and end. Merging is probably better.
 - Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.
 - Consider if it could be useful to split combilex words with the possesive 's added as this is also done when parsing and would give better POS agreement. Alternatively we should merge parse words, but that may be difficult due to the parse tree also needing modification then.
 - Move add_festival from contexts to basic contexts.
@@ -43,8 +41,6 @@ Consider To Add/Change:
 
 Nice to add:
 - Actual tests.
-- Support for CMUdict
-- Make make_entry in dictionary.py output either combilex or cmudict format.
 (- Think that the merging done when loading parses for txt based labelling recreates the combined POS-tags so we don't have to split combilex ones.)
 - Support for "standard" question sets that are not tailored to a dataset.
 - Could just output an HTK dictionary instead of lattice?

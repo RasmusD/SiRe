@@ -28,15 +28,22 @@ class Dictionary(object):
   """A dictionary class."""
   
   #Create a combilex dictionary
-  def __init__(self, path):
-    print "Loading combilex..."
-    self.type = "combilex"
-    entries = [x for x in open(os.path.join(path, "combilex.dict"), "r").readlines() if x[0] == "("]
-    entries += [x for x in open(os.path.join(path, "combilex.add"), "r").readlines() if x[0] == "("]
+  def __init__(self, path, dctType):
+    if dctType not in ["combilex", "cmudict"]:
+      raise SiReError("{0} is not a valid dictionary type! Must be combilex or cmudict.".format(dctType))
+    print "Loading {0}...".format(dctType)
+    self.type = dctType
+    entries = [x for x in open(path, "r").readlines() if x[0] == "("]
+    #Ready the phones for the dictionary type
+    if dctType == "combilex":
+      self.phoneme_feats = phoneme_features.CombilexPhonemes()
+    else:
+      self.phoneme_feats = phoneme_features.CMUPhonemes()
+
     #Generally this should not be used directly - rather the get methods below should be used
     #to retrieve the desired type of entry.
     self.raw_dictionary_entries = {}
-    #Parse each combilex entry into its name, part of speech tag, reduction level and syllable/phonemes
+    #Parse each entry into its name, part of speech tag, reduction level and syllable/phonemes
     for e in entries:
       entry = e.split("\"")
       #find the name
@@ -71,9 +78,14 @@ class Dictionary(object):
         c_syll["stress"] = syll[1]
         #Make the phonemes
         for phon in syll[0].split():
+          #Check that this is a valid phone
+          self.phoneme_feats.is_phoneme(phon, fail=True)
+
           c_phon = {"id":None, "stress":None, "start":None, "end":None}
           c_phon["id"] = phon
           #Phone stress not encoded directly in combilex surface form dicts.
+          #This information is in CMUdict on vowels but is lost in the syllabification script in SiReUtils/syllabify_cmudict.py
+          #Could be retained if one wanted.
           c_phon["stress"] = None
           c_syll["phonemes"].append(c_phon)
         c_syll["id"] = syll[0].replace(" ", "")
@@ -82,7 +94,6 @@ class Dictionary(object):
         self.raw_dictionary_entries[name] += [word]
       else:
         self.raw_dictionary_entries[name] = [word]
-    self.phoneme_feats = phoneme_features.CombilexPhonemes()
     print "Done."
   
   #Returns a whitespace delimited phoneme string of an entry
