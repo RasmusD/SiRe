@@ -19,7 +19,7 @@ import site
 site.addsitedir(".")
 
 #Rest of imports
-import argparse, os, utterance, contexts, copy, context_skeletons, utterance_load, dictionary, phoneme_features
+import argparse, os, utterance, contexts, copy, context_skeletons, dictionary, phoneme_features
 import sire_io as io
 from datetime import datetime
 from error_messages import SiReError
@@ -166,14 +166,14 @@ if __name__ == "__main__":
   parser.add_argument('-HHEd_fix', action="store_true", help="Applies a fix to the contexts around the current phoneme to be compatible with hardcoded delimiters in HHEd.")
   parser.add_argument('-comma_is_pause', action='store_true', help="If making labs from txt, commas mark where to pause and so we should pause.")
   parser.add_argument('-general_sil_phoneme', type=str, help="If making labs from txt, use this as the silence phoneme.", default="sil")
-  
+  parser.add_argument('-emphasis', action="store_true", help="If using a corpus emphasis tagged via all capital letters, use this to not lowercase all text.")
   #A few mutually exclusive groups
   #TODO should be more
   group = parser.add_mutually_exclusive_group()
   group.add_argument('-pron_reduced', type=str, nargs=2, help='Produce labels with a reduced pronunciation based on word level LM scores. REDUCTION_LEVEL should be a float between 1.0 (fully pronunced) and 0.0 (fully reduced).', metavar=('REDUCTION_LEVEL', 'LM_SCORE_DIR_PATH'))
   group.add_argument('-pron_phoneme_lm', type=str, help='Produce labels with a pronunciation based on phoneme level LM scores. LM_SCORE_DIR_PATH is the path to the stored best paths.', metavar=('LM_SCORE_DIR_PATH'))
   args = parser.parse_args()
-  
+
   #Just a check - argparse does not have mutually inclusive groups.
   if args.pron_reduced or args.pron_phoneme_lm:
     if args.intype != "txt":
@@ -186,11 +186,11 @@ if __name__ == "__main__":
     args.phoneme_features = phoneme_features.CMUPhonemes()
   #We use festival features always - hardcoded here as we want them in all full-context labs but not in e.g. corpus analysis
   args.festival_features = True
-  
+
   #We can't use commas as pause if we are not creating labs from text.
   if args.comma_is_pause and args.intype != "txt":
     raise SiReError("It makes no sense to insert pauses at commas when you already have the pauses from the alignment or labs!")
-  
+
   #Check if this is well-formed
   if args.pron_reduced:
     if args.intype != "txt":
@@ -207,14 +207,14 @@ if __name__ == "__main__":
       raise SiReError("REDUCTION_LEVEL must be a float value! Was {0}!".format(args.pron_reduced[0]))
   else:
     args.pron_reduced = False
-  
+
   if args.stanford_pcfg_parse:
     args.pcfgdict = read_stanford_pcfg_parses(args.parsedir)
-  
+
   if args.stanford_dependency_parse:
     args.dependencydict = read_stanford_dependency_parses(args.parsedir)
-  
-  
+
+
   if args.intype == "txt":
     if not os.path.isdir(args.inpath):
       raise SiReError("Input path is not a directory! It must be when creating labs from text.")
@@ -227,6 +227,8 @@ if __name__ == "__main__":
     args.phoneme_features = args.dictionary.phoneme_feats
   elif args.intype == "hts_lab":
     labs = io.open_labdir_line_by_line(args.inpath)
+    print "This is a lab", len(labs[0])
+    # labs is a list of lists. Each list within the list of one of the labs
     args.intype = "hts_mlf"
   elif args.intype == "sire_lab":
     labs = io.open_labdir_line_by_line(args.inpath)
@@ -235,7 +237,7 @@ if __name__ == "__main__":
       raise SiReError("Input path to mlf does no exist!")
     mlf = open(args.inpath, "r").readlines()
     labs = io.parse_mlf(mlf, args.intype)
-  
+
   #Used if we make questions fitted to a dataset
   #We use qfile as the path to the file later.
   if args.questions == True:
@@ -243,14 +245,15 @@ if __name__ == "__main__":
     args.qfile = open(args.qpath, "w")
     parser.add_argument('-qfileutt', type=str, help="A variable used to store the GV question file.", default=None)
     args.qfileutt = open(args.qpath+"_utt", "w")
-  
+
   for lab in labs:
     print "Making full context label for {0}".format(lab[0])
     #Make an utt
+    print "The lab sent in", lab
     utt = utterance.Utterance(lab, args)
     #This writes out the label and also the questions
     write_context_utt(utt, args)
-  
+
   #Removes duplicates in the question set
   if args.questions:
     args.qfile.close()
