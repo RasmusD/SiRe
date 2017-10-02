@@ -16,8 +16,6 @@
 
 import phoneme_features, utterance_load, os, prosody, pos
 from error_messages import SiReError
-import pdb
-import re
 
 class Utterance(object):
   """An object representing an utterance."""
@@ -49,7 +47,7 @@ class Utterance(object):
       proto = utterance_load.proto_from_state_align_lab(lab)
       self.txtloaded = False
     elif args.intype == "hts_mlf":
-      proto = utterance_load.proto_from_hts_lab(lab)
+      proto = utterance_load.proto_from_hts_lab(lab, args.state_level)
       self.txtloaded = False
     elif args.intype == "sire_lab":
       #As we need additional information here we check if args contains it
@@ -92,7 +90,6 @@ class Utterance(object):
     self.phonemes = []
     self.syllables = []
     self.words = []
-    self.upper_reg = re.compile(r'[A-Z][A-Z]+')
     #We need to know which phoneme features this utterance is created with.
     if hasattr(args, 'dictionary'):
       self.phoneme_features = args.dictionary.phoneme_feats
@@ -142,7 +139,7 @@ class Utterance(object):
     if args.festival_features == True:
       #We need to know the words
       if args.intype != "txt" and self.txtloaded == False:
-        print "ID", self.id
+        # print "ID", self.id
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"), args.emphasis)
       #If we have a pcfg parse we have a proper POS tag mechanism and they have already been added
       if not args.stanford_pcfg_parse:
@@ -196,7 +193,7 @@ class Utterance(object):
   def num_emph_words(self):
       num = 0
       for i in xrange(0,len(self.words)):
-          if re.search(self.upper_reg, self.words[i].id) != None:
+          if self.words[i].id.isupper():
               num += 1
     #   print "Number of emphasised words is:", num
       return num
@@ -375,7 +372,6 @@ class Word:
   def load_from_proto(self, proto_word, word_utt_pos, current_phoneme_utt_pos, current_syll_utt_pos, proto_utt_len, utt):
     self.id = proto_word["id"]
     self.parent_utt = utt
-    self.upper_reg = re.compile(r'[A-Z][A-Z]+')
     #We initially save the utt pos of each syllable and phoneme in the word
     #instead of direct references because for the order we create these.
     #These can later be added, but should not be necessary
@@ -392,8 +388,7 @@ class Word:
       self.child_phoneme_utt_positions.append(i+current_phoneme_utt_pos)
     self.syllables = None
 
-    print proto_word["id"]
-    # pdb.set_trace()
+    # print proto_word["id"]
 
   #This works because we are passing by reference value.
   def add_syllables(self):
@@ -451,7 +446,7 @@ class Word:
 
   #Assigns emphasis to word if original text is capitalised
   def get_emph(self):
-      if re.search(self.upper_reg, self.id) != None:
+      if self.id.isupper():
           return True
 
 # Check if the next word is emphasised
@@ -460,54 +455,37 @@ class Word:
       if pos == len(self.parent_utt.words):
         return "xx"
       else:
-          if re.search(self.upper_reg, self.parent_utt.words[pos].id) != None:
+          if self.parent_utt.words[pos].id.isupper():
               return True
 
 # Check if the previous word is emphasised
   def backward_emph(self):
-      if self.pos_in_utt() == 0:
+      if self.pos_in_utt() <= 0:
         return "xx"
       else:
         pos = self.pos_in_utt() - 1
-        if re.search(self.upper_reg, self.parent_utt.words[pos].id) != None:
+        if self.parent_utt.words[pos].id.isupper():
             return True
 
 # Count how many words until the next emphasised word
   def next_emph(self):
       pos = self.pos_in_utt()
-      for i in xrange(pos, len(self.parent_utt.words)+1):
+      for i in xrange(pos+1, len(self.parent_utt.words)+1):
           if i == len(self.parent_utt.words):
-            return "xx"
-          elif re.search(self.upper_reg, self.parent_utt.words[i].id) != None:
-            num = i - pos
-            # if the current word is the emphasised word, check if there is a next emphasised word.
-            # this is to avoid overlap with get_emph
-            if num == 0:
-                new_pos = pos + 1
-                for i in xrange(new_pos, len(self.parent_utt.words)+1):
-                    if i == len(self.parent_utt.words):
-                      return "xx"
-                    elif re.search(self.upper_reg, self.parent_utt.words[i].id) != None:
-                      num = i - pos
-                      return num
-            return num
+              return "xx"
+          elif self.parent_utt.words[i].id.isupper():
+              num = i - pos
+              return num
 
 # Count how many words until the previous emphasised word
   def prev_emph(self):
      pos = self.pos_in_utt()
      for i in xrange(pos, -1, -1):
-         if i == 0:
+         if i <= 0 and self.parent_utt.words[i].id.islower():
              return "xx"
-         elif re.search(self.upper_reg, self.parent_utt.words[i].id) != None:
-               num = pos - i
-               # if the current word is the emphasised word, check if there is a previous emphasised word.
-               # this is to avoid overlap with get_emph
-               if num == 0:
-                   new_pos = pos - 1
-                   for i in xrange(new_pos, -1, -1):
-                       if i == 0:
-                          return "xx"
-                       elif re.search(self.upper_reg, self.parent_utt.words[i].id) != None:
-                            num = pos - i
-                            return num
-               return num
+         elif self.parent_utt.words[i].id.isupper():
+             num = pos - i
+             if num <= 0:
+                 return "xx"
+             else:
+                 return num

@@ -68,11 +68,16 @@ def write_context_utt(utt, args):
         context = contexts.AbsoluteStanfordDependency(phone)
       elif args.context_type == "categorical":
         context = contexts.CategoricalStanfordDependency(phone)
+    elif args.emphasis == True:
+        if args.context_type == "absolute":
+            context = contexts.Emphasis(phone)
+        elif args.context_type != "absolute":
+            print "Emphasis features can only be used with the Absolute context type."
     else:
       if args.context_type == "relational":
-        context = contexts.Relational(phone)
+          context = contexts.Relational(phone)
       elif args.context_type == "absolute":
-        context = contexts.Absolute(phone)
+          context = contexts.Absolute(phone)
       elif args.context_type == "categorical":
         context = contexts.Categorical(phone)
     if args.questions == True:
@@ -166,7 +171,8 @@ if __name__ == "__main__":
   parser.add_argument('-HHEd_fix', action="store_true", help="Applies a fix to the contexts around the current phoneme to be compatible with hardcoded delimiters in HHEd.")
   parser.add_argument('-comma_is_pause', action='store_true', help="If making labs from txt, commas mark where to pause and so we should pause.")
   parser.add_argument('-general_sil_phoneme', type=str, help="If making labs from txt, use this as the silence phoneme.", default="sil")
-  parser.add_argument('-emphasis', action="store_true", help="If using a corpus emphasis tagged via all capital letters, use this to not lowercase all text.")
+  parser.add_argument('-emphasis', action="store_true", help="If using a corpus emphasis tagged via all capital letters, use this to add emphasis features")
+  parser.add_argument('-state_level', action="store_true", help="If the input labels are state aligned. Uses HTK 3.5 labels.")
   #A few mutually exclusive groups
   #TODO should be more
   group = parser.add_mutually_exclusive_group()
@@ -227,7 +233,7 @@ if __name__ == "__main__":
     args.phoneme_features = args.dictionary.phoneme_feats
   elif args.intype == "hts_lab":
     labs = io.open_labdir_line_by_line(args.inpath)
-    print "This is a lab", len(labs[0])
+    # print "This is a lab", len(labs[0])
     # labs is a list of lists. Each list within the list of one of the labs
     args.intype = "hts_mlf"
   elif args.intype == "sire_lab":
@@ -249,7 +255,7 @@ if __name__ == "__main__":
   for lab in labs:
     print "Making full context label for {0}".format(lab[0])
     #Make an utt
-    print "The lab sent in", lab
+    # print "The lab sent in", lab
     utt = utterance.Utterance(lab, args)
     #This writes out the label and also the questions
     write_context_utt(utt, args)

@@ -15,7 +15,7 @@
 ##########################################################################
 
 #Methods for loading utterances
-import argparse, utterance, utterance_utils, phoneme_features, parsetrees, os, dictionary
+import utterance, utterance_utils, phoneme_features, parsetrees, os, dictionary
 from error_messages import SiReError
 import re
 
@@ -180,103 +180,100 @@ def proto_from_sire_lab(lab, context_type, HHEd_fix):
   proto["utt"].pop(0)
   return proto
 
-def proto_from_hts_lab(lab):
+def proto_from_hts_lab(lab, state):
   proto = {"utt":[]}
   proto["id"] = lab[0]
   lab.pop(0)
   # Create split lib
 
-  delims = ["^","-","+","=","@","_","/A:","_","_","/B:","-","-","@","-","&","-","#","-","$","-","!","-",";","-","|","/C:","+","+","/D:","_","/E:","+","@","+","&","+","#","+","/F:","_","/G:","_","/H:","=","@","=","|","/I:","=","/J:","+","-","[","]"]
+  if state:
 
-  c_syll = {"id":"", "phonemes":[], "stress":None}
-  c_word = {"id":"", "syllables":[]}
+      delims = ["^","-","+","=","@","_","/A:","_","_","/B:","-","-","@","-","&","-","#","-","$","-","!","-",";","-","|","/C:","+","+","/D:","_","/E:","+","@","+","&","+","#","+","/F:","_","/G:","_","/H:","=","@","=","|","/I:","=","/J:","+","-","[","]"]
 
-############################################################
-#################For Phone Aligned Labels###################
-############################################################
+      c_syll = {"id":"", "phonemes":[], "stress":None}
+      c_word = {"id":"", "syllables":[]}
 
-  # for i, line in enumerate(lab):
-  #   c_phon = {"id":None, "stress":None, "start":None, "end":None}
-  #   line[-1] = split_hts_lab(line[-1], delims)
-  #   # Create phonemes
-  #   c_phon["id"] = line[-1][2]
-  #   c_phon["start"] = line[0]
-  #   c_phon["end"] = line[1]
-  #   # VCTK HTS labs do not contain stress information at the phoneme level
-  #   c_phon["stress"] = None
-  #   # Add phonemes to syll
-  #   # If phonemes is beginning of syll prev syll is done
-  #   if line[-1][5] in ["xx", "1"]:
-  #     for p in c_syll["phonemes"]:
-  #       c_syll["id"] += p["id"]
-  #     # Add syll to word
-  #     c_word["syllables"].append(c_syll)
-  #     # If new syll is beginning of word, prev word is done
-  #     if line[-1][13] in ["xx", "1"]:
-  #       for s in c_word["syllables"]:
-  #         c_word["id"] += s["id"]
-  #       proto["utt"].append(c_word)
-  #       c_word = {"id":"", "syllables":[]}
-  #     c_syll = {"id":"", "phonemes":[c_phon], "stress":line[-1][10]}
-  #   else:
-  #     c_syll["phonemes"].append(c_phon)
-  #   # If this is the last phoneme we are done
-  #   if i == len(lab) - 1:
-  #     for p in c_syll["phonemes"]:
-  #       c_syll["id"] += p["id"]
-  #     c_word["syllables"].append(c_syll)
-  #     for s in c_word["syllables"]:
-  #         c_word["id"] += c_syll["id"]
-  #     proto["utt"].append(c_word)
-  # # The first is empty so we can pop
-  # proto["utt"].pop(0)
-  # return proto
+      state_count = 0
 
-############################################################
-#################For State Aligned Labels###################
-############################################################
+      for i, line in enumerate(lab):
 
-  state_count = 0
+        line[-1] = split_hts_lab(line[-1], delims)
+        line[-1].pop(53)
+        line[-1].pop(54)
+        if state_count == 0:
+            c_phon = {"id":None, "stress":None, "start":None, "end":None, "states":{}}
+            c_phon["start"] = line[0]
+        c_phon["id"] = line[-1][2]
+        # VCTK HTS labs do not contain stress information at the phoneme level
+        c_phon["stress"] = None
+        c_phon["states"][state_count] = [line[0], line[1]]
 
-  for i, line in enumerate(lab):
+        if state_count < 4:
+            state_count += 1
+        else:
+            state_count = 0
+            c_phon["end"] = line[1]
+            # Add phonemes to syll
+            # If phonemes is beginning of syll prev syll is done
+            if line[-1][5] in ["xx", "1"]:
+              for p in c_syll["phonemes"]:
+                # print "Earlier P", p
+                c_syll["id"] += p["id"]
 
-    line[-1] = split_hts_lab(line[-1], delims)
-    line[-1].pop(53)
-    line[-1].pop(54)
-    if state_count == 0:
-        c_phon = {"id":None, "stress":None, "start":None, "end":None, "states":{}}
+              # Add syll to word
+              c_word["syllables"].append(c_syll)
+              # If new syll is beginning of word, prev word is done
+              if line[-1][13] in ["xx", "1"]:
+                for s in c_word["syllables"]:
+                  c_word["id"] += s["id"]
+                #   print "New S", s
+                proto["utt"].append(c_word)
+                c_word = {"id":"", "syllables":[]}
+              c_syll = {"id":"", "phonemes":[c_phon], "stress":line[-1][10]}
+            else:
+              c_syll["phonemes"].append(c_phon)
+            # If this is the last phoneme we are done
+            # print "This is I", i
+            if i == len(lab) - 1:
+              for p in c_syll["phonemes"]:
+                c_syll["id"] += p["id"]
+              c_word["syllables"].append(c_syll)
+              for s in c_word["syllables"]:
+                  c_word["id"] += c_syll["id"]
+              proto["utt"].append(c_word)
+            #   print "C_Word", c_word["id"]
+      # The first is empty so we can pop
+      proto["utt"].pop(0)
+
+      return proto
+  else:
+      delims = ["~","-","+","=",":","_","/A/","_","_","/B/","-","-",":","-","&","-","#","-","$","-",">","-","<","-","|","/C/","+","+","/D/","_","/E/","+",":","+","&","+","#","+","/F/","_","/G/","_","/H/","~",":","=","&","/I/","_","/J/","+","-"]
+      for i, line in enumerate(lab):
+        c_phon = {"id":None, "stress":None, "start":None, "end":None}
+        line[-1] = split_hts_lab(line[-1], delims)
+        # Create phonemes
+        c_phon["id"] = line[-1][2]
         c_phon["start"] = line[0]
-    c_phon["id"] = line[-1][2]
-    # VCTK HTS labs do not contain stress information at the phoneme level
-    c_phon["stress"] = None
-    c_phon["states"][state_count] = [line[0], line[1]]
-
-    if state_count < 4:
-        state_count += 1
-    else:
-        state_count = 0
         c_phon["end"] = line[1]
+        # VCTK HTS labs do not contain stress information at the phoneme level
+        c_phon["stress"] = None
         # Add phonemes to syll
         # If phonemes is beginning of syll prev syll is done
         if line[-1][5] in ["xx", "1"]:
           for p in c_syll["phonemes"]:
-            # print "Earlier P", p
             c_syll["id"] += p["id"]
-
           # Add syll to word
           c_word["syllables"].append(c_syll)
           # If new syll is beginning of word, prev word is done
           if line[-1][13] in ["xx", "1"]:
             for s in c_word["syllables"]:
               c_word["id"] += s["id"]
-            #   print "New S", s
             proto["utt"].append(c_word)
             c_word = {"id":"", "syllables":[]}
           c_syll = {"id":"", "phonemes":[c_phon], "stress":line[-1][10]}
         else:
           c_syll["phonemes"].append(c_phon)
         # If this is the last phoneme we are done
-        # print "This is I", i
         if i == len(lab) - 1:
           for p in c_syll["phonemes"]:
             c_syll["id"] += p["id"]
@@ -284,11 +281,10 @@ def proto_from_hts_lab(lab):
           for s in c_word["syllables"]:
               c_word["id"] += c_syll["id"]
           proto["utt"].append(c_word)
-        #   print "C_Word", c_word["id"]
-  # The first is empty so we can pop
-  proto["utt"].pop(0)
+      # The first is empty so we can pop
+      proto["utt"].pop(0)
+      return proto
 
-  return proto
 
 #Create a proto utterance from text.
 #Note that all phonemes are given a phony 100ms duration - this is expected to be overridden by the back-end duration prediction system.

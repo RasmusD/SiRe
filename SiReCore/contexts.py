@@ -73,6 +73,14 @@ def RelationalStanfordDependency(phoneme):
   add_relational_stanford_dependency(c, phoneme)
   return c
 
+def Emphasis(phoneme):
+    """Creates emphasis features based on the absolute context type"""
+    c = context_skeletons.Emphasis(phoneme.parent_utt.phoneme_features)
+    add_absolute(c, phoneme)
+    add_festival(c, phoneme)
+    add_emphasis(c, phoneme)
+    return c
+
 #This set is equivalent to what Festival does.
 def Absolute(phoneme):
   """Creates an absolute context string of the given phoneme."""
@@ -294,16 +302,6 @@ def add_basic(context_skeleton, phoneme):
   c.add("wnp", str(word.num_phonemes()))
   #Word number of syllables
   c.add("wns", str(word.num_syllables()))
-  #Word emphasis
-  c.add("wemph", str(word.get_emph()))
-  #Next word emphasis
-  c.add("fwemph", str(word.forward_emph()))
-  #Previous word emphasis
-  c.add("bwemph", str(word.backward_emph()))
-  # #Words until next emphasised word
-  c.add("wnew", str(word.next_emph()))
-  # #Words until last emphasised word
-  c.add("wpew", str(word.prev_emph()))
 
   ##### Utterance level features #####
   #Phonemes in utterance
@@ -312,12 +310,30 @@ def add_basic(context_skeleton, phoneme):
   c.add("uns", str(utt.num_syllables()))
   #Words in utterance
   c.add("unw", str(utt.num_words()))
-  #Emphasised words in utterance
-  c.add("unew", str(utt.num_emph_words()))
 
   ##### EXPERIMENTAL DO NOT COMMIT! #####
 #  c.add("ut", "read")
 
+def add_emphasis(context_skeleton, phoneme):
+    """Adds the emphasis context set"""
+    c = context_skeleton
+    word = phoneme.parent_word
+    utt = phoneme.parent_utt
+    ### Word Level Emphasis ###
+    #Word emphasis
+    c.add("wemph", str(word.get_emph()))
+    #Next word emphasis
+    c.add("fwemph", str(word.forward_emph()))
+    #Previous word emphasis
+    c.add("bwemph", str(word.backward_emph()))
+    # #Words until next emphasised word
+    c.add("wnew", str(word.next_emph()))
+    # #Words until last emphasised word
+    c.add("wpew", str(word.prev_emph()))
+
+    ### Utterance Level Emphasis ###
+    #Emphasised words in utterance
+    c.add("unew", str(utt.num_emph_words()))
 
 def add_categorical(context_skeleton, phoneme):
   """Adds the categorical context set. Categorical means that positions in segments are categorical."""
