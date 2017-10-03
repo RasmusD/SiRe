@@ -87,7 +87,7 @@ class Base(object):
     #self.pnsp = "intxx"
     #Phonemes from previous stressed phoneme
     #self.ppsp = "intxx"
-    
+
     ##### Syllable level features #####
     #Left syllable stress
     self.lss = "intxx0"
@@ -110,13 +110,13 @@ class Base(object):
     self.snss = "intxx"
     #Syllables from previous stressed syll
     self.spss = "intxx"
-    
+
     ##### Word level features #####
     #Word number of phonemes
     self.wnp = "intxx"
     #Word number of syllables
     self.wns = "intxx"
-    
+
     ##### Utterance level features #####
     #Utterance number of phonemes
     self.unp = "intutt"
@@ -127,7 +127,7 @@ class Base(object):
     ##### Experimental! #####
     #Is this read or spontaneous data?
     #self.ut = "bool"
-  
+
   #Can only add one context value to the dict.
   #Throws error if context already has a value.
   #Used for phoneme context string generation.
@@ -141,7 +141,7 @@ class Base(object):
           raise SiReError("Tried to add a context ({0} - new value: {1}) which already has a value ({2}).".format(v_name, value, self.added_contexts[v_name]))
     else:
       raise SiReError("Tried to add context ({0}) which does not exist in skeleton! ".format(v_name))
-  
+
   #Adds values in a list to the dict.
   #Ignores the initial value and only adds
   #to to the dict in a list for each key.
@@ -156,7 +156,7 @@ class Base(object):
           self.added_contexts[v_name] += [value]
     else:
       raise SiReError("Tried to add context ({0}) which does not exist in skeleton! ".format(v_name))
-  
+
   #Returns a context string based on what is in added_contexts.
   def get_context_string(self, HHEd_fix=False):
     s = ""
@@ -209,7 +209,7 @@ class Categorical(Base):
     self.lwup = "bool"
     #R pos in utt
     self.rwup = "bool"
-    
+
     #Accent and pos features to complete festival equivalent
     #General pos
     self.rgpos = "bool"
@@ -251,7 +251,7 @@ class Absolute(Base):
     self.wfwup = "int0"
     #Backward pos in utt
     self.wbwup = "int0"
-    
+
     #Accent and pos features to complete festival equivalent
     #General pos
     self.rgpos = "bool"
@@ -293,7 +293,7 @@ class Relational(Base):
     self.wfwup = "float"
     #Backward pos in utt
     self.wbwup = "float"
-    
+
     #Accent and pos features to complete festival equivalent
     #General pos
     self.rgpos = "bool"
@@ -310,6 +310,26 @@ class Relational(Base):
     #Distance to next accented syllable
     self.nasd = "intxx"
 
+class Emphasis(Absolute):
+    """The emphasis set of features based on the original text being capitalised where there is emphasis in the wav file"""
+    def __init__(self, phoneme_features):
+        super(Emphasis, self).__init__(phoneme_features)
+        ### Word ###
+        #Word level emphasis
+        self.wemph = "bool"
+        #Next word emphasis
+        self.fwemph = "bool"
+        #Previous word emphasis
+        self.bwemph = "bool"
+        #Words to next emphasised word
+        self.wnew = "intxx"
+        #Words from previous emphasised word
+        self.wpew = "intxx"
+
+        ### Utterance ###
+        #Utterance number of emphasised words
+        self.unew = "intutt"
+
 class CategoricalStanfordPcfg(Categorical):
   """An extension of the categorical base set including information from a stanford parsing of the sentence."""
   def __init__(self, phoneme_features):
@@ -321,7 +341,7 @@ class CategoricalStanfordPcfg(Categorical):
     self.wgpp = "bool"
     #Word greatgrandparent phrase
     self.wggpp = "bool"
-    
+
     #R Word categorical position in parent phrase
     self.rwcppp = "bool"
     #C Word categorical position in parent phrase

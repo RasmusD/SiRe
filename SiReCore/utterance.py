@@ -19,7 +19,7 @@ from error_messages import SiReError
 
 class Utterance(object):
   """An object representing an utterance."""
-  
+
   #Create an empty utt.
   #The proto utterance follows the following conventions:
   #It is a dictionary with two keys, id giving the name of the utt,
@@ -31,7 +31,7 @@ class Utterance(object):
   #A proto_syllable is a dict containing three keys, id giving the name of the syllable,
   #stress giving its stress value and phonemes.
   #The id of a syllable is expected to be the id of all its contained
-  #phonemes in order as a string. 
+  #phonemes in order as a string.
   #Phonemes is itself a list of proto_phonemes.
   #A proto_phoneme is a dict containing 4 keys.
   #Id being the type of phoneme, must be a valid phoneme in phoneme set used.
@@ -47,7 +47,7 @@ class Utterance(object):
       proto = utterance_load.proto_from_state_align_lab(lab)
       self.txtloaded = False
     elif args.intype == "hts_mlf":
-      proto = utterance_load.proto_from_hts_lab(lab)
+      proto = utterance_load.proto_from_hts_lab(lab, args.state_level)
       self.txtloaded = False
     elif args.intype == "sire_lab":
       #As we need additional information here we check if args contains it
@@ -84,7 +84,7 @@ class Utterance(object):
       self.txtloaded = True
     else:
       raise SiReError("Don't know what to do with intype - {0}".format(args.intype))
-    
+
     #Construct the utt from the proto utt
     self.id = proto["id"]
     self.phonemes = []
@@ -99,7 +99,7 @@ class Utterance(object):
       raise SiReError("args does not contain either a dictionary or a phoneme featureset!")
     s_utt_pos = 0
     p_utt_pos = 0
-    
+
     for wi, proto_word in enumerate(proto["utt"]):
       p_word_pos = 0
       word = Word()
@@ -119,32 +119,33 @@ class Utterance(object):
         syll.add_phonemes()
       word.add_phonemes()
       word.add_syllables()
-    
+
     #If we should use the stanford pcfg parse info
     if hasattr(args, 'stanford_pcfg_parse') and args.stanford_pcfg_parse:
       print "Loading stanford pcfg parse info to utt..."
       if args.intype != "txt":
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
       utterance_load.load_stanford_pcfg_parse(self, args.pcfgdict[self.id], args.comma_is_pause)
-    
+
     #If we should use the stanford dependency parse info
     if hasattr(args, 'stanford_dependency_parse') and args.stanford_dependency_parse:
       print "Loading stanford dependency parse info to utt..."
       if args.intype != "txt" and self.txtloaded == False:
         utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
       utterance_load.load_stanford_dependency_parse(self, args.dependencydict[self.id])
-    
+
     #If we output a Festival context set we should modify the UTT a bit further.
     #Right now we use the full festival features as standard, but some operations, like corpus analysis, does not rely on this and it is a nuisance to have the text a requirement so this is still just an option.
     if args.festival_features == True:
       #We need to know the words
       if args.intype != "txt" and self.txtloaded == False:
-        utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
+        # print "ID", self.id
+        utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"), args.emphasis)
       #If we have a pcfg parse we have a proper POS tag mechanism and they have already been added
       if not args.stanford_pcfg_parse:
         pos.simple_festival_pos_predict(self)
       prosody.simple_festival_accent_predict(self)
-    
+
 #    #Replacing UH - test!
 #    if not self.txtloaded:
 #      utterance_load.load_txt(self, os.path.join(args.txtdir, self.id+".txt"))
@@ -153,22 +154,22 @@ class Utterance(object):
 #        for p in w.phonemes:
 #          if p.id in ["@", "V"]:
 #            p.id = "UHV"
-  
+
   def num_phonemes(self):
     return len(self.phonemes)
-  
+
   def num_syllables(self):
     return len(self.syllables)
-  
+
   def num_words(self):
     return len(self.words)
-  
+
   def num_words_no_pau(self, keep_comma=False):
     return len(self.get_words_no_pau(keep_comma))
-  
+
   def num_phonemes_no_pau(self):
     return len(self.get_phonemes_no_pau())
-  
+
   #Gets the words without pausing
   #Used when comparing to stanford parse etc.
   def get_words_no_pau(self, keep_comma=False):
@@ -180,7 +181,7 @@ class Utterance(object):
       if word.id not in ignore:
         tmp.append(word)
     return tmp
-  
+
   def get_phonemes_no_pau(self):
     tmp = []
     ignore = self.phoneme_features.get_sil_phonemes()
@@ -189,11 +190,19 @@ class Utterance(object):
         tmp.append(p)
     return tmp
 
+  def num_emph_words(self):
+      num = 0
+      for i in xrange(0,len(self.words)):
+          if self.words[i].id.isupper():
+              num += 1
+    #   print "Number of emphasised words is:", num
+      return num
+
 class Phoneme:
   """A class representing a phoneme."""
   def __init__(self, p_id=None):
     self.id = p_id
-  
+
   def load_from_proto(self, proto_phone, p_syll_pos, p_utt_pos, p_word_pos, syll, word, utt):
     self.id = proto_phone["id"]
     self.start = proto_phone["start"]
@@ -206,7 +215,7 @@ class Phoneme:
     self.parent_utt = utt
     if "states" in proto_phone:
       self.states = proto_phone["states"]
-  
+
   #These are expensive operations I think.
   #But necessary to keep things properly dynamic and has lots of benefits further on
   #when merging parses into utterances.
@@ -215,13 +224,13 @@ class Phoneme:
       if p == self:
         return i
     raise SiReError("Cannot find self {0} in syll {1}!".format(self.id, self.parent_syllable.id))
-  
+
   def pos_in_word(self):
     for i, p in enumerate(self.parent_word.phonemes):
       if p == self:
         return i
     raise SiReError("Cannot find phoneme {0} in word {1}!".format(self.id, self.parent_word.id))
-  
+
   def pos_in_utt(self):
     for i, p in enumerate(self.parent_utt.phonemes):
       if p == self:
@@ -230,24 +239,24 @@ class Phoneme:
 
   def get_feats(self):
     return self.parent_utt.phoneme_features.get_phoneme_feats(self.id)
-  
+
   def get_feats_dict(self):
     return self.parent_utt.phoneme_features.get_phoneme_feats_dict(self.id)
-  
+
   def get_left_phoneme(self):
     pos = self.pos_in_utt()
     if pos == 0:
       return Phoneme("xx")
     else:
       return self.parent_utt.phonemes[pos-1]
-  
+
   def get_left_left_phoneme(self):
     pos = self.pos_in_utt()
     if pos <= 1:
       return Phoneme("xx")
     else:
       return self.parent_utt.phonemes[pos-2]
-  
+
   def get_right_phoneme(self):
     pos = self.pos_in_utt()
     u_len = self.parent_utt.num_phonemes() - 1
@@ -255,7 +264,7 @@ class Phoneme:
       return Phoneme("xx")
     else:
       return self.parent_utt.phonemes[pos+1]
-  
+
   def get_righ_right_phoneme(self):
     pos = self.pos_in_utt()
     u_len = self.parent_utt.num_phonemes() - 2
@@ -263,7 +272,7 @@ class Phoneme:
       return Phoneme("xx")
     else:
       return self.parent_utt.phonemes[pos+2]
-  
+
   #Returns the duration of the phone
   #Note that if the utterance was created from text
   #then this duration is phony and not valid.
@@ -272,12 +281,12 @@ class Phoneme:
 
 class Syllable:
   """A class representing a syllable."""
-  
+
   #An empty syll.
   #Using this can be dangerous if you don't add everything necesary later.
   def __init__(self, s_id=None):
     self.id = None
-  
+
   def load_from_proto(self, proto_syll, current_phoneme_utt_pos, s_word_pos, s_utt_pos, word, utt):
     self.id = proto_syll["id"]
     self.stress = proto_syll["stress"]
@@ -294,55 +303,55 @@ class Syllable:
     #This will be filled later
     self.phonemes = None
     self.vowel_id = self.find_vowel(proto_syll, utt.phoneme_features)
-  
+
   #This works because we are passing by reference value.
   def add_phonemes(self):
     self.phonemes = []
     for i in self.child_phoneme_utt_positions:
       self.phonemes.append(self.parent_utt.phonemes[i])
     del self.child_phoneme_utt_positions
-  
+
   #If a syllable contains more than one vowel this return the first one.
   def find_vowel(self, proto_syll, phoneme_features):
     for p in proto_syll["phonemes"]:
       if phoneme_features.is_vowel(p["id"]):
         return p["id"]
     return "novowel"
-  
+
   def pos_in_word(self):
     for i, p in enumerate(self.parent_word.syllables):
       if p == self:
         return i
     raise SiReError("Cannot find syllable {0} in word {1}!".format(self.id, self.parent_word.id))
-    
+
   def pos_in_utt(self):
     for i, p in enumerate(self.parent_utt.syllables):
       if p == self:
         return i
     raise SiReError("Cannot find syllable {0} in utt {1}!".format(self.id, self.parent_utt.id))
-  
+
   def num_phonemes(self):
     return len(self.phonemes)
-  
+
   def start_time(self):
     return self.phonemes[0].start
-  
+
   def end_time(self):
     return self.phonemes[-1].end
-  
-  def get_vowel_feats(self):  
+
+  def get_vowel_feats(self):
     return self.parent_utt.phoneme_features.get_phone_feats(self.vowel_id)
-  
-  def get_vowel_feats_dict(self):  
+
+  def get_vowel_feats_dict(self):
     return self.parent_utt.phoneme_features.get_phone_feats_dict(self.vowel_id)
-  
+
   def get_left_syllable(self):
     pos = self.pos_in_utt()
     if pos == 0:
       return "xx"
     else:
       return self.parent_utt.syllables[pos-1]
-  
+
   def get_right_syllable(self):
     pos = self.pos_in_utt()
     u_len = self.parent_utt.num_syllables() - 1
@@ -354,12 +363,12 @@ class Syllable:
 
 class Word:
   """A classs representing a word."""
-  
+
   #An empty word with only a name.
   #This can go wrong if you don't add everything needed later.
   def __init__(self):
     self.id = None
-  
+
   def load_from_proto(self, proto_word, word_utt_pos, current_phoneme_utt_pos, current_syll_utt_pos, proto_utt_len, utt):
     self.id = proto_word["id"]
     self.parent_utt = utt
@@ -378,51 +387,53 @@ class Word:
     for i in range(tmp):
       self.child_phoneme_utt_positions.append(i+current_phoneme_utt_pos)
     self.syllables = None
-  
+
+    # print proto_word["id"]
+
   #This works because we are passing by reference value.
   def add_syllables(self):
     self.syllables = []
     for i in self.child_syllable_utt_positions:
       self.syllables.append(self.parent_utt.syllables[i])
     del self.child_syllable_utt_positions
-  
+
   #This works because we are passing by reference value.
   def add_phonemes(self):
     self.phonemes = []
     for i in self.child_phoneme_utt_positions:
       self.phonemes.append(self.parent_utt.phonemes[i])
     del self.child_phoneme_utt_positions
-  
+
   def pos_in_utt(self):
     for i, p in enumerate(self.parent_utt.words):
       if p == self:
         return i
     raise SiReError("Cannot find word {0} in utt {1}!".format(self.id, self.parent_utt.id))
-  
+
   def num_syllables(self):
     return len(self.syllables)
-  
+
   def num_phonemes(self):
     return len(self.phonemes)
-  
+
   def start_time(self):
     return self.phonemes[0].start
-  
+
   def end_time(self):
     return self.phonemes[-1].end
-  
+
   #Gets the durations of the word.
   #NOTE: This will be a phony if utt created from text.
   def get_duration(self):
     return int(self.phonemes[-1].end) - int(self.phonemes[0].start)
-  
+
   #Returns the previous word in the utterance. Returns "xx" if this is the first word in the utt.
   def get_prev_word(self):
     if self.pos_in_utt() == 0:
       return "xx"
     else:
       return self.parent_utt.words[self.pos_in_utt() - 1]
-  
+
   #Returns the next word in the utterance. Returns "xx" if this is the last word in the utt.
   def get_next_word(self):
     #Pos in utt starts from 0, len starts at 1, so add 1
@@ -432,3 +443,49 @@ class Word:
     else:
       #We want the next one and have already added one to pos.
       return self.parent_utt.words[pos]
+
+  #Assigns emphasis to word if original text is capitalised
+  def get_emph(self):
+      if self.id.isupper():
+          return True
+
+# Check if the next word is emphasised
+  def forward_emph(self):
+      pos = self.pos_in_utt() + 1
+      if pos == len(self.parent_utt.words):
+        return "xx"
+      else:
+          if self.parent_utt.words[pos].id.isupper():
+              return True
+
+# Check if the previous word is emphasised
+  def backward_emph(self):
+      if self.pos_in_utt() <= 0:
+        return "xx"
+      else:
+        pos = self.pos_in_utt() - 1
+        if self.parent_utt.words[pos].id.isupper():
+            return True
+
+# Count how many words until the next emphasised word
+  def next_emph(self):
+      pos = self.pos_in_utt()
+      for i in xrange(pos+1, len(self.parent_utt.words)+1):
+          if i == len(self.parent_utt.words):
+              return "xx"
+          elif self.parent_utt.words[i].id.isupper():
+              num = i - pos
+              return num
+
+# Count how many words until the previous emphasised word
+  def prev_emph(self):
+     pos = self.pos_in_utt()
+     for i in xrange(pos, -1, -1):
+         if i <= 0 and self.parent_utt.words[i].id.islower():
+             return "xx"
+         elif self.parent_utt.words[i].id.isupper():
+             num = pos - i
+             if num <= 0:
+                 return "xx"
+             else:
+                 return num

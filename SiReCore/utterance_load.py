@@ -17,6 +17,7 @@
 #Methods for loading utterances
 import utterance, utterance_utils, phoneme_features, parsetrees, os, dictionary
 from error_messages import SiReError
+import re
 
 #Create a prototype utterance from a lab from an aligned mlf.
 #Note this assumes the following:
@@ -49,7 +50,7 @@ def proto_from_align_lab(lab):
   proto["utt"] = make_sylls(proto["utt"])
   #Then words with start and end times.
   proto["utt"] = make_words(proto["utt"])
-  
+
   return proto
 
 #This makes some assumptions about the lab format which is sampled below:
@@ -99,7 +100,7 @@ def proto_from_state_align_lab(lab):
   proto["utt"] = make_sylls(proto["utt"])
   #Then words with start and end times.
   proto["utt"] = make_words(proto["utt"])
-  
+
   return proto
 
 #Create a prototype utterance from a SiRe label which has had at least the basic set of features added.
@@ -179,50 +180,111 @@ def proto_from_sire_lab(lab, context_type, HHEd_fix):
   proto["utt"].pop(0)
   return proto
 
-def proto_from_hts_lab(lab):
+def proto_from_hts_lab(lab, state):
   proto = {"utt":[]}
   proto["id"] = lab[0]
   lab.pop(0)
   # Create split lib
-  delims = ["~","-","+","=",":","_","/A/","_","_","/B/","-","-",":","-","&","-","#","-","$","-",">","-","<","-","|","/C/","+","+","/D/","_","/E/","+",":","+","&","+","#","+","/F/","_","/G/","_","/H/","~",":","=","&","/I/","_","/J/","+","-"]
-  c_word = {"id":"", "syllables":[]}
-  c_syll = {"id":"", "phonemes":[], "stress":None}
-  for i, line in enumerate(lab):
-    c_phon = {"id":None, "stress":None, "start":None, "end":None}
-    line[-1] = split_hts_lab(line[-1], delims)  
-    # Create phonemes
-    c_phon["id"] = line[-1][2]
-    c_phon["start"] = line[0]
-    c_phon["end"] = line[1]
-    # VCTK HTS labs do not contain stress information at the phoneme level
-    c_phon["stress"] = None
-    # Add phonemes to syll
-    # If phonemes is beginning of syll prev syll is done
-    if line[-1][5] in ["xx", "1"]:
-      for p in c_syll["phonemes"]:
-        c_syll["id"] += p["id"]
-      # Add syll to word
-      c_word["syllables"].append(c_syll)
-      # If new syll is beginning of word, prev word is done
-      if line[-1][13] in ["xx", "1"]:
-        for s in c_word["syllables"]:
-          c_word["id"] += s["id"]
-        proto["utt"].append(c_word)
-        c_word = {"id":"", "syllables":[]}
-      c_syll = {"id":"", "phonemes":[c_phon], "stress":line[-1][10]}
-    else:
-      c_syll["phonemes"].append(c_phon)
-    # If this is the last phoneme we are done
-    if i == len(lab) - 1:
-      for p in c_syll["phonemes"]:
-        c_syll["id"] += p["id"]
-      c_word["syllables"].append(c_syll)
-      for s in c_word["syllables"]:
-          c_word["id"] += c_syll["id"]
-      proto["utt"].append(c_word)
-  # The first is empty so we can pop
-  proto["utt"].pop(0)
-  return proto
+
+  if state:
+
+      delims = ["^","-","+","=","@","_","/A:","_","_","/B:","-","-","@","-","&","-","#","-","$","-","!","-",";","-","|","/C:","+","+","/D:","_","/E:","+","@","+","&","+","#","+","/F:","_","/G:","_","/H:","=","@","=","|","/I:","=","/J:","+","-","[","]"]
+
+      c_syll = {"id":"", "phonemes":[], "stress":None}
+      c_word = {"id":"", "syllables":[]}
+
+      state_count = 0
+
+      for i, line in enumerate(lab):
+
+        line[-1] = split_hts_lab(line[-1], delims)
+        line[-1].pop(53)
+        line[-1].pop(54)
+        if state_count == 0:
+            c_phon = {"id":None, "stress":None, "start":None, "end":None, "states":{}}
+            c_phon["start"] = line[0]
+        c_phon["id"] = line[-1][2]
+        # VCTK HTS labs do not contain stress information at the phoneme level
+        c_phon["stress"] = None
+        c_phon["states"][state_count] = [line[0], line[1]]
+
+        if state_count < 4:
+            state_count += 1
+        else:
+            state_count = 0
+            c_phon["end"] = line[1]
+            # Add phonemes to syll
+            # If phonemes is beginning of syll prev syll is done
+            if line[-1][5] in ["xx", "1"]:
+              for p in c_syll["phonemes"]:
+                # print "Earlier P", p
+                c_syll["id"] += p["id"]
+
+              # Add syll to word
+              c_word["syllables"].append(c_syll)
+              # If new syll is beginning of word, prev word is done
+              if line[-1][13] in ["xx", "1"]:
+                for s in c_word["syllables"]:
+                  c_word["id"] += s["id"]
+                #   print "New S", s
+                proto["utt"].append(c_word)
+                c_word = {"id":"", "syllables":[]}
+              c_syll = {"id":"", "phonemes":[c_phon], "stress":line[-1][10]}
+            else:
+              c_syll["phonemes"].append(c_phon)
+            # If this is the last phoneme we are done
+            # print "This is I", i
+            if i == len(lab) - 1:
+              for p in c_syll["phonemes"]:
+                c_syll["id"] += p["id"]
+              c_word["syllables"].append(c_syll)
+              for s in c_word["syllables"]:
+                  c_word["id"] += c_syll["id"]
+              proto["utt"].append(c_word)
+            #   print "C_Word", c_word["id"]
+      # The first is empty so we can pop
+      proto["utt"].pop(0)
+
+      return proto
+  else:
+      delims = ["~","-","+","=",":","_","/A/","_","_","/B/","-","-",":","-","&","-","#","-","$","-",">","-","<","-","|","/C/","+","+","/D/","_","/E/","+",":","+","&","+","#","+","/F/","_","/G/","_","/H/","~",":","=","&","/I/","_","/J/","+","-"]
+      for i, line in enumerate(lab):
+        c_phon = {"id":None, "stress":None, "start":None, "end":None}
+        line[-1] = split_hts_lab(line[-1], delims)
+        # Create phonemes
+        c_phon["id"] = line[-1][2]
+        c_phon["start"] = line[0]
+        c_phon["end"] = line[1]
+        # VCTK HTS labs do not contain stress information at the phoneme level
+        c_phon["stress"] = None
+        # Add phonemes to syll
+        # If phonemes is beginning of syll prev syll is done
+        if line[-1][5] in ["xx", "1"]:
+          for p in c_syll["phonemes"]:
+            c_syll["id"] += p["id"]
+          # Add syll to word
+          c_word["syllables"].append(c_syll)
+          # If new syll is beginning of word, prev word is done
+          if line[-1][13] in ["xx", "1"]:
+            for s in c_word["syllables"]:
+              c_word["id"] += s["id"]
+            proto["utt"].append(c_word)
+            c_word = {"id":"", "syllables":[]}
+          c_syll = {"id":"", "phonemes":[c_phon], "stress":line[-1][10]}
+        else:
+          c_syll["phonemes"].append(c_phon)
+        # If this is the last phoneme we are done
+        if i == len(lab) - 1:
+          for p in c_syll["phonemes"]:
+            c_syll["id"] += p["id"]
+          c_word["syllables"].append(c_syll)
+          for s in c_word["syllables"]:
+              c_word["id"] += c_syll["id"]
+          proto["utt"].append(c_word)
+      # The first is empty so we can pop
+      proto["utt"].pop(0)
+      return proto
+
 
 #Create a proto utterance from text.
 #Note that all phonemes are given a phony 100ms duration - this is expected to be overridden by the back-end duration prediction system.
@@ -265,13 +327,13 @@ def proto_from_txt(lab, dictionary, general_sil_phoneme="sil", comma_is_pause=Fa
   else: #Else a pcfg parse should exist and we can get the pos tags from that.
     tree = parsetrees.stanfordPcfgTree()
     tree.make_tree(pcfgdict[proto["id"]])
-    
+
     #Do we need some punctuation?
     if comma_is_pause == True:
       leafs = tree.get_leafs(include_punct=[","])
     else:
       leafs = tree.get_leafs()
-    
+
     #In this case we need to do some merging
     if len(leafs) != len(words):
       leafs = merge(leafs, words, proto["id"])
@@ -314,7 +376,7 @@ def load_stanford_pcfg_parse(utt, parse, comma_is_pause=False):
   num_w = utt.num_words_no_pau(comma_is_pause)
   if len(leafs) != num_w:
     #First we try to see if this is due to differences in how words are
-    #dealt with in parsing and annotation. 
+    #dealt with in parsing and annotation.
     #Prime example is using 's in e.g. there's for transcription instead of there is.
     #Parsing splits there's into two whereas in e.g. combilex there's is one word.
     #If this is the case we split the WORD into two with the 's being a single phoneme
@@ -345,7 +407,7 @@ def load_stanford_pcfg_parse(utt, parse, comma_is_pause=False):
       word.greatgrandparent_phrase = parsetrees.get_fake_stanford_pcfg_parse()
     else:
       word.greatgrandparent_phrase = word.grandparent_phrase.parent
-  
+
   #Now add fake parse for sil, pau and #
   for word in utt.words:
     if word.id in utt.phoneme_features.get_sil_phonemes():
@@ -364,7 +426,7 @@ def load_stanford_dependency_parse(utt, parse):
   nodes = tree.get_nodes(utt_sorted=True)
   if len(nodes) != utt.num_words_no_pau():
     #First we try to see if this is due to differences in how words are
-    #dealt with in parsing and annotation. 
+    #dealt with in parsing and annotation.
     #Prime example is using 's in e.g. there's for transcription instead of there is.
     #Parsing splits there's into two whereas in e.g. combilex there's is one word.
     #If this is the case we split the WORD into two with the 's being a single phoneme
@@ -390,7 +452,7 @@ def load_stanford_dependency_parse(utt, parse):
       word.greatgrandparent_dependency = word.grandparent_dependency.parent
     else:
       word.greatgrandparent_dependency = parsetrees.stanfordDependencyTree()
-  
+
   #Now add empty parse for sil, pau and #
   for word in utt.words:
     if word.id in utt.phoneme_features.get_sil_phonemes()+[","]:
@@ -399,14 +461,30 @@ def load_stanford_dependency_parse(utt, parse):
       word.greatgrandparent_dependency = parsetrees.stanfordDependencyTree()
 
 #Get word ids from text.
-def load_txt(utt, txtpath):
+def load_txt(utt, txtpath, emphasis):
   txt = open(txtpath, "r").read()
   for x in ["!", ".", "?", ",", "--"]:
     txt = txt.replace(x, "")
+
   #We lower case because other methods use word name
   #and we don't care about case there.
-  txt = txt.lower()
+
+  # if not using emphasis, lowercase like normal
+  if not emphasis:
+      txt = txt.lower()
   txt = txt.split()
+  # if using emphasis, lower case all but words with two or more capitalised letters
+  if emphasis:
+      temp_txt = []
+      upper_reg = re.compile(r'[A-Z][A-Z]+')
+      for i in txt:
+          if re.search(upper_reg, i) != None:
+              temp_txt.append(i)
+          else:
+              i = i.lower()
+              temp_txt.append(i)
+      txt = temp_txt
+
   if len(txt) != utt.num_words_no_pau():
     for w in utt.words:
       print w.id
@@ -512,14 +590,21 @@ def make_words(utt):
 def split_hts_lab(lab, delims):
   values = {}
   for i, delim in enumerate(delims):
+    # print "Delims", delims
+    # print "Loopers", i, delim
+    # print "lab", lab
     s = lab.split(delim)
+    # print "Splitting", lab.split(delim)
+    # print "S", s
     s = [s[0], delim.join(s[1:])]
+    # print "New S", s
     if i+1 != len(delims):
       values[i] = s[0]
       lab = s[1]
     else:
       values[i] = s[0]
       values[i+1] = s[1]
+  # print "values", values
   return values
 
 #Takes a list of words and a path to a file with LM scores for each word.
@@ -537,20 +622,20 @@ def reduce_word_tuples(words, score_file, reduction_level):
   scores = {}
   for i, x in enumerate(open(score_file, "r").readlines()):
     scores[i] = x.strip().split()
-  
+
   if len(scores) != len(words):
     raise SiReError("I seem to have a mismatching set of words ({0}) and LM scores ({1}) for {2}".format(len(words), len(scores), score_file))
-  
+
   #The number of words to reduce
   n_to_reduce = int(round(len(words)*(1-reduction_level), 0))
-  
+
   #A list of dict entry tuples ordered by score in descending order
   ranked = sorted(scores.items(), key=lambda (k, v): v[1])
-  
+
   #Now mark the appropriate ones to be reduced
   for i in range(n_to_reduce):
     w_l[ranked[i][0]][1] = True
-  
+
   return w_l
 
 
