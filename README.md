@@ -22,6 +22,7 @@ If you try it out, here is what it can do (also see some papers further down whi
 - Create mlfs and slfs suitable for alignment using the Festival multisyn tools or HTK.
 - Do some corpus analysis and assorted simple tools including syllabifying cmuDict for use with SiRe.
 - Use NGRAM statistics for pronunciation reduction.
+- Apply word emphasis on specified words through capitalization
 - More to come... see TODO
 
 How to make it work:
@@ -47,6 +48,10 @@ Implemented a new module/improved an old?
 
 Papers published utilising SiRe:
 - Dall, R., Hashimoto, K., Oura, K., Nankaku, Y. and Tokuda, K. (2016). Redefining the Linguistic Context Feature Set for HMM and DNN TTS Through Position and Parsing. In Proc. Interspeech, San Francisco, USA. 
+
+Other work utilising SiRe:
+- Dall, R. (2016). Statistical Parametric Speech Synthesis Using Conversational Data and Phenomena. PhD Thesis, University of Edinburgh, UK.
+- Massey, L. (2017). Emphasis Modelling and Placement in DNN-based Text-to-Speech. MSc Thesis, University of Edinburgh, UK.
 
 #Copyright 2015 Rasmus Dall
 
