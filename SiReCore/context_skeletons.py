@@ -116,16 +116,6 @@ class Base(object):
     self.wnp = "intxx"
     #Word number of syllables
     self.wns = "intxx"
-    #Word level emphasis
-    self.wemph = "bool"
-    #Next word emphasis
-    self.fwemph = "bool"
-    #Previous word emphasis
-    self.bwemph = "bool"
-    #Words to next emphasised word
-    self.wnew = "intxx"
-    #Words from previous emphasised word
-    self.wpew = "intxx"
 
     ##### Utterance level features #####
     #Utterance number of phonemes
@@ -134,8 +124,6 @@ class Base(object):
     self.uns = "intutt"
     #Utterance number of words
     self.unw = "intutt"
-    #Utterance number of emphasised words
-    self.unew = "intutt"
     ##### Experimental! #####
     #Is this read or spontaneous data?
     #self.ut = "bool"
