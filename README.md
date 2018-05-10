@@ -7,6 +7,8 @@ But it is useful for me and should slowly develop into something useful to other
 
 NOTE: I aim to soon add some simple instructions/documentation to show of how to use SiRe. The test script in SiReTest currently can serve as an example for label generation.
 
+UPDATE May 18, 2018: I doubt I will add anything further to SiRe. But I'll happily support anybody who might.
+
 If you try it out, here is what it can do (also see some papers further down which has used this tool):
 
 - Load standard HTS (2.3beta for sure, but should work with most) and convert them to several other linguistic feature sets (see below).
